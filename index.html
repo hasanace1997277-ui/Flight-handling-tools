@@ -16,7 +16,6 @@
       --border: #e2e8f0;
       --text: #0f172a;
       --muted: #64748b;
-      --danger: #dc2626;
       --success: #16a34a;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
@@ -121,16 +120,12 @@
       color: #ffffff;
     }
 
-    .btn-danger {
-      color: var(--danger);
-      border-color: #fecaca;
-      background: #fef2f2;
+    .owner-only {
+      display: none;
     }
 
-    .btn-danger:hover {
-      background: var(--danger);
-      border-color: var(--danger);
-      color: #ffffff;
+    .app.owner-unlocked .owner-only {
+      display: inline-flex;
     }
 
     /* Filter Bar */
@@ -277,7 +272,7 @@
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 5px;
+      gap: 6px;
       padding-top: 10px;
       border-top: 1px solid var(--border);
     }
@@ -287,8 +282,8 @@
       background: var(--primary);
       color: #ffffff;
       font-weight: 700;
-      font-size: 0.76rem;
-      padding: 6px 11px;
+      font-size: 0.78rem;
+      padding: 6px 14px;
       border-radius: 8px;
       transition: background 0.2s ease;
     }
@@ -306,7 +301,7 @@
       color: var(--secondary);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 5px 8px;
+      padding: 5px 9px;
       font-size: 0.72rem;
       font-weight: 700;
       cursor: pointer;
@@ -316,12 +311,6 @@
     .mini-btn:hover {
       border-color: var(--primary);
       color: var(--primary);
-    }
-
-    .mini-btn.del:hover {
-      background: #fef2f2;
-      border-color: var(--danger);
-      color: var(--danger);
     }
 
     /* Compact "All in One View" Mode */
@@ -387,13 +376,13 @@
 
     .app.compact-view .open-link {
       font-size: 0.68rem;
-      padding: 4px 8px;
+      padding: 4px 10px;
       border-radius: 6px;
     }
 
     .app.compact-view .mini-btn {
       font-size: 0.66rem;
-      padding: 3px 6px;
+      padding: 3px 7px;
       border-radius: 6px;
     }
 
@@ -453,8 +442,7 @@
     }
 
     .form-group input,
-    .form-group select,
-    .form-group textarea {
+    .form-group select {
       background: var(--bg);
       color: var(--text);
       border: 1px solid var(--border);
@@ -465,8 +453,7 @@
     }
 
     .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
+    .form-group select:focus {
       outline: none;
       border-color: var(--primary);
       background: var(--surface);
@@ -507,9 +494,9 @@
       </div>
       <div class="toolbar">
         <button class="btn" id="compactToggleBtn" type="button" onclick="toggleCompactView()">Fit All in One View</button>
-        <button class="btn btn-primary" type="button" onclick="openProjectModal()">+ Add Project</button>
-        <button class="btn" type="button" onclick="openExportModal()">Export Array Code</button>
-        <button class="btn btn-danger" type="button" onclick="resetToDefaults()">Reset Defaults</button>
+        <button class="btn" id="editModeBtn" type="button" onclick="toggleEditMode()">Edit Mode: OFF</button>
+        <button class="btn btn-primary owner-only" type="button" onclick="openProjectModal()">+ Add Project</button>
+        <button class="btn owner-only" type="button" onclick="openExportModal()">Export Array Code</button>
       </div>
     </header>
 
@@ -658,7 +645,7 @@
         icon: "🧩",
         category: "DEV & TEXT",
         file: "HTML block view.html",
-        src: "https://hasanace1997277-ui.github.io/Flight-handling-tools/HTML%20block%20view.html"
+        src: ""
       },
       {
         title: "TXT File Combiner",
@@ -669,11 +656,12 @@
       }
     ];
 
-    const STORAGE_KEY = "flight_handling_portal_icons_v1";
+    const STORAGE_KEY = "flight_handling_portal_icons_v2";
     const VIEW_KEY = "flight_handling_portal_compact_v1";
     let projects = [];
     let activeCategory = "ALL";
     let isCompactView = false;
+    let isEditMode = false;
 
     function init() {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -704,6 +692,15 @@
       appRoot.classList.toggle("compact-view", isCompactView);
       btn.classList.toggle("active-toggle", isCompactView);
       btn.textContent = isCompactView ? "Normal Block Size" : "Fit All in One View";
+    }
+
+    function toggleEditMode() {
+      isEditMode = !isEditMode;
+      const appRoot = document.getElementById("appRoot");
+      const btn = document.getElementById("editModeBtn");
+      appRoot.classList.toggle("owner-unlocked", isEditMode);
+      btn.classList.toggle("active-toggle", isEditMode);
+      btn.textContent = isEditMode ? "Edit Mode: ON" : "Edit Mode: OFF";
     }
 
     function persist() {
@@ -762,8 +759,7 @@
             </div>
             <div class="card-footer">
               <a class="open-link ${hasLink ? "" : "disabled"}" href="${href}" ${hasLink ? 'target="_blank" rel="noopener"' : ""}>Open</a>
-              <button class="mini-btn" type="button" onclick="openProjectModal(${p._idx})">URL</button>
-              <button class="mini-btn del" type="button" onclick="deleteProject(${p._idx})">✕</button>
+              <button class="mini-btn owner-only" type="button" onclick="openProjectModal(${p._idx})">URL</button>
             </div>
           </article>
         `;
@@ -816,14 +812,6 @@
       closeModal("projectModal");
     }
 
-    function deleteProject(idx) {
-      if (confirm(`Delete "${projects[idx].title}"?`)) {
-        projects.splice(idx, 1);
-        persist();
-        renderGrid();
-      }
-    }
-
     function openExportModal() {
       const code = `const DEFAULT_PROJECTS = ${JSON.stringify(projects, null, 2)};`;
       document.getElementById("exportTextarea").value = code;
@@ -835,14 +823,6 @@
       ta.select();
       navigator.clipboard.writeText(ta.value);
       alert("Copied DEFAULT_PROJECTS array!");
-    }
-
-    function resetToDefaults() {
-      if (confirm("Reset projects to DEFAULT_PROJECTS?")) {
-        localStorage.removeItem(STORAGE_KEY);
-        projects = JSON.parse(JSON.stringify(DEFAULT_PROJECTS));
-        renderGrid();
-      }
     }
 
     init();
