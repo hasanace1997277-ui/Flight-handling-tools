@@ -1,0 +1,3553 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Flight Handling Report v23.1</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- JSZip for Microsoft Word (.docx) generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #0052cc;
+      --primary-container: #e7f0fd;
+      --header-dark: #1e293b;
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --surface-variant: #eef2f6;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #cbd5e1;
+      --word-blue: #185abd;
+      --zimbra-purple: #673ab7;
+      --excel-green: #107c41;
+      --backup-teal: #0d9488;
+      --save-amber: #b45309;
+      --early-green: #059669;
+      --delay-red: #dc2626;
+      --ontime-blue: #0284c7;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html, body {
+      overflow-x: hidden;
+      max-width: 100vw;
+      width: 100%;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.4;
+      padding-bottom: 120px;
+    }
+
+    .app-wrapper {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 14px;
+      transform-origin: top center;
+      transition: max-width 0.2s ease, transform 0.15s ease-out;
+      overflow-x: clip;
+    }
+    .app-wrapper.wide-grid {
+      max-width: 100%;
+      width: 100%;
+      padding: 10px 16px;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 10px 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .brand-title h1 { font-size: 18px; font-weight: 700; color: var(--header-dark); }
+    .brand-title p { font-size: 11px; color: var(--text-muted); }
+    
+    .zoom-controls { display: flex; align-items: center; gap: 4px; }
+    .btn-zoom {
+      background: var(--surface-variant);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .zoom-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 6px;
+      background: var(--primary-container);
+      color: var(--primary);
+      border-radius: 4px;
+      min-width: 44px;
+      text-align: center;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .date-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .date-input {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--header-dark);
+      background: #fff;
+      font-family: inherit;
+    }
+    .quick-date-btn {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface-variant);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .quick-date-btn:hover { background: #e2e8f0; }
+
+    .chips-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      scrollbar-width: none;
+    }
+    .chips-row::-webkit-scrollbar { display: none; }
+    
+    .chip-locked {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .chip-locked.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      cursor: default;
+    }
+    .chip-locked.disabled {
+      background: #f8fafc;
+      color: #94a3b8;
+      opacity: 0.45;
+      cursor: not-allowed;
+      border-color: #e2e8f0;
+    }
+
+    .shift-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .shift-btn {
+      padding: 10px;
+      text-align: center;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .shift-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .setup-box { background: #e7f5ff; border: 1px solid #74c0fc; }
+    .catalog-box { background: #fdf2e9; border: 1px solid #fed7aa; }
+    .tools-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #fff;
+    }
+    .btn-dark { background: #343a40; }
+    .btn-orange { background: #d97706; }
+    .btn-sort { background: #1971c2; }
+    .btn-mem { background: #6741d9; }
+    .btn-excel { background: var(--excel-green); }
+    .btn-save-record { background: #d97706; }
+    .btn-archive { background: #475569; }
+    .btn-copy-prev { background: #0284c7; }
+    .btn-shortcodes { background: #4f46e5; }
+    .btn-backup { background: var(--backup-teal); }
+    .btn-clear { background: #e03131; }
+
+    /* View Mode Toggles */
+    .view-toggle-box {
+      display: inline-flex;
+      background: var(--surface-variant);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+    .view-toggle-btn {
+      border: none;
+      background: transparent;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+    }
+    .view-toggle-btn.active {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Flight Cards Layout Container */
+    #flightListContainer {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: clip;
+    }
+    #flightListContainer.grid-layout {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      align-items: start;
+      width: 100%;
+    }
+    @media (max-width: 1400px) {
+      #flightListContainer.grid-layout {
+        grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      }
+    }
+    @media (max-width: 650px) {
+      #flightListContainer.grid-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Flight Card */
+    .flight-card {
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      min-width: 0;
+      width: 100%;
+    }
+    #flightListContainer.grid-layout .flight-card {
+      margin-bottom: 0;
+    }
+
+    .flight-header {
+      background: var(--header-dark);
+      color: #fff;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      min-width: 0;
+    }
+    .flight-info {
+      min-width: 0;
+      overflow: hidden;
+    }
+    .flight-info h3 { 
+      font-size: 14px; 
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sta-std-tag {
+      font-size: 10px;
+      background: #283548;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 3px;
+      display: inline-block;
+    }
+    .status-badge { font-size: 10px; font-weight: 600; margin-top: 4px; }
+    .status-early { color: #34d399; }
+    .status-delayed { color: #f87171; }
+    .status-ontime { color: #38bdf8; }
+
+    .flight-actions { 
+      display: flex; 
+      align-items: center; 
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .btn-action-edit {
+      background: #fab005;
+      color: #000;
+      border: none;
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .mode-select {
+      background: #0284c7;
+      color: #fff;
+      border: 1px solid #38bdf8;
+      padding: 3px 4px;
+      border-radius: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      max-width: 105px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .btn-action-delete {
+      background: transparent;
+      color: #f87171;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 0 2px;
+    }
+    .collapse-chevron {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-left: 2px;
+    }
+
+    .flight-body { padding: 12px; min-width: 0; }
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 8px;
+      margin-bottom: 8px;
+      width: 100%;
+    }
+    .form-grid-1 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 8px;
+      margin-bottom: 8px;
+      width: 100%;
+    }
+    .input-group { 
+      display: flex; 
+      flex-direction: column; 
+      position: relative; 
+      min-width: 0;
+      width: 100%;
+    }
+    .input-group label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .input-group input, .input-group select, .input-group textarea {
+      width: 100%;
+      max-width: 100%;
+      padding: 7px 9px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text);
+      outline: none;
+      background: #fff;
+      font-family: inherit;
+    }
+    .input-group textarea {
+      line-height: 1.4;
+      resize: vertical;
+    }
+    .input-group input:focus, .input-group textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-container);
+    }
+
+    .bottom-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      box-shadow: 0 -4px 10px rgba(0,0,0,0.08);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-generate {
+      flex: 2;
+      max-width: 600px;
+      background: #2b8a3e;
+      color: #fff;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-open-excel {
+      flex: 1;
+      max-width: 320px;
+      background: var(--excel-green);
+      color: #fff;
+      padding: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+    .modal-window {
+      background: #fff;
+      border-radius: 12px;
+      max-width: 780px;
+      width: 100%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    }
+    .modal-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 { font-size: 16px; font-weight: 700; }
+    .modal-close { background: transparent; border: none; font-size: 20px; cursor: pointer; }
+    .modal-body { padding: 18px; overflow-y: auto; }
+    .modal-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      background: #f8fafc;
+    }
+
+    .view-tabs {
+      display: flex;
+      gap: 6px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 12px;
+    }
+    .tab-btn {
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: var(--text-muted);
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+    }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .report-console {
+      background: #1e293b;
+      color: #f8fafc;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.35;
+      padding: 16px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      user-select: all;
+      max-height: 380px;
+      overflow-y: auto;
+    }
+
+    .zimbra-preview-box {
+      background: #ffffff;
+      color: #000000;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      max-height: 380px;
+      overflow-y: auto;
+    }
+
+    /* Excel Spreadsheet Table Styles */
+    .excel-table-container {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid #71717a;
+      background: #fff;
+    }
+    .excel-sheet-table {
+      border-collapse: collapse;
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      color: #000;
+      white-space: nowrap;
+      width: 100%;
+    }
+    .excel-sheet-table th, .excel-sheet-table td {
+      border: 1px solid #000000;
+      padding: 5px 6px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .excel-sheet-table th {
+      background-color: #ebe6da;
+      font-weight: bold;
+      color: #000000;
+      line-height: 1.25;
+    }
+    .excel-sheet-table th.red-col {
+      color: #d90429 !important;
+    }
+    .excel-sheet-table tr.draggable-row {
+      cursor: grab;
+      transition: background-color 0.1s ease;
+    }
+    .excel-sheet-table tr.draggable-row:hover {
+      background-color: #f1f5f9;
+    }
+    .excel-sheet-table tr.dragging {
+      opacity: 0.4;
+      background-color: #cbd5e1 !important;
+    }
+    .excel-sheet-table tr.drag-over {
+      border-top: 3px solid #0052cc !important;
+    }
+    .drag-handle-cell {
+      cursor: grab;
+      user-select: none;
+      color: #64748b;
+      font-weight: bold;
+      padding: 4px;
+    }
+    .rem-ontime {
+      background-color: #4ade80 !important;
+      color: #000000;
+      font-weight: bold;
+      text-align: left !important;
+      padding-left: 8px !important;
+    }
+    .rem-delayed {
+      background-color: #fed7aa !important;
+      color: #000000;
+      font-weight: bold;
+      text-align: left !important;
+      padding-left: 8px !important;
+    }
+
+    .btn-word { background: var(--word-blue); color: #fff; }
+    .btn-zimbra { background: var(--zimbra-purple); color: #fff; }
+  </style>
+</head>
+<body>
+
+  <div id="datalist-hub"></div>
+
+  <!-- Hidden File Input for Backup Restoration -->
+  <input type="file" id="backupFileInput" accept=".json,application/json" style="display:none;" onchange="handleBackupFileImport(event)" />
+
+  <div class="app-wrapper" id="appWrapper">
+    <header class="top-bar">
+      <div class="brand-title">
+        <h1>Flight Handling Report</h1>
+        <p>Airport Ground Operations v23.1</p>
+      </div>
+      <div class="zoom-controls">
+        <button class="btn-zoom" onclick="adjustZoom(-0.05)" title="Zoom Out">-</button>
+        <span class="zoom-badge" id="zoomBadge">100%</span>
+        <button class="btn-zoom" onclick="adjustZoom(0.05)" title="Zoom In">+</button>
+      </div>
+    </header>
+
+    <!-- SECTION 1: DATE SELECTION & LOCKED DAY OF WEEK -->
+    <section class="card">
+      <div class="card-title">📅 REPORTING DATE (AUTO-LOCKS DAY OF WEEK)</div>
+      <div class="date-row">
+        <input type="date" id="reportDateInput" class="date-input" onchange="handleDateInputChange(this.value)" />
+        <button class="quick-date-btn" onclick="setQuickDate(0)">Today</button>
+        <button class="quick-date-btn" onclick="setQuickDate(-1)">Yesterday</button>
+        <button class="quick-date-btn" onclick="setQuickDate(-2)">-2 Days</button>
+        <button class="quick-date-btn" onclick="setQuickDate(-5)">-5 Days</button>
+        <span id="dateTagDisplay" style="font-size:12px; font-weight:700; color:var(--primary); margin-left:auto; font-family:'JetBrains Mono', monospace;"></span>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; margin-bottom:4px;">
+        <div class="card-title" style="margin-bottom:0;">Day of the Week (Strictly Locked to Date)</div>
+        <span style="font-size:11px; color:#b45309; font-weight:600;">🔒 Auto-locked to calendar date</span>
+      </div>
+      <div class="chips-row" id="dayChips"></div>
+
+      <div class="card-title" style="margin-top:12px;">Reporting Shift</div>
+      <div class="shift-row">
+        <button class="shift-btn" id="shiftMorning" onclick="setShift('Morning')">Morning Shift</button>
+        <button class="shift-btn" id="shiftEvening" onclick="setShift('Evening')">Evening Shift</button>
+      </div>
+
+      <div class="input-group" style="margin-top:12px;">
+        <label>Staff Info (Duty Officer / Designation / Shift / Station - Multiline Supported)</label>
+        <textarea id="staffInfoInput" rows="4" placeholder="e.g.&#10;HASAN AL BANNA&#10;GSA&#10;SHIFT - A&#10;BIMAN, CGP, SAIA" oninput="saveStaffInfo(this.value)"></textarea>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+        <button class="btn btn-save-record" onclick="saveCurrentDateRecord()">💾 Save This Date &amp; Shift Record</button>
+        <button class="btn btn-archive" onclick="openArchiveModal()">📜 Past Dates Archive (<span id="archiveCountBadge">0</span>)</button>
+        <button class="btn btn-copy-prev" onclick="openCopyPreviousWeekModal()" title="Copy flights from 7 days ago">📋 Copy Prev Week (-7D)</button>
+        <button class="btn btn-shortcodes" onclick="openShortcodesModal()" title="Manage Delay Codes and Airline Registration Prefixes">⚡ Shortcuts &amp; Prefixes</button>
+      </div>
+    </section>
+
+    <!-- Master Catalog Quick Access Bar -->
+    <section class="card catalog-box">
+      <div class="card-title" style="color:#c2410c;">📖 Pre-Saved Master Flight Catalog</div>
+      <p style="font-size:11px; color:#7c2d12; margin-bottom:8px;">Pre-saved flights sorted: BG (smallest to largest flight no.), followed by other carriers alphabetically.</p>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <select id="catalogSelect" style="flex:1; padding:8px 10px; border-radius:6px; border:1px solid #fed7aa; font-size:12px; font-weight:600;">
+        </select>
+        <button class="btn btn-orange" onclick="addSelectedFromCatalog()">+ Insert to Today</button>
+        <button class="btn btn-dark" onclick="openCatalogManagerModal()">⚙️ Manage Catalog</button>
+      </div>
+    </section>
+
+    <!-- Shift Tools & Data Backup -->
+    <section class="card setup-box">
+      <div class="card-title">⚙️ Shift Controls &amp; Data Backup</div>
+      <div class="tools-grid">
+        <button class="btn btn-dark" onclick="openAddFlightModal()">+ Manual Add Flight</button>
+        <button class="btn btn-sort" onclick="sortFlightsByDeparture()">⇅ Sort (STD)</button>
+        <button class="btn btn-excel" onclick="openExcelTableModal()">📊 BG Spreadsheet (Both Shifts)</button>
+        <button class="btn btn-mem" onclick="openMemoryModal()">🧹 Clean Memory</button>
+        <button class="btn btn-backup" onclick="exportBackupData()" title="Save all templates, memory and data to a backup file">💾 Export Backup</button>
+        <button class="btn btn-backup" onclick="triggerImportBackup()" title="Restore templates and data from a backup file">📥 Import Backup</button>
+        <button class="btn btn-clear" onclick="clearShiftInputs()">🗑️ Clear Inputs</button>
+      </div>
+    </section>
+
+    <!-- Header bar with View Toggle (Stack vs 4-Col Grid) -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:0 4px; flex-wrap:wrap; gap:8px;">
+      <div>
+        <span style="font-size:12px; font-weight:700; color:var(--text-muted);" id="flightListHeader">FLIGHTS</span>
+        <span style="font-size:12px; font-weight:600; color:var(--primary); margin-left:6px;" id="flightCountBadge">0 Scheduled</span>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:11px; font-weight:700; color:var(--text-muted);">LAYOUT:</span>
+        <div class="view-toggle-box">
+          <button id="viewToggleStack" class="view-toggle-btn active" onclick="setFlightViewMode('stack')">📱 Stack (1-Col)</button>
+          <button id="viewToggleGrid" class="view-toggle-btn" onclick="setFlightViewMode('grid')">🔲 4-Col Grid</button>
+        </div>
+      </div>
+    </div>
+    
+    <main id="flightListContainer"></main>
+  </div>
+
+  <!-- Bottom Generate Bar -->
+  <div class="bottom-bar">
+    <button class="btn-generate" onclick="generateReport()">
+      📄 GENERATE REPORT (<span id="btnFlightCount">0</span> FLIGHTS)
+    </button>
+    <button class="btn-open-excel" onclick="openExcelTableModal()">
+      📊 BG SPREADSHEET TABLE
+    </button>
+  </div>
+
+  <!-- Modal: Delay Codes & Airline Registration Prefixes -->
+  <div class="modal-backdrop" id="shortcodesModal">
+    <div class="modal-window" style="max-width:760px;">
+      <div class="modal-header">
+        <h3>⚡ Manage Delay Codes &amp; Airline Prefixes</h3>
+        <button class="modal-close" onclick="closeModal('shortcodesModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Section A: Delay Codes -->
+        <div style="margin-bottom:18px;">
+          <div class="card-title" style="color:var(--primary);">1. Delay Reason Shortcuts (Type Code &amp; Tab)</div>
+          <p style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">Typing e.g. <b>93</b> in Delay Reason expands to <b>DUE A/CONSEQ</b>, <b>88</b> expands to <b>DUE DESTINATION SLOT</b>.</p>
+          
+          <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <input type="text" id="newDelayCodeInput" placeholder="Code (e.g. 89)" style="width:110px; padding:6px 8px; border:1px solid var(--border); border-radius:6px; font-size:12px; font-weight:bold;" />
+            <input type="text" id="newDelayTextInput" placeholder="Reason (e.g. DUE ATC CLEARANCE)" style="flex:1; padding:6px 8px; border:1px solid var(--border); border-radius:6px; font-size:12px;" />
+            <button class="btn btn-dark" style="padding:6px 12px; font-size:11px;" onclick="addDelayCodeRule()">+ Add Code</button>
+          </div>
+
+          <div id="delayCodesListTable" style="max-height:150px; overflow-y:auto; border:1px solid var(--border); border-radius:6px; background:#f8fafc; padding:6px;"></div>
+        </div>
+
+        <!-- Section B: Airline Registration Prefixes -->
+        <div>
+          <div class="card-title" style="color:var(--primary);">2. A/C Registration Carrier Prefixes</div>
+          <p style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">Typing tail letters (e.g. <b>AKD</b> on BG flight becomes <b>S2-AKD</b>; <b>AUC</b> on G9/FZ becomes <b>A6-AUC</b>; <b>OVG</b> on OV becomes <b>A4O-OVG</b>).</p>
+          
+          <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <input type="text" id="newCarrierCodeInput" placeholder="Airline (e.g. SV)" style="width:110px; padding:6px 8px; border:1px solid var(--border); border-radius:6px; font-size:12px; font-weight:bold;" />
+            <input type="text" id="newCarrierPrefixInput" placeholder="Prefix (e.g. HZ-)" style="flex:1; padding:6px 8px; border:1px solid var(--border); border-radius:6px; font-size:12px; font-weight:bold;" />
+            <button class="btn btn-dark" style="padding:6px 12px; font-size:11px;" onclick="addCarrierPrefixRule()">+ Add Prefix</button>
+          </div>
+
+          <div id="carrierPrefixesListTable" style="max-height:150px; overflow-y:auto; border:1px solid var(--border); border-radius:6px; background:#f8fafc; padding:6px;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-dark" onclick="closeModal('shortcodesModal')">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Copy Previous Week's Flights -->
+  <div class="modal-backdrop" id="copyPrevModal">
+    <div class="modal-window" style="max-width:680px;">
+      <div class="modal-header">
+        <h3>📋 Copy Previous Week's Flights</h3>
+        <button class="modal-close" onclick="closeModal('copyPrevModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px; margin-bottom:12px;">
+          <div style="font-size:12px; font-weight:700; color:#15803d; margin-bottom:4px;">AUTO-CALCULATED PREVIOUS WEEK:</div>
+          <div style="font-size:13px; font-weight:bold;" id="prevWeekDateText"></div>
+          <div style="font-size:11px; color:#166534; margin-top:4px;">Guaranteed to match the same Day of the Week.</div>
+        </div>
+
+        <div id="prevWeekFoundBox" style="margin-bottom:12px;"></div>
+
+        <div class="card-title">Or Choose Any Past Date from Saved Archives:</div>
+        <select id="archiveDropdownSelect" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border); font-size:13px; margin-bottom:12px;" onchange="handleArchiveDropdownChange(this.value)">
+        </select>
+
+        <div style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:10px;">
+          <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px;">COPY PREFERENCES:</div>
+          <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; cursor:pointer;">
+            <input type="radio" name="copyOption" value="schedule_only" checked />
+            Copy Flight Schedule Only (Flight No, STA/STD, Sector, Mode) — Clear Actual Inputs
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; cursor:pointer; margin-top:6px;">
+            <input type="radio" name="copyOption" value="schedule_and_details" />
+            Copy Full Schedule + Aircraft Details (Reg, Capt, Sector, Bay)
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-dark" onclick="closeModal('copyPrevModal')">Cancel</button>
+        <button class="btn btn-copy-prev" id="btnExecuteCopyPrev" onclick="executeCopyFlightsFromPast()">📥 Copy Flights to Today</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add/Edit Flight Schedule -->
+  <div class="modal-backdrop" id="flightModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 id="flightModalTitle">Add / Edit Flight Schedule</h3>
+        <button class="modal-close" onclick="closeModal('flightModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="modalFlightId" />
+        <div class="form-grid-2">
+          <div class="input-group">
+            <label>Day (Locked to Calendar)</label>
+            <input type="text" id="modalDay" readonly style="background:#f1f5f9; cursor:not-allowed;" />
+          </div>
+          <div class="input-group">
+            <label>Shift</label>
+            <select id="modalShift">
+              <option>Morning</option>
+              <option>Evening</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group" style="margin-bottom:10px;">
+          <label>Flight No</label>
+          <input type="text" id="modalFlightNo" placeholder="e.g. BG615/BG616 or BG135/BG135" list="dl_t_no" data-category="t_no" oninput="handleModalFlightNoChange(this.value)" />
+          <span id="autoModeHint" style="font-size:11px; font-weight:600; color:var(--primary); margin-top:3px;"></span>
+        </div>
+        <div class="form-grid-2">
+          <div class="input-group">
+            <label>STA / STD (Arrival/Departure)</label>
+            <input type="text" id="modalStaStd" placeholder="e.g. 1455/1520" list="dl_t_time" data-category="t_time" />
+          </div>
+          <div class="input-group">
+            <label>Sector (Auto-calculated)</label>
+            <input type="text" id="modalSector" placeholder="e.g. DAC-CGP-DAC" list="dl_sec" data-category="sec" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-dark" onclick="closeModal('flightModal')">Cancel</button>
+        <button class="btn btn-sort" onclick="saveFlightTemplate()">Save Flight</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Master Flight Catalog Manager Modal -->
+  <div class="modal-backdrop" id="catalogModal">
+    <div class="modal-window" style="max-width:700px;">
+      <div class="modal-header">
+        <h3>📖 Pre-Saved Master Flight Catalog</h3>
+        <button class="modal-close" onclick="closeModal('catalogModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:14px;">
+          <div style="font-size:12px; font-weight:700; margin-bottom:8px; color:var(--primary);">+ ADD NEW TO MASTER CATALOG</div>
+          <div class="form-grid-2">
+            <div class="input-group">
+              <label>Flight No</label>
+              <input type="text" id="catNewFlightNo" placeholder="BG615/BG616" oninput="handleCatalogFlightNoInput(this.value)" />
+            </div>
+            <div class="input-group">
+              <label>STA/STD</label>
+              <input type="text" id="catNewStaStd" placeholder="1455/1520" />
+            </div>
+          </div>
+          <div class="form-grid-1" style="margin-top:8px;">
+            <div class="input-group">
+              <label>Sector (Auto-calculated)</label>
+              <input type="text" id="catNewSector" placeholder="DAC-CGP-DAC" />
+            </div>
+          </div>
+          <button class="btn btn-orange" style="margin-top:10px; width:100%; justify-content:center;" onclick="saveNewCatalogEntry()">Save into Catalog</button>
+        </div>
+
+        <div class="card-title">Pre-Saved Flight Entries (Auto-Sorted)</div>
+        <div id="catalogListItems" style="max-height:240px; overflow-y:auto;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-dark" onclick="closeModal('catalogModal')">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Past Dates & Records Archive Modal -->
+  <div class="modal-backdrop" id="archiveModal">
+    <div class="modal-window" style="max-width:820px;">
+      <div class="modal-header">
+        <h3>📜 Past Dates' Saved Mail &amp; Inputs</h3>
+        <button class="modal-close" onclick="closeModal('archiveModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Browse saved flight handling records from today or previous days. You can view the saved mail or restore all inputs back into the workspace.</p>
+        <div id="archiveRecordsList" style="max-height:360px; overflow-y:auto;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-dark" onclick="closeModal('archiveModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Memory Cleaning Modal -->
+  <div class="modal-backdrop" id="memoryModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>🧹 Clean Memory Suggestions</h3>
+        <button class="modal-close" onclick="closeModal('memoryModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="memoryCategoriesList"></div>
+      <div class="modal-footer">
+        <button class="btn btn-clear" onclick="wipeAllMemory()">Wipe All Memory</button>
+        <button class="btn btn-dark" onclick="closeModal('memoryModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generated Report Modal with Zimbra, Word & Telex tabs -->
+  <div class="modal-backdrop" id="reportModal">
+    <div class="modal-window" style="max-width:820px;">
+      <div class="modal-header">
+        <div>
+          <h3>Generated Operations Report</h3>
+          <p style="font-size:11px; color:var(--text-muted);">Zimbra Rich Email, HTML Source &amp; Monospace Telex</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('reportModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="view-tabs">
+          <button class="tab-btn active" id="tabZimbra" onclick="switchReportTab('zimbra')">✉️ Zimbra Email View</button>
+          <button class="tab-btn" id="tabZimbraSource" onclick="switchReportTab('source')">&lt;&gt; Zimbra HTML Source</button>
+          <button class="tab-btn" id="tabTelex" onclick="switchReportTab('telex')">📄 Plaintext Telex</button>
+        </div>
+
+        <div id="viewZimbra" class="zimbra-preview-box"></div>
+        <textarea id="viewZimbraSource" class="report-console" style="display:none; width:100%; height:320px; font-size:11px;" readonly></textarea>
+        <pre id="viewTelex" class="report-console" style="display:none;"></pre>
+      </div>
+      <div class="modal-footer" style="flex-wrap:wrap; justify-content:space-between; gap:8px;">
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn btn-zimbra" onclick="copyZimbraRichHtml()">📋 Copy Zimbra Table (Paste to Email)</button>
+          <button class="btn btn-dark" onclick="copyZimbraSourceCode()">💻 Copy HTML Source</button>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn btn-word" onclick="downloadWordDocument()">📥 Download Word (.docx)</button>
+          <button class="btn btn-sort" onclick="copyTelexText()">📋 Copy Plain Text</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXCEL SPREADSHEET TABLE MODAL (BG FLIGHTS - COMBINED BOTH SHIFTS) WITH DRAG & DROP -->
+  <div class="modal-backdrop" id="excelModal">
+    <div class="modal-window" style="max-width:96vw; width:1280px;">
+      <div class="modal-header">
+        <div>
+          <h3>📊 Biman (BG) Operations Spreadsheet Table — Morning &amp; Evening Shifts Combined</h3>
+          <p style="font-size:11px; color:var(--text-muted);">Parses both shifts for the selected date. Non-6 sorted by STA/STD, 6xx sorted numerically. Drag rows to custom-order anytime.</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('excelModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid var(--border);">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label style="font-size:12px; font-weight:700;">Date Label:</label>
+            <input type="text" id="excelDateInput" style="padding:4px 8px; border:1px solid var(--border); border-radius:4px; font-size:12px; font-weight:bold; width:150px;" oninput="updateExcelTableDate(this.value)" />
+          </div>
+          <span style="font-size:11px; color:var(--primary); font-weight:600;">
+            ⇅ Combined Morning + Evening BG Flights. Drag &amp; drop rows to reorder.
+          </span>
+        </div>
+
+        <div class="excel-table-container" id="excelTableWrapper">
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between;">
+        <button class="btn btn-excel" onclick="copyExcelTableHtml()">📋 Copy Table for Excel (Ctrl+V into Excel)</button>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-dark" onclick="resetExcelDefaultSort()">↺ Re-apply Default Sort</button>
+          <button class="btn btn-dark" onclick="closeModal('excelModal')">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    
+    const MODES = [
+      { id: "MODE1", title: "Foreign Carrier" },
+      { id: "MODE2", title: "Biman (Intl)" },
+      { id: "MODE3", title: "Biman (Dom)" },
+      { id: "MODE4", title: "Biman (Intl+Dom)" }
+    ];
+
+    const MEM_CATEGORIES = [
+      { key: "capt", name: "Captain Names" },
+      { key: "reg", name: "A/C Registration" },
+      { key: "sec", name: "Sectors" },
+      { key: "reason", name: "Delay Reasons" },
+      { key: "csm", name: "C/S/M Values" },
+      { key: "ata", name: "ATA Entries" },
+      { key: "atd", name: "ATD Entries" },
+      { key: "lss", name: "LSS (Loadsheet)" },
+      { key: "ebc", name: "EBC (Baggage)" },
+      { key: "t_no", name: "Flight Numbers" },
+      { key: "t_time", name: "STA/STD Times" }
+    ];
+
+    // State Variables
+    let activeDate = localStorage.getItem("fhr_active_date") || new Date().toISOString().split("T")[0];
+    let activeDay = localStorage.getItem("fhr_day") || "Sunday";
+    let activeShift = localStorage.getItem("fhr_shift") || "Morning";
+    let currentZoom = parseFloat(localStorage.getItem("fhr_zoom") || "1.0");
+    let flightViewMode = localStorage.getItem("fhr_flight_view_mode") || "stack";
+
+    let collapsedFlightIds = new Set();
+    let excelOrderedFlightIds = [];
+    let savedArchives = JSON.parse(localStorage.getItem("fhr_saved_archives")) || [];
+
+    // DELAY CODE RULES (Auto-expands on Tab or blur)
+    let delayCodes = JSON.parse(localStorage.getItem("fhr_delay_codes")) || {
+      "93": "DUE A/CONSEQ",
+      "88": "DUE DESTINATION SLOT",
+      "89": "DUE ATC CLEARANCE",
+      "81": "DUE ATD RESTRICTION",
+      "41": "DUE AIRCRAFT DEFECT",
+      "34": "DUE BAGGAGE LOADING",
+      "99": "DUE OPS"
+    };
+
+    // AIRLINE REGISTRATION PREFIX RULES
+    let airlinePrefixes = JSON.parse(localStorage.getItem("fhr_airline_prefixes")) || {
+      "BG": "S2-",
+      "G9": "A6-",
+      "3L": "A6-",
+      "FZ": "A6-",
+      "OV": "A4O-",
+      "SV": "HZ-",
+      "QR": "A7-",
+      "EK": "A6-",
+      "WY": "A4O-",
+      "J9": "9K-",
+      "BS": "S2-",
+      "2A": "S2-",
+      "VQ": "S2-"
+    };
+
+    let masterCatalog = JSON.parse(localStorage.getItem("fhr_master_catalog")) || [
+      { flightNo: "BG121/BG121", staStd: "0830/0930", sector: "DAC-CGP-MCT" },
+      { flightNo: "BG122/BG122", staStd: "2120/2220", sector: "MCT-CGP-DAC" },
+      { flightNo: "BG125/BG125", staStd: "1625/1725", sector: "DAC-CGP-DOH" },
+      { flightNo: "BG126/BG126", staStd: "0640/0740", sector: "DOH-CGP-DAC" },
+      { flightNo: "BG135/BG135", staStd: "1505/1605", sector: "DAC-CGP-JED" },
+      { flightNo: "BG136/BG136", staStd: "1055/1155", sector: "JED-CGP-DAC" },
+      { flightNo: "BG137/BG137", staStd: "1655/1755", sector: "DAC-CGP-MED" },
+      { flightNo: "BG138/BG138", staStd: "0930/1030", sector: "MED-CGP-DAC" },
+      { flightNo: "BG147/BG147", staStd: "1755/1855", sector: "DAC-CGP-DXB" },
+      { flightNo: "BG148/BG148", staStd: "0650/0750", sector: "DXB-CGP-DAC" },
+      { flightNo: "BG151/BG151", staStd: "2000/2050", sector: "DAC-CGP-SHJ" },
+      { flightNo: "BG152/BG152", staStd: "0900/0945", sector: "SHJ-CGP-DAC" },
+      { flightNo: "BG615/BG616", staStd: "1455/1520", sector: "DAC-CGP-DAC" },
+      { flightNo: "BG617/BG618", staStd: "2200/2225", sector: "DAC-CGP-DAC" },
+      { flightNo: "G9526/G9527", staStd: "0645/0745", sector: "SHJ-CGP-SHJ" }
+    ];
+
+    let templates = JSON.parse(localStorage.getItem("fhr_templates")) || {
+      "Thursday_Morning": [
+        { id: 1, flightNo: "BG126/BG126", staStd: "0645/0745" },
+        { id: 2, flightNo: "BG148/BG148", staStd: "0650/0750" },
+        { id: 3, flightNo: "BG121/BG121", staStd: "0830/0930" }
+      ],
+      "Thursday_Evening": [
+        { id: 4, flightNo: "BG137/BG137", staStd: "1705/1805" },
+        { id: 5, flightNo: "BG147/BG147", staStd: "1755/1855" },
+        { id: 6, flightNo: "BG615/BG616", staStd: "1455/1520" },
+        { id: 7, flightNo: "BG617/BG618", staStd: "2145/2210" }
+      ]
+    };
+
+    let handlingData = JSON.parse(localStorage.getItem("fhr_data")) || {};
+    let staticInfo = JSON.parse(localStorage.getItem("fhr_static")) || { staffInfo: "" };
+    let memory = JSON.parse(localStorage.getItem("fhr_memory")) || {
+      capt: ["AHSAN", "BILLAH", "HISHAM", "MARK", "SHAFI"],
+      reg: ["S2-AJU", "S2-AJS", "S2-AFP", "S2-AJV", "S2-AKE", "S2-AGR"],
+      type: ["B788", "B789", "B777", "B737", "DH-8"],
+      sec: ["DOH-CGP-DAC", "DXB-CGP-DAC", "DAC-CGP-MCT", "DAC-CGP-MED", "DAC-CGP-DXB", "DAC-CGP-DAC", "DAC-CGP-JED", "DAC-CGP-SHJ"],
+      reason: ["DUE TO LATE ARRIVAL OF AIRCRAFT", "DUE A/CONSEQ", "DUE DESTINATION SLOT", "DUE ATC CLEARANCE", "DUE OPS"],
+      csm: ["NIL", "110/00/00", "00/00/00", "4500/00/00"]
+    };
+
+    // -------------------------------------------------------------------------
+    // 4-DIGIT TIME AUTO-FORMATTER (1 -> 0001, 20 -> 0020, 945 -> 0945)
+    // -------------------------------------------------------------------------
+    function autoFormatTime4Digits(val) {
+      if (!val) return "";
+      let s = val.trim();
+      if (/^\d{1,4}$/.test(s)) {
+        return s.padStart(4, '0');
+      }
+      return s;
+    }
+
+    function handleAtaBlur(flightId, val) {
+      if (!val) return;
+      const formatted = autoFormatTime4Digits(val);
+      const el = document.getElementById(`ata_${flightId}`);
+      if (el) el.value = formatted;
+      saveFieldValue(flightId, 'ata', formatted);
+      updateMemory('ata', formatted);
+    }
+
+    function handleLssBlur(flightId, val) {
+      if (!val) return;
+      const formatted = autoFormatTime4Digits(val);
+      const el = document.getElementById(`lss_${flightId}`);
+      if (el) el.value = formatted;
+      saveFieldValue(flightId, 'lss', formatted);
+      updateMemory('lss', formatted);
+    }
+
+    // -------------------------------------------------------------------------
+    // STREAMLINED PASSENGER FORMATTER
+    // -------------------------------------------------------------------------
+    function autoFormatPaxInput(val, mode) {
+      if (!val) return "";
+      let s = val.trim();
+      const pad2 = (n) => String(n).padStart(2, '0');
+
+      if (s.endsWith("+")) {
+        s += "00";
+      }
+
+      const isBimanIntl = (mode === "MODE2" || mode === "MODE4");
+
+      // Case 1: Pure numbers (e.g. "25", "6", "147")
+      if (/^\d+$/.test(s)) {
+        const num = parseInt(s, 10);
+        const numStr = (num < 10) ? pad2(num) : String(num);
+        if (isBimanIntl) {
+          // Biman Intl / Intl+Dom: 25 -> 00/25+00
+          return `00/${numStr}+00`;
+        } else {
+          // Foreign Carrier (MODE1) & Biman Dom (MODE3): 25 -> 25+00
+          return `${numStr}+00`;
+        }
+      }
+
+      // Case 2: Number+Infants without slash (e.g. "25+00", "25+01", "159+01")
+      const noSlashMatch = s.match(/^(\d+)\+(\d+)$/);
+      if (noSlashMatch) {
+        const adt = parseInt(noSlashMatch[1], 10);
+        const inf = parseInt(noSlashMatch[2], 10);
+        const adtStr = (adt < 10) ? pad2(adt) : String(adt);
+        const infStr = pad2(inf);
+        if (isBimanIntl) {
+          // In Biman Intl & Intl+Dom: 25+00 -> 00/25+00
+          return `00/${adtStr}+${infStr}`;
+        } else {
+          // Foreign Carrier & Biman Dom: keep as 25+00
+          return `${adtStr}+${infStr}`;
+        }
+      }
+
+      // Case 3: JCL/YCL without infant suffix (e.g. "12/145")
+      const jclYclMatch = s.match(/^(\d+)\/(\d+)$/);
+      if (jclYclMatch) {
+        const jcl = parseInt(jclYclMatch[1], 10);
+        const ycl = parseInt(jclYclMatch[2], 10);
+        return `${pad2(jcl)}/${(ycl < 10 ? pad2(ycl) : ycl)}+00`;
+      }
+
+      // Case 4: JCL/YCL+INF where infant is single digit (e.g. "12/145+1" or "00/25+0")
+      const fullMatch = s.match(/^(\d+)\/(\d+)\+(\d+)$/);
+      if (fullMatch) {
+        const jcl = parseInt(fullMatch[1], 10);
+        const ycl = parseInt(fullMatch[2], 10);
+        const inf = parseInt(fullMatch[3], 10);
+        return `${pad2(jcl)}/${(ycl < 10 ? pad2(ycl) : ycl)}+${pad2(inf)}`;
+      }
+
+      return s;
+    }
+
+    function handlePaxBlur(flightId, key, val, mode) {
+      if (!val) return;
+      const formatted = autoFormatPaxInput(val, mode);
+      if (formatted !== val) {
+        const el = document.getElementById(`${key}_${flightId}`);
+        if (el) el.value = formatted;
+        saveFieldValue(flightId, key, formatted);
+        handlePaxInput(flightId, key, formatted, mode);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // A/C REG AIRLINE PREFIX APPLIER (AKD -> S2-AKD, AUC -> A6-AUC, OVG -> A4O-OVG)
+    // -------------------------------------------------------------------------
+    function getCarrierCodeFromFlight(flightNo) {
+      if (!flightNo) return "";
+      const clean = flightNo.toUpperCase().trim();
+      const match = clean.match(/^([A-Z0-9]{2})/);
+      return match ? match[1] : "";
+    }
+
+    function autoFormatRegWithPrefix(regVal, flightNo) {
+      if (!regVal) return "";
+      let r = regVal.toUpperCase().trim();
+      if (r.includes("-")) return r;
+
+      const carrier = getCarrierCodeFromFlight(flightNo);
+      const prefix = airlinePrefixes[carrier] || "";
+
+      if (prefix && !r.startsWith(prefix)) {
+        return prefix + r;
+      }
+      return r;
+    }
+
+    function handleRegInput(flightId, regVal, flightNo) {
+      const finalReg = autoFormatRegWithPrefix(regVal, flightNo);
+      saveFieldValue(flightId, 'reg', finalReg);
+
+      const autoType = detectDefaultType(finalReg);
+      if (autoType) {
+        saveFieldValue(flightId, 'type', autoType);
+      }
+    }
+
+    function handleRegBlur(flightId, regVal, flightNo) {
+      if (!regVal) return;
+      const finalReg = autoFormatRegWithPrefix(regVal, flightNo);
+      if (finalReg !== regVal) {
+        const inputEl = document.getElementById(`reg_${flightId}`);
+        if (inputEl) inputEl.value = finalReg;
+        handleRegInput(flightId, finalReg, flightNo);
+        updateMemory("reg", finalReg);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // DELAY REASON SHORTCODES (93 -> DUE A/CONSEQ, 88 -> DUE DESTINATION SLOT)
+    // -------------------------------------------------------------------------
+    function expandDelayCode(val) {
+      if (!val) return "";
+      const code = val.trim();
+      if (delayCodes[code]) {
+        return delayCodes[code];
+      }
+      return val;
+    }
+
+    function handleDelayReasonInput(flightId, staStd, reasonVal) {
+      const finalReason = expandDelayCode(reasonVal);
+      saveFieldValue(flightId, 'delayReason', finalReason);
+      const atd = handlingData[flightId]?.atd || '';
+      if (atd) {
+        const delay = computeDelay(staStd, atd, finalReason);
+        const badge = document.getElementById(`badge_${flightId}`);
+        if (badge) {
+          badge.className = `status-badge ${delay.badgeClass}`;
+          badge.innerText = delay.message;
+        }
+      }
+    }
+
+    function handleDelayReasonBlur(flightId, staStd, reasonVal) {
+      if (!reasonVal) return;
+      const expanded = expandDelayCode(reasonVal);
+      if (expanded !== reasonVal) {
+        const inputEl = document.getElementById(`reason_${flightId}`);
+        if (inputEl) inputEl.value = expanded;
+        handleDelayReasonInput(flightId, staStd, expanded);
+        updateMemory("reason", expanded);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // SHORTCODES & PREFIXES MODAL HANDLERS
+    // -------------------------------------------------------------------------
+    function openShortcodesModal() {
+      renderDelayCodesListDOM();
+      renderCarrierPrefixesListDOM();
+      document.getElementById("shortcodesModal").classList.add("open");
+    }
+
+    function renderDelayCodesListDOM() {
+      const container = document.getElementById("delayCodesListTable");
+      const keys = Object.keys(delayCodes);
+      if (keys.length === 0) {
+        container.innerHTML = `<div style="font-size:11px; color:#94a3b8; padding:4px;">No custom delay codes configured.</div>`;
+        return;
+      }
+      container.innerHTML = keys.map(code => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:3px 6px; border-bottom:1px solid #e2e8f0; font-size:12px;">
+          <div><b style="color:var(--primary); font-family:'JetBrains Mono', monospace;">${code}</b> &rarr; ${delayCodes[code]}</div>
+          <button class="btn btn-clear" style="padding:2px 6px; font-size:10px;" onclick="deleteDelayCode('${code}')">&times;</button>
+        </div>
+      `).join("");
+    }
+
+    function addDelayCodeRule() {
+      const code = document.getElementById("newDelayCodeInput").value.trim();
+      const text = document.getElementById("newDelayTextInput").value.toUpperCase().trim();
+      if (!code || !text) {
+        alert("Please enter both delay code and explanation");
+        return;
+      }
+      delayCodes[code] = text;
+      localStorage.setItem("fhr_delay_codes", JSON.stringify(delayCodes));
+      document.getElementById("newDelayCodeInput").value = "";
+      document.getElementById("newDelayTextInput").value = "";
+      renderDelayCodesListDOM();
+    }
+
+    function deleteDelayCode(code) {
+      delete delayCodes[code];
+      localStorage.setItem("fhr_delay_codes", JSON.stringify(delayCodes));
+      renderDelayCodesListDOM();
+    }
+
+    function renderCarrierPrefixesListDOM() {
+      const container = document.getElementById("carrierPrefixesListTable");
+      const carriers = Object.keys(airlinePrefixes);
+      if (carriers.length === 0) {
+        container.innerHTML = `<div style="font-size:11px; color:#94a3b8; padding:4px;">No airline prefixes configured.</div>`;
+        return;
+      }
+      container.innerHTML = carriers.map(c => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:3px 6px; border-bottom:1px solid #e2e8f0; font-size:12px;">
+          <div><b style="color:var(--primary); font-family:'JetBrains Mono', monospace;">${c}</b> &rarr; Prefix: <span style="font-weight:700; color:#b45309;">${airlinePrefixes[c]}</span></div>
+          <button class="btn btn-clear" style="padding:2px 6px; font-size:10px;" onclick="deleteCarrierPrefix('${c}')">&times;</button>
+        </div>
+      `).join("");
+    }
+
+    function addCarrierPrefixRule() {
+      const carrier = document.getElementById("newCarrierCodeInput").value.toUpperCase().trim();
+      let prefix = document.getElementById("newCarrierPrefixInput").value.toUpperCase().trim();
+      if (!carrier || !prefix) {
+        alert("Please enter both airline code and registration prefix");
+        return;
+      }
+      if (!prefix.endsWith("-")) prefix += "-";
+      airlinePrefixes[carrier] = prefix;
+      localStorage.setItem("fhr_airline_prefixes", JSON.stringify(airlinePrefixes));
+      document.getElementById("newCarrierCodeInput").value = "";
+      document.getElementById("newCarrierPrefixInput").value = "";
+      renderCarrierPrefixesListDOM();
+    }
+
+    function deleteCarrierPrefix(c) {
+      delete airlinePrefixes[c];
+      localStorage.setItem("fhr_airline_prefixes", JSON.stringify(airlinePrefixes));
+      renderCarrierPrefixesListDOM();
+    }
+
+    // -------------------------------------------------------------------------
+    // C/S/M AUTO-FORMAT: If user enters pure number (e.g. 4500), convert to 4500/00/00
+    // -------------------------------------------------------------------------
+    function formatCsmValue(val) {
+      if (!val) return "";
+      const clean = val.trim().toUpperCase();
+      if (/^\d+$/.test(clean)) {
+        return `${clean}/00/00`;
+      }
+      return clean;
+    }
+
+    function handleCsmBlur(flightId, key, val) {
+      if (!val) return;
+      const formatted = formatCsmValue(val);
+      if (formatted !== val) {
+        const el = document.getElementById(`${key}_${flightId}`);
+        if (el) el.value = formatted;
+        saveFieldValue(flightId, key, formatted);
+        updateMemory("csm", formatted);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // VIEW MODE (STACK vs 4-COL GRID)
+    // -------------------------------------------------------------------------
+    function setFlightViewMode(mode) {
+      flightViewMode = mode;
+      localStorage.setItem("fhr_flight_view_mode", mode);
+      applyFlightViewModeDOM();
+    }
+
+    function applyFlightViewModeDOM() {
+      const container = document.getElementById("flightListContainer");
+      const wrapper = document.getElementById("appWrapper");
+      const btnStack = document.getElementById("viewToggleStack");
+      const btnGrid = document.getElementById("viewToggleGrid");
+
+      if (flightViewMode === "grid") {
+        container.classList.add("grid-layout");
+        wrapper.classList.add("wide-grid");
+        btnGrid.classList.add("active");
+        btnStack.classList.remove("active");
+      } else {
+        container.classList.remove("grid-layout");
+        wrapper.classList.remove("wide-grid");
+        btnStack.classList.add("active");
+        btnGrid.classList.remove("active");
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // DATE SELECTION & STRICT LOCKING ENGINE
+    // -------------------------------------------------------------------------
+    function getFormattedDateTag(dateStr) {
+      if (!dateStr) return "";
+      const [y, m, d] = dateStr.split("-").map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      const day = String(d).padStart(2, '0');
+      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      const mon = months[dateObj.getMonth()];
+      const yr = String(y).slice(-2);
+      const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      const dayName = dayNames[dateObj.getDay()];
+      return `${day}/${mon}/${yr}/${dayName}`;
+    }
+
+    function getFullMonthDate(dateStr) {
+      if (!dateStr) return "";
+      const [y, m, d] = dateStr.split("-").map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      const day = String(d).padStart(2, '0');
+      const fullMonths = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+      const monthName = fullMonths[dateObj.getMonth()];
+      return `${day} ${monthName} ${y}`;
+    }
+
+    function calculatePrevWeekDateStr(dateStr) {
+      const [y, m, d] = dateStr.split("-").map(Number);
+      const prevDt = new Date(y, m - 1, d - 7);
+      const py = prevDt.getFullYear();
+      const pm = String(prevDt.getMonth() + 1).padStart(2, '0');
+      const pd = String(prevDt.getDate()).padStart(2, '0');
+      return `${py}-${pm}-${pd}`;
+    }
+
+    function handleDateInputChange(dateVal) {
+      if (!dateVal) return;
+      activeDate = dateVal;
+      localStorage.setItem("fhr_active_date", activeDate);
+
+      const [y, m, d] = dateVal.split("-").map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      activeDay = DAYS[dateObj.getDay()];
+      localStorage.setItem("fhr_day", activeDay);
+
+      renderDayChips();
+      updateDateTagDisplay();
+      renderFlightList();
+    }
+
+    function setQuickDate(offsetDays) {
+      const d = new Date();
+      d.setDate(d.getDate() + offsetDays);
+      const dateStr = d.toISOString().split("T")[0];
+      document.getElementById("reportDateInput").value = dateStr;
+      handleDateInputChange(dateStr);
+    }
+
+    function renderDayChips() {
+      const container = document.getElementById("dayChips");
+      container.innerHTML = DAYS.map(d => {
+        const isActive = (d === activeDay);
+        return `
+          <div class="chip-locked ${isActive ? 'active' : 'disabled'}" title="${isActive ? 'Day of the week locked to chosen date' : 'Locked: change calendar date to switch day'}">
+            ${isActive ? '🔒 ' + d : d}
+          </div>
+        `;
+      }).join("");
+
+      const modalDayInp = document.getElementById("modalDay");
+      if (modalDayInp) modalDayInp.value = activeDay;
+    }
+
+    function updateDateTagDisplay() {
+      const tag = getFormattedDateTag(activeDate);
+      document.getElementById("dateTagDisplay").innerText = tag ? `[${tag}]` : "";
+      const excelDateInp = document.getElementById("excelDateInput");
+      if (excelDateInp) excelDateInp.value = tag;
+    }
+
+    // -------------------------------------------------------------------------
+    // COPY PREVIOUS WEEK'S FLIGHTS (-7 DAYS)
+    // -------------------------------------------------------------------------
+    let selectedArchiveIdToCopy = null;
+
+    function openCopyPreviousWeekModal() {
+      const prevDateStr = calculatePrevWeekDateStr(activeDate);
+      const prevDateTag = getFormattedDateTag(prevDateStr);
+      const currDateTag = getFormattedDateTag(activeDate);
+
+      document.getElementById("prevWeekDateText").innerText = `Previous Week: ${prevDateTag} (${activeDay}) → Target: ${currDateTag} (${activeShift} Shift)`;
+
+      const exactPrevMatch = savedArchives.find(r => r.date === prevDateStr && r.shift === activeShift) ||
+                             savedArchives.find(r => r.date === prevDateStr);
+
+      const foundBox = document.getElementById("prevWeekFoundBox");
+      if (exactPrevMatch) {
+        selectedArchiveIdToCopy = exactPrevMatch.id;
+        foundBox.innerHTML = `
+          <div style="background:#e0f2fe; border:1px solid #7dd3fc; border-radius:8px; padding:10px;">
+            <div style="font-size:12px; font-weight:700; color:#0369a1;">✓ FOUND SAVED RECORD FROM PREVIOUS WEEK:</div>
+            <div style="font-size:12px; margin-top:2px;"><b>${exactPrevMatch.dateTag}</b> (${exactPrevMatch.shift} Shift) — <b>${(exactPrevMatch.templates||[]).length} Flights</b></div>
+            <div style="font-size:11px; color:#0c4a6e; margin-top:2px;">Flights: ${(exactPrevMatch.templates||[]).map(f=>f.flightNo).join(", ")}</div>
+          </div>
+        `;
+      } else {
+        selectedArchiveIdToCopy = null;
+        foundBox.innerHTML = `
+          <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px; font-size:12px; color:#b45309;">
+            ℹ️ No saved archive found for exact date <b>${prevDateTag}</b>. You can select another past date from the dropdown below or duplicate the base weekly schedule.
+          </div>
+        `;
+      }
+
+      const dropdown = document.getElementById("archiveDropdownSelect");
+      if (savedArchives.length === 0) {
+        dropdown.innerHTML = `<option value="">(No saved archives yet)</option>`;
+      } else {
+        dropdown.innerHTML = `<option value="">-- Choose from saved archives (${savedArchives.length}) --</option>` +
+          savedArchives.map(rec => `
+            <option value="${rec.id}" ${exactPrevMatch && rec.id === exactPrevMatch.id ? 'selected' : ''}>
+              ${rec.dateTag || rec.date} (${rec.shift} Shift) — ${(rec.templates||[]).length} Flights
+            </option>
+          `).join("");
+      }
+
+      document.getElementById("copyPrevModal").classList.add("open");
+    }
+
+    function handleArchiveDropdownChange(recId) {
+      selectedArchiveIdToCopy = recId || null;
+    }
+
+    function executeCopyFlightsFromPast() {
+      let sourceRecord = null;
+      if (selectedArchiveIdToCopy) {
+        sourceRecord = savedArchives.find(r => r.id === selectedArchiveIdToCopy);
+      }
+
+      const copyOption = document.querySelector('input[name="copyOption"]:checked').value;
+      const targetKey = `${activeDay}_${activeShift}`;
+
+      if (sourceRecord && sourceRecord.templates && sourceRecord.templates.length > 0) {
+        const clonedTemplates = sourceRecord.templates.map(f => ({
+          id: Date.now() + Math.floor(Math.random() * 10000),
+          flightNo: f.flightNo,
+          staStd: f.staStd
+        }));
+
+        templates[targetKey] = clonedTemplates;
+        localStorage.setItem("fhr_templates", JSON.stringify(templates));
+
+        clonedTemplates.forEach((cloned, idx) => {
+          const original = sourceRecord.templates[idx];
+          const origData = sourceRecord.handlingData[original.id] || {};
+
+          handlingData[cloned.id] = {
+            mode: origData.mode || detectDefaultMode(cloned.flightNo),
+            sector: origData.sector || formatSectorForMail(detectDefaultSector(cloned.flightNo)),
+            type: origData.type || detectDefaultType(origData.reg || ""),
+            reg: (copyOption === "schedule_and_details") ? (origData.reg || "") : "",
+            capt: (copyOption === "schedule_and_details") ? (origData.capt || "") : "",
+            bay: (copyOption === "schedule_and_details") ? (origData.bay || "") : "",
+            ata: "",
+            atd: "",
+            delayReason: "",
+            lss: "",
+            ebc: "",
+            arrPax: "",
+            arrCsm: "",
+            jngPax: "",
+            jngCsm: "",
+            dtrPax: "",
+            dtrCsm: "",
+            jngInt: "",
+            jngDom: ""
+          };
+        });
+
+        localStorage.setItem("fhr_data", JSON.stringify(handlingData));
+        renderFlightList();
+        closeModal("copyPrevModal");
+        alert(`Successfully copied ${clonedTemplates.length} flights into ${getFormattedDateTag(activeDate)} (${activeShift} Shift)!`);
+      } else {
+        alert("Please select a saved past date archive that contains flights to copy.");
+      }
+    }
+
+    // Archive Save & Load
+    function saveCurrentDateRecord() {
+      const key = getCurrentKey();
+      const currentTemplates = templates[key] || [];
+      const { telexText, zimbraHtml } = buildReportStructures();
+      const dateTag = getFormattedDateTag(activeDate);
+
+      const currentHandlingSnapshot = {};
+      currentTemplates.forEach(f => {
+        if (handlingData[f.id]) {
+          currentHandlingSnapshot[f.id] = JSON.parse(JSON.stringify(handlingData[f.id]));
+        }
+      });
+
+      const recordId = `${activeDate}_${activeShift}`;
+      const record = {
+        id: recordId,
+        date: activeDate,
+        dateTag: dateTag,
+        day: activeDay,
+        shift: activeShift,
+        staffInfo: staticInfo.staffInfo || "",
+        templates: JSON.parse(JSON.stringify(currentTemplates)),
+        handlingData: currentHandlingSnapshot,
+        telexReport: telexText,
+        zimbraHtml: zimbraHtml,
+        savedAt: new Date().toLocaleString()
+      };
+
+      const existingIdx = savedArchives.findIndex(r => r.id === recordId);
+      if (existingIdx !== -1) {
+        savedArchives[existingIdx] = record;
+      } else {
+        savedArchives.unshift(record);
+      }
+
+      localStorage.setItem("fhr_saved_archives", JSON.stringify(savedArchives));
+      updateArchiveCountBadge();
+      alert(`Record for ${dateTag} (${activeShift} Shift) successfully saved to archive!`);
+    }
+
+    function updateArchiveCountBadge() {
+      document.getElementById("archiveCountBadge").innerText = savedArchives.length;
+    }
+
+    function openArchiveModal() {
+      renderArchiveListDOM();
+      document.getElementById("archiveModal").classList.add("open");
+    }
+
+    function renderArchiveListDOM() {
+      const container = document.getElementById("archiveRecordsList");
+      if (savedArchives.length === 0) {
+        container.innerHTML = `<p style="font-size:12px; color:var(--text-muted); padding:16px; text-align:center;">No saved date records yet. Click "Save This Date & Shift Record" to create snapshots.</p>`;
+        return;
+      }
+
+      container.innerHTML = savedArchives.map((rec, idx) => `
+        <div style="background:var(--surface-variant); border-radius:8px; padding:12px; margin-bottom:10px; border:1px solid var(--border);">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+            <div>
+              <span style="font-size:13px; font-weight:700; color:var(--primary); font-family:'JetBrains Mono', monospace;">${rec.dateTag || rec.date}</span>
+              <span style="font-size:11px; font-weight:700; background:#e2e8f0; padding:2px 6px; border-radius:4px; margin-left:6px;">${rec.shift} Shift</span>
+              <span style="font-size:11px; color:var(--text-muted); margin-left:6px;">${(rec.templates || []).length} Flights</span>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted);">Saved: ${rec.savedAt}</div>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); margin:4px 0 8px 0;">Officer: ${rec.staffInfo ? rec.staffInfo.split('\n')[0] : 'N/A'}</div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="btn btn-dark" style="padding:4px 8px; font-size:11px;" onclick="viewArchiveMail(${idx})">👁️ View Mail</button>
+            <button class="btn btn-sort" style="padding:4px 8px; font-size:11px;" onclick="restoreArchiveToWorkspace(${idx})">📥 Load into Workspace</button>
+            <button class="btn btn-clear" style="padding:4px 8px; font-size:11px;" onclick="deleteArchiveRecord(${idx})">🗑️ Delete</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function viewArchiveMail(idx) {
+      const rec = savedArchives[idx];
+      if (!rec) return;
+
+      currentReportData = {
+        telexText: rec.telexReport,
+        zimbraHtml: rec.zimbraHtml
+      };
+
+      document.getElementById("viewZimbra").innerHTML = rec.zimbraHtml;
+      document.getElementById("viewZimbraSource").value = rec.zimbraHtml;
+      document.getElementById("viewTelex").innerText = rec.telexReport;
+      switchReportTab('zimbra');
+      document.getElementById("archiveModal").classList.remove("open");
+      document.getElementById("reportModal").classList.add("open");
+    }
+
+    function restoreArchiveToWorkspace(idx) {
+      const rec = savedArchives[idx];
+      if (!rec) return;
+
+      if (!confirm(`Load inputs and flights from ${rec.dateTag} (${rec.shift} Shift) into current workspace?`)) return;
+
+      activeDate = rec.date;
+      document.getElementById("reportDateInput").value = activeDate;
+      localStorage.setItem("fhr_active_date", activeDate);
+
+      activeDay = rec.day;
+      localStorage.setItem("fhr_day", activeDay);
+
+      activeShift = rec.shift;
+      localStorage.setItem("fhr_shift", activeShift);
+
+      if (rec.staffInfo) {
+        staticInfo.staffInfo = rec.staffInfo;
+        localStorage.setItem("fhr_static", JSON.stringify(staticInfo));
+        document.getElementById("staffInfoInput").value = staticInfo.staffInfo;
+      }
+
+      const key = `${activeDay}_${activeShift}`;
+      templates[key] = rec.templates;
+      localStorage.setItem("fhr_templates", JSON.stringify(templates));
+
+      Object.assign(handlingData, rec.handlingData);
+      localStorage.setItem("fhr_data", JSON.stringify(handlingData));
+
+      renderDayChips();
+      renderShiftButtons();
+      updateDateTagDisplay();
+      renderFlightList();
+      closeModal("archiveModal");
+
+      alert(`Restored inputs for ${rec.dateTag} (${rec.shift} Shift) into workspace!`);
+    }
+
+    function deleteArchiveRecord(idx) {
+      if (!confirm("Delete this saved record from archive?")) return;
+      savedArchives.splice(idx, 1);
+      localStorage.setItem("fhr_saved_archives", JSON.stringify(savedArchives));
+      updateArchiveCountBadge();
+      renderArchiveListDOM();
+    }
+
+    // Catalog Sorter
+    function compareCatalogFlights(a, b) {
+      const isBgA = /^BG/i.test(a.flightNo.trim());
+      const isBgB = /^BG/i.test(b.flightNo.trim());
+
+      if (isBgA && !isBgB) return -1;
+      if (!isBgA && isBgB) return 1;
+
+      if (isBgA && isBgB) {
+        const numA = parseInt((a.flightNo.match(/\d+/) || [999999])[0], 10);
+        const numB = parseInt((b.flightNo.match(/\d+/) || [999999])[0], 10);
+        if (numA !== numB) return numA - numB;
+        return a.flightNo.localeCompare(b.flightNo, undefined, { numeric: true });
+      }
+
+      return a.flightNo.localeCompare(b.flightNo, undefined, { numeric: true });
+    }
+
+    function sortMasterCatalog() {
+      masterCatalog.sort(compareCatalogFlights);
+      localStorage.setItem("fhr_master_catalog", JSON.stringify(masterCatalog));
+    }
+
+    // Formulas
+    function detectDefaultType(reg) {
+      if (!reg) return "";
+      const r = reg.toUpperCase().trim();
+      if (r.includes("AJS") || r.includes("AJT") || r.includes("AJU") || r.includes("AJV")) return "B788";
+      if (r.includes("AJX") || r.includes("AJY")) return "B789";
+      if (r.includes("AFO") || r.includes("AFP") || r.includes("AHM") || r.includes("AHN")) return "B777";
+      if (r.includes("AFL") || r.includes("AFM") || r.includes("AHO") || r.includes("AHV")) return "B737";
+      if (r.includes("AKF") || r.includes("AKE") || r.includes("AKD") || r.includes("AGR") || r.includes("AJW")) return "DH-8";
+      return "";
+    }
+
+    function detectDefaultSector(flightNo) {
+      if (!flightNo) return "";
+      const f = flightNo.toUpperCase().trim();
+      if (f.includes("121")) return "DAC/CGP/MCT";
+      if (f.includes("122")) return "MCT/CGP/DAC";
+      if (f.includes("125")) return "DAC/CGP/DOH";
+      if (f.includes("126")) return "DOH/CGP/DAC";
+      if (f.includes("127")) return "DAC/CGP/AUH";
+      if (f.includes("128")) return "AUH/CGP/DAC";
+      if (f.includes("135")) return "DAC/CGP/JED";
+      if (f.includes("136")) return "JED/CGP/DAC";
+      if (f.includes("137")) return "DAC/CGP/MED";
+      if (f.includes("138")) return "MED/CGP/DAC";
+      if (f.includes("147")) return "DAC/CGP/DXB";
+      if (f.includes("148")) return "DXB/CGP/DAC";
+      if (f.includes("151")) return "DAC/CGP/SHJ";
+      if (f.includes("152")) return "SHJ/CGP/DAC";
+      if (f.includes("61")) return "DAC/CGP/DAC";
+      return "";
+    }
+
+    function formatSectorForMail(sec) {
+      if (!sec) return "---";
+      return sec.replace(/\//g, "-").toUpperCase().trim();
+    }
+
+    function formatSectorForSpreadsheet(sec) {
+      if (!sec) return "";
+      return sec.replace(/-/g, "/").toUpperCase().trim();
+    }
+
+    function formatBayForMail(val) {
+      if (!val) return "--";
+      const clean = val.toUpperCase().trim();
+      const obMatch = clean.match(/^(?:B-)?0?(\d+)\s*(?:A|O\/?B)$/);
+      if (obMatch) return `${parseInt(obMatch[1])}A`;
+      const numMatch = clean.match(/^(?:B-)?0?(\d+)$/);
+      if (numMatch) return `${parseInt(numMatch[1])}`;
+      return clean;
+    }
+
+    function formatBayBridge(val) {
+      if (!val) return "";
+      const clean = val.toUpperCase().trim();
+      if (clean.startsWith("B-") && (clean.includes("O/B") || clean.split("-")[1].length <= 2)) return clean;
+      const obMatch = clean.match(/^(?:B-)?0?(\d+)\s*(?:A|O\/?B)$/);
+      if (obMatch) return `B-${parseInt(obMatch[1])} O/B`;
+      const numMatch = clean.match(/^(?:B-)?0?(\d+)$/);
+      if (numMatch) return `B-${parseInt(numMatch[1])}`;
+      return clean;
+    }
+
+    function detectDefaultMode(flightNo) {
+      if (!flightNo) return "MODE1";
+      const clean = flightNo.toUpperCase().trim();
+      if (clean.includes("BG")) {
+        const match = clean.match(/BG(\d+)/);
+        if (match && match[1]) {
+          const numStr = match[1];
+          if (numStr.startsWith("6")) return "MODE3";
+          const num = parseInt(numStr);
+          return (num % 2 !== 0) ? "MODE2" : "MODE4";
+        }
+      }
+      return "MODE1";
+    }
+
+    function previewAutoMode(flightNo) {
+      const mode = detectDefaultMode(flightNo);
+      const modeObj = MODES.find(m => m.id === mode);
+      document.getElementById("autoModeHint").innerText = flightNo ? `⚡ Auto-assigned: ${modeObj.title}` : "";
+    }
+
+    function handleModalFlightNoChange(flightNo) {
+      previewAutoMode(flightNo);
+      const autoSec = detectDefaultSector(flightNo);
+      const secInput = document.getElementById("modalSector");
+      if (autoSec && secInput && !secInput.value) {
+        secInput.value = formatSectorForMail(autoSec);
+      }
+    }
+
+    function handleCatalogFlightNoInput(flightNo) {
+      const autoSec = detectDefaultSector(flightNo);
+      const secInput = document.getElementById("catNewSector");
+      if (autoSec && secInput && !secInput.value) {
+        secInput.value = formatSectorForMail(autoSec);
+      }
+    }
+
+    // PURE VERTICAL SCROLL: NEVER SHIFTS HORIZONTALLY ON TAB
+    document.addEventListener("focusin", (e) => {
+      if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.tagName === "TEXTAREA")) {
+        setTimeout(() => {
+          const rect = e.target.getBoundingClientRect();
+          const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+          const topSafe = 85;
+          const bottomSafe = viewportHeight - 110;
+
+          if (rect.top < topSafe || rect.bottom > bottomSafe) {
+            const targetScrollY = window.pageYOffset + rect.top - (viewportHeight / 2) + (rect.height / 2);
+            window.scrollTo({
+              top: Math.max(0, targetScrollY),
+              left: 0,
+              behavior: "smooth"
+            });
+          } else {
+            if (window.pageXOffset !== 0) {
+              window.scrollTo({ left: 0, top: window.pageYOffset });
+            }
+          }
+        }, 40);
+      }
+    });
+
+    // Smart Tab Autocomplete for Inputs
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Tab" && !e.shiftKey && e.target && e.target.tagName === "INPUT") {
+        const input = e.target;
+        const cat = input.getAttribute("data-category");
+
+        // Instant ATA/ATD/LSS 4-digit auto-formatting on Tab
+        if (cat === "ata" || cat === "atd" || cat === "lss" || input.id.startsWith("ata_") || input.id.startsWith("atd_") || input.id.startsWith("lss_")) {
+          const formatted = autoFormatTime4Digits(input.value);
+          if (formatted !== input.value) {
+            input.value = formatted;
+            const parts = input.id.split("_");
+            const fieldKey = parts[0];
+            const fId = parseInt(parts[1], 10);
+            if (!isNaN(fId)) {
+              if (fieldKey === "atd") {
+                const flt = templates[getCurrentKey()]?.find(f => f.id === fId);
+                handleAtdInput(fId, flt ? flt.staStd : "", formatted);
+              } else {
+                saveFieldValue(fId, fieldKey, formatted);
+                updateMemory(fieldKey, formatted);
+              }
+            }
+          }
+        }
+
+        // EXPLICITLY DISABLE SUGGESTION COMPLETION FOR BAY
+        if (cat === "bay" || input.id.startsWith("bay_")) {
+          return;
+        }
+
+        // Instant Pax auto-formatting on Tab
+        if (input.id.includes("Pax_") || input.id.includes("jngInt_") || input.id.includes("jngDom_") || input.id.includes("arrPax_") || input.id.includes("dtrPax_") || input.id.includes("jngPax_")) {
+          const parts = input.id.split("_");
+          const fieldKey = parts[0];
+          const fId = parseInt(parts[1], 10);
+          const currentMode = handlingData[fId]?.mode || detectDefaultMode(templates[getCurrentKey()]?.find(f => f.id === fId)?.flightNo);
+          const formatted = autoFormatPaxInput(input.value, currentMode);
+          if (formatted !== input.value) {
+            input.value = formatted;
+            saveFieldValue(fId, fieldKey, formatted);
+            handlePaxInput(fId, fieldKey, formatted, currentMode);
+          }
+        }
+
+        // Instant Delay Reason Shortcut expansion on Tab (e.g. 93, 88)
+        if (cat === "reason" || input.id.startsWith("reason_")) {
+          const val = input.value.trim();
+          if (delayCodes[val]) {
+            input.value = delayCodes[val];
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+            return;
+          }
+        }
+
+        // Instant A/C Reg Airline Prefix expansion on Tab (e.g. AKD -> S2-AKD)
+        if (cat === "reg" || input.id.startsWith("reg_")) {
+          const parts = input.id.split("_");
+          const fId = parseInt(parts[1], 10);
+          const fltObj = templates[getCurrentKey()]?.find(f => f.id === fId);
+          if (fltObj) {
+            const formattedReg = autoFormatRegWithPrefix(input.value, fltObj.flightNo);
+            if (formattedReg !== input.value) {
+              input.value = formattedReg;
+              handleRegInput(fId, formattedReg, fltObj.flightNo);
+            }
+          }
+        }
+
+        // Standard history memory suggestion completion
+        if (cat && memory[cat] && input.value.trim().length > 0) {
+          const query = input.value.trim().toUpperCase();
+          const matches = memory[cat].filter(item => item.toUpperCase().startsWith(query));
+          if (matches.length === 1) {
+            input.value = matches[0];
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        }
+      }
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      sortMasterCatalog();
+      applyZoom(currentZoom);
+
+      const dateInp = document.getElementById("reportDateInput");
+      dateInp.value = activeDate;
+      handleDateInputChange(activeDate);
+
+      renderShiftButtons();
+      document.getElementById("staffInfoInput").value = staticInfo.staffInfo || "";
+      renderDataLists();
+      renderCatalogDropdown();
+      updateArchiveCountBadge();
+      applyFlightViewModeDOM();
+      renderFlightList();
+    });
+
+    // Backup Export & Import
+    function exportBackupData() {
+      const backupObject = {
+        app: "Flight Handling Report",
+        version: "v23.1",
+        exportedAt: new Date().toISOString(),
+        activeDate,
+        activeDay,
+        activeShift,
+        currentZoom,
+        flightViewMode,
+        staticInfo,
+        masterCatalog,
+        templates,
+        handlingData,
+        memory,
+        savedArchives,
+        delayCodes,
+        airlinePrefixes
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupObject, null, 2));
+      const downloadAnchor = document.createElement("a");
+      const datePart = new Date().toISOString().split("T")[0];
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `Flight_Handling_Backup_${datePart}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      alert("Backup file downloaded successfully!");
+    }
+
+    function triggerImportBackup() {
+      const fileInput = document.getElementById("backupFileInput");
+      fileInput.value = "";
+      fileInput.click();
+    }
+
+    function handleBackupFileImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!imported.templates && !imported.masterCatalog) {
+            throw new Error("Invalid backup file format.");
+          }
+
+          if (!confirm("Restore backup? This will replace your current schedule templates, catalog, archives, and data.")) {
+            return;
+          }
+
+          if (imported.templates) templates = imported.templates;
+          if (imported.masterCatalog) masterCatalog = imported.masterCatalog;
+          if (imported.handlingData) handlingData = imported.handlingData;
+          if (imported.memory) memory = imported.memory;
+          if (imported.staticInfo) staticInfo = imported.staticInfo;
+          if (imported.activeDate) activeDate = imported.activeDate;
+          if (imported.activeDay) activeDay = imported.activeDay;
+          if (imported.activeShift) activeShift = imported.activeShift;
+          if (imported.currentZoom) currentZoom = imported.currentZoom;
+          if (imported.flightViewMode) flightViewMode = imported.flightViewMode;
+          if (imported.savedArchives) savedArchives = imported.savedArchives;
+          if (imported.delayCodes) delayCodes = imported.delayCodes;
+          if (imported.airlinePrefixes) airlinePrefixes = imported.airlinePrefixes;
+
+          sortMasterCatalog();
+
+          localStorage.setItem("fhr_templates", JSON.stringify(templates));
+          localStorage.setItem("fhr_master_catalog", JSON.stringify(masterCatalog));
+          localStorage.setItem("fhr_data", JSON.stringify(handlingData));
+          localStorage.setItem("fhr_memory", JSON.stringify(memory));
+          localStorage.setItem("fhr_static", JSON.stringify(staticInfo));
+          localStorage.setItem("fhr_active_date", activeDate);
+          localStorage.setItem("fhr_day", activeDay);
+          localStorage.setItem("fhr_shift", activeShift);
+          localStorage.setItem("fhr_zoom", currentZoom.toString());
+          localStorage.setItem("fhr_flight_view_mode", flightViewMode);
+          localStorage.setItem("fhr_saved_archives", JSON.stringify(savedArchives));
+          localStorage.setItem("fhr_delay_codes", JSON.stringify(delayCodes));
+          localStorage.setItem("fhr_airline_prefixes", JSON.stringify(airlinePrefixes));
+
+          applyZoom(currentZoom);
+          document.getElementById("reportDateInput").value = activeDate;
+          handleDateInputChange(activeDate);
+          renderShiftButtons();
+          document.getElementById("staffInfoInput").value = staticInfo.staffInfo || "";
+          renderDataLists();
+          renderCatalogDropdown();
+          updateArchiveCountBadge();
+          applyFlightViewModeDOM();
+          renderFlightList();
+
+          alert("Backup successfully restored!");
+        } catch (err) {
+          alert("Error restoring backup: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function adjustZoom(delta) {
+      currentZoom = Math.min(1.30, Math.max(0.70, Math.round((currentZoom + delta) * 100) / 100));
+      applyZoom(currentZoom);
+      localStorage.setItem("fhr_zoom", currentZoom.toString());
+    }
+    function applyZoom(zoom) {
+      document.getElementById("appWrapper").style.transform = `scale(${zoom})`;
+      document.getElementById("zoomBadge").innerText = `${Math.round(zoom * 100)}%`;
+    }
+
+    function setShift(shift) {
+      activeShift = shift;
+      localStorage.setItem("fhr_shift", shift);
+      renderShiftButtons();
+      renderFlightList();
+    }
+    function renderShiftButtons() {
+      document.getElementById("shiftMorning").className = `shift-btn ${activeShift === 'Morning' ? 'active' : ''}`;
+      document.getElementById("shiftEvening").className = `shift-btn ${activeShift === 'Evening' ? 'active' : ''}`;
+    }
+    function saveStaffInfo(val) {
+      staticInfo.staffInfo = val;
+      localStorage.setItem("fhr_static", JSON.stringify(staticInfo));
+    }
+
+    function renderDataLists() {
+      const hub = document.getElementById("datalist-hub");
+      hub.innerHTML = Object.keys(memory).map(key => `
+        <datalist id="dl_${key}">
+          ${(memory[key] || []).map(val => `<option value="${val}">`).join("")}
+        </datalist>
+      `).join("");
+    }
+
+    function updateMemory(category, val) {
+      if (!val || val.trim().length < 2) return;
+      if (category === "bay") return;
+      const clean = val.toUpperCase().trim();
+      if (!memory[category]) memory[category] = [];
+      if (!memory[category].includes(clean)) {
+        memory[category].unshift(clean);
+        if (memory[category].length > 25) memory[category].pop();
+        localStorage.setItem("fhr_memory", JSON.stringify(memory));
+        renderDataLists();
+      }
+    }
+
+    function getCurrentKey() {
+      return `${activeDay}_${activeShift}`;
+    }
+
+    function renderCatalogDropdown() {
+      const select = document.getElementById("catalogSelect");
+      if (masterCatalog.length === 0) {
+        select.innerHTML = `<option value="">(No flights saved in catalog)</option>`;
+        return;
+      }
+
+      sortMasterCatalog();
+
+      const bgItems = [];
+      const otherItems = [];
+
+      masterCatalog.forEach((item, idx) => {
+        if (/^BG/i.test(item.flightNo.trim())) {
+          bgItems.push({ item, idx });
+        } else {
+          otherItems.push({ item, idx });
+        }
+      });
+
+      let optionsHtml = "";
+
+      if (bgItems.length > 0) {
+        optionsHtml += `<optgroup label="✈️ Biman Bangladesh Airlines (BG - Flight No. Order)">`;
+        optionsHtml += bgItems.map(({ item, idx }) => `
+          <option value="${idx}">${item.flightNo} | STA/STD: ${item.staStd} | ${item.sector}</option>
+        `).join("");
+        optionsHtml += `</optgroup>`;
+      }
+
+      if (otherItems.length > 0) {
+        optionsHtml += `<optgroup label="🌐 Other Carriers (Alphabetical)">`;
+        optionsHtml += otherItems.map(({ item, idx }) => `
+          <option value="${idx}">${item.flightNo} | STA/STD: ${item.staStd} | ${item.sector}</option>
+        `).join("");
+        optionsHtml += `</optgroup>`;
+      }
+
+      select.innerHTML = optionsHtml;
+    }
+
+    function addSelectedFromCatalog() {
+      const select = document.getElementById("catalogSelect");
+      if (!select.value && select.value !== 0 && select.value !== "0") return;
+      const item = masterCatalog[parseInt(select.value)];
+      if (!item) return;
+
+      const key = getCurrentKey();
+      if (!templates[key]) templates[key] = [];
+
+      const newId = Date.now();
+      templates[key].push({
+        id: newId,
+        flightNo: item.flightNo,
+        staStd: item.staStd
+      });
+
+      const autoMode = detectDefaultMode(item.flightNo);
+      if (!handlingData[newId]) handlingData[newId] = {};
+      handlingData[newId].mode = autoMode;
+      handlingData[newId].sector = formatSectorForMail(item.sector || detectDefaultSector(item.flightNo));
+      handlingData[newId].type = detectDefaultType("");
+
+      localStorage.setItem("fhr_templates", JSON.stringify(templates));
+      localStorage.setItem("fhr_data", JSON.stringify(handlingData));
+      renderFlightList();
+    }
+
+    function openCatalogManagerModal() {
+      renderCatalogManagerList();
+      document.getElementById("catalogModal").classList.add("open");
+    }
+
+    function renderCatalogManagerList() {
+      const container = document.getElementById("catalogListItems");
+      if (masterCatalog.length === 0) {
+        container.innerHTML = `<p style="font-size:12px; color:var(--text-muted); padding:10px;">No saved entries.</p>`;
+        return;
+      }
+
+      sortMasterCatalog();
+
+      container.innerHTML = masterCatalog.map((item, idx) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--surface-variant); border-radius:6px; margin-bottom:6px;">
+          <div>
+            <div style="font-size:13px; font-weight:700;">${item.flightNo}</div>
+            <div style="font-size:11px; color:var(--text-muted);">STA/STD: ${item.staStd} | SEC: ${item.sector}</div>
+          </div>
+          <button class="btn btn-clear" style="padding:4px 8px; font-size:10px;" onclick="deleteCatalogEntry(${idx})">Delete</button>
+        </div>
+      `).join("");
+    }
+
+    function saveNewCatalogEntry() {
+      const fNo = document.getElementById("catNewFlightNo").value.toUpperCase().trim();
+      const sStd = document.getElementById("catNewStaStd").value.trim();
+      const sec = formatSectorForMail(document.getElementById("catNewSector").value.toUpperCase().trim() || detectDefaultSector(fNo));
+
+      if (!fNo || !sStd) {
+        alert("Please enter Flight No and STA/STD");
+        return;
+      }
+
+      masterCatalog.push({ flightNo: fNo, staStd: sStd, sector: sec });
+      sortMasterCatalog();
+
+      document.getElementById("catNewFlightNo").value = "";
+      document.getElementById("catNewStaStd").value = "";
+      document.getElementById("catNewSector").value = "";
+
+      renderCatalogManagerList();
+      renderCatalogDropdown();
+    }
+
+    function deleteCatalogEntry(idx) {
+      masterCatalog.splice(idx, 1);
+      sortMasterCatalog();
+      renderCatalogManagerList();
+      renderCatalogDropdown();
+    }
+
+    // Render Flight List Cards
+    function renderFlightList() {
+      const key = getCurrentKey();
+      const list = templates[key] || [];
+      const container = document.getElementById("flightListContainer");
+      document.getElementById("flightListHeader").innerText = `FLIGHTS FOR ${activeDay.toUpperCase()} (${activeShift.toUpperCase()} SHIFT)`;
+      document.getElementById("flightCountBadge").innerText = `${list.length} Scheduled`;
+      document.getElementById("btnFlightCount").innerText = list.length;
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="card" style="text-align:center; padding:32px 16px; grid-column: 1 / -1;">
+            <p style="font-weight:700; font-size:14px; margin-bottom:6px;">No flights scheduled for ${activeDay} ${activeShift}</p>
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Use "+ Insert to Today" from catalog above, copy previous week's flights, or click "+ Manual Add Flight".</p>
+            <div style="display:flex; justify-content:center; gap:8px;">
+              <button class="btn btn-copy-prev" onclick="openCopyPreviousWeekModal()">📋 Copy Prev Week (-7D)</button>
+              <button class="btn btn-dark" onclick="openAddFlightModal()">+ Manual Add Flight</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = list.map((flight) => {
+        if (!handlingData[flight.id]) {
+          handlingData[flight.id] = { mode: detectDefaultMode(flight.flightNo) };
+        } else if (!handlingData[flight.id].mode) {
+          handlingData[flight.id].mode = detectDefaultMode(flight.flightNo);
+        }
+
+        const d = handlingData[flight.id];
+        const mode = d.mode;
+        const isForeign = (mode === "MODE1");
+        const delayInfo = computeDelay(flight.staStd, d.atd, d.delayReason);
+        const isCollapsed = collapsedFlightIds.has(flight.id);
+
+        if (!d.type && d.reg) {
+          d.type = detectDefaultType(d.reg);
+        }
+        if (!d.sector) {
+          d.sector = formatSectorForMail(detectDefaultSector(flight.flightNo));
+        }
+
+        return `
+          <article class="flight-card" id="card_${flight.id}">
+            <div class="flight-header" onclick="toggleCardCollapse(${flight.id})">
+              <div class="flight-info">
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <h3>${flight.flightNo}</h3>
+                  <span class="collapse-chevron" id="chevron_${flight.id}">${isCollapsed ? '▼' : '▲'}</span>
+                </div>
+                <div class="sta-std-tag">STA/STD: ${flight.staStd}</div>
+                <div class="status-badge ${delayInfo.badgeClass}" id="badge_${flight.id}">${d.atd ? delayInfo.message : ''}</div>
+              </div>
+              <div class="flight-actions" onclick="event.stopPropagation()">
+                <button class="btn-action-edit" onclick="openEditFlightModal(${flight.id})">EDIT</button>
+                <select class="mode-select" onchange="changeHandlingMode(${flight.id}, this.value)">
+                  ${MODES.map(m => `<option value="${m.id}" ${mode === m.id ? 'selected' : ''}>${m.title}</option>`).join("")}
+                </select>
+                <button class="btn-action-delete" title="Delete Flight" onclick="deleteFlight(${flight.id})">&times;</button>
+              </div>
+            </div>
+
+            <div class="flight-body" id="body_${flight.id}" style="display: ${isCollapsed ? 'none' : 'block'};">
+              <div class="card-title">Common Details</div>
+              
+              <div class="form-grid-2">
+                <div class="input-group">
+                  <label>ATA (Arrival)</label>
+                  <input type="text" id="ata_${flight.id}" value="${d.ata || ''}" placeholder="0630" list="dl_ata" data-category="ata" oninput="saveFieldValue(${flight.id}, 'ata', this.value)" onblur="handleAtaBlur(${flight.id}, this.value)">
+                </div>
+                <div class="input-group">
+                  <label>ATD (Departure)</label>
+                  <input type="text" id="atd_${flight.id}" value="${d.atd || ''}" placeholder="0745" list="dl_atd" data-category="atd" oninput="handleAtdInput(${flight.id}, '${flight.staStd}', this.value)" onblur="handleAtdBlur(${flight.id}, '${flight.staStd}', this.value)">
+                </div>
+              </div>
+
+              <!-- DELAY REASON (SHORTCODE SUPPORTED: 93, 88) -->
+              <div class="form-grid-1">
+                <div class="input-group">
+                  <label>Delay Reason (93=CONSEQ, 88=SLOT)</label>
+                  <input type="text" id="reason_${flight.id}" value="${d.delayReason || ''}" placeholder="e.g. 93 or DUE TO LATE ARRIVAL" list="dl_reason" data-category="reason" 
+                    oninput="handleDelayReasonInput(${flight.id}, '${flight.staStd}', this.value)" 
+                    onblur="handleDelayReasonBlur(${flight.id}, '${flight.staStd}', this.value)" 
+                    onchange="updateMemory('reason', this.value)">
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="input-group">
+                  <label>CAPT</label>
+                  <input type="text" value="${d.capt || ''}" placeholder="AHSAN" list="dl_capt" data-category="capt" oninput="saveFieldValue(${flight.id}, 'capt', this.value)" onchange="updateMemory('capt', this.value)">
+                </div>
+                <div class="input-group">
+                  <label>A/C REG (Auto-Prefix)</label>
+                  <input type="text" id="reg_${flight.id}" value="${d.reg || ''}" placeholder="e.g. AKD or S2-AJU" list="dl_reg" data-category="reg" 
+                    oninput="handleRegInput(${flight.id}, this.value, '${flight.flightNo}')" 
+                    onblur="handleRegBlur(${flight.id}, this.value, '${flight.flightNo}')" 
+                    onchange="updateMemory('reg', this.value)">
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="input-group">
+                  <label>SECTOR</label>
+                  <input type="text" id="sec_${flight.id}" value="${formatSectorForMail(d.sector)}" placeholder="DAC-CGP-DAC" list="dl_sec" data-category="sec" oninput="saveFieldValue(${flight.id}, 'sector', this.value)" onchange="updateMemory('sec', this.value)">
+                </div>
+                <!-- BAY FIELD: AUTOCOMPLETE / SUGGESTION COMPLETION FULLY DISABLED -->
+                <div class="input-group">
+                  <label>BAY (4 stays 4, 3A stays 3A)</label>
+                  <input type="text" id="bay_${flight.id}" value="${d.bay || ''}" placeholder="4 or 3A" autocomplete="off" spellcheck="false" 
+                    oninput="saveFieldValue(${flight.id}, 'bay', this.value)">
+                </div>
+              </div>
+
+              <!-- LSS & EBC HIDDEN FOR FOREIGN CARRIER -->
+              ${!isForeign ? `
+                <div class="form-grid-2">
+                  <div class="input-group">
+                    <label>LSS</label>
+                    <input type="text" id="lss_${flight.id}" value="${d.lss || ''}" placeholder="0740" list="dl_lss" data-category="lss" oninput="saveFieldValue(${flight.id}, 'lss', this.value)" onblur="handleLssBlur(${flight.id}, this.value)">
+                  </div>
+                  <div class="input-group">
+                    <label>EBC (BDT)</label>
+                    <input type="text" value="${d.ebc || ''}" placeholder="0 or 1113" list="dl_ebc" data-category="ebc" oninput="saveFieldValue(${flight.id}, 'ebc', this.value)" onchange="updateMemory('ebc', this.value)">
+                  </div>
+                </div>
+              ` : ''}
+
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; margin-top:8px;">
+                <div class="card-title" style="margin-bottom:0;">PAX &amp; BREAKDOWN — ${MODES.find(m => m.id === mode).title.toUpperCase()}</div>
+                <span id="dep_total_${flight.id}" style="font-size:10px; font-weight:700; background:var(--primary-container); color:var(--primary); padding:2px 5px; border-radius:4px; display:${getCalculatedDepTotal(mode, d) ? 'inline-block' : 'none'};">
+                  TOTAL DEP: ${getCalculatedDepTotal(mode, d) || ''}
+                </span>
+              </div>
+
+              <div id="pax_section_${flight.id}">
+                ${renderModeInputsHtml(mode, flight.id, d)}
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function toggleCardCollapse(flightId) {
+      const b = document.getElementById(`body_${flightId}`);
+      const ch = document.getElementById(`chevron_${flightId}`);
+      if (collapsedFlightIds.has(flightId)) {
+        collapsedFlightIds.delete(flightId);
+        if (b) b.style.display = "block";
+        if (ch) ch.innerText = "▲";
+      } else {
+        collapsedFlightIds.add(flightId);
+        if (b) b.style.display = "none";
+        if (ch) ch.innerText = "▼";
+      }
+    }
+
+    function handleAtdInput(flightId, staStd, atdVal) {
+      saveFieldValue(flightId, 'atd', atdVal);
+      const reason = handlingData[flightId]?.delayReason || '';
+      const delay = computeDelay(staStd, atdVal, reason);
+      const badge = document.getElementById(`badge_${flightId}`);
+      if (badge) {
+        badge.className = `status-badge ${delay.badgeClass}`;
+        badge.innerText = atdVal ? delay.message : '';
+      }
+    }
+
+    function handleAtdBlur(flightId, staStd, atdVal) {
+      if (!atdVal) return;
+      const formatted = autoFormatTime4Digits(atdVal);
+      const el = document.getElementById(`atd_${flightId}`);
+      if (el) el.value = formatted;
+      handleAtdInput(flightId, staStd, formatted);
+      updateMemory('atd', formatted);
+    }
+
+    function handlePaxInput(flightId, key, val, mode) {
+      saveFieldValue(flightId, key, val);
+      const d = handlingData[flightId] || {};
+      const total = getCalculatedDepTotal(mode, d);
+      const badge = document.getElementById(`dep_total_${flightId}`);
+      if (badge) {
+        if (total) {
+          badge.innerText = `TOTAL DEP: ${total}`;
+          badge.style.display = 'inline-block';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+    }
+
+    // Render Mode Inputs
+    function renderModeInputsHtml(mode, id, d) {
+      const inp = (label, key, val, isPax = true) => `
+        <div class="input-group">
+          <label>${label}</label>
+          <input type="text" id="${key}_${id}" value="${val || ''}" 
+            oninput="handlePaxInput(${id}, '${key}', this.value, '${mode}')" 
+            ${isPax ? `onblur="handlePaxBlur(${id}, '${key}', this.value, '${mode}')"` : `onblur="handleCsmBlur(${id}, '${key}', this.value)"`}>
+        </div>
+      `;
+
+      if (mode === "MODE1") {
+        return `
+          <div class="form-grid-2">
+            ${inp("ARR PAX", "arrPax", d.arrPax, true)}
+            ${inp("C/S/M", "arrCsm", d.arrCsm, false)}
+          </div>
+          <div class="form-grid-2">
+            ${inp("DEP PAX", "jngPax", d.jngPax, true)}
+            ${inp("C/S/M", "jngCsm", d.jngCsm, false)}
+          </div>
+        `;
+      }
+      if (mode === "MODE2") {
+        return `
+          <div class="form-grid-2">
+            ${inp("ARR PAX", "arrPax", d.arrPax, true)}
+            ${inp("C/S/M", "arrCsm", d.arrCsm, false)}
+          </div>
+          <div class="form-grid-2">
+            ${inp("DTR PAX", "dtrPax", d.dtrPax, true)}
+            ${inp("JNG PAX", "jngPax", d.jngPax, true)}
+          </div>
+          <div class="form-grid-2">
+            ${inp("DTR C/S/M", "dtrCsm", d.dtrCsm, false)}
+            ${inp("JNG C/S/M", "jngCsm", d.jngCsm, false)}
+          </div>
+        `;
+      }
+      if (mode === "MODE3") {
+        return `
+          <div class="form-grid-2">
+            ${inp("ARR PAX", "arrPax", d.arrPax, true)}
+            ${inp("C/S/M", "arrCsm", d.arrCsm, false)}
+          </div>
+          <div class="form-grid-2">
+            ${inp("JNG INT", "jngInt", d.jngInt, true)}
+            ${inp("JNG DOM", "jngDom", d.jngDom, true)}
+          </div>
+          <div class="form-grid-1">
+            ${inp("DEP C/S/M", "jngCsm", d.jngCsm, false)}
+          </div>
+        `;
+      }
+      if (mode === "MODE4") {
+        return `
+          <div class="form-grid-2">
+            ${inp("ARR PAX", "arrPax", d.arrPax, true)}
+            ${inp("C/S/M", "arrCsm", d.arrCsm, false)}
+          </div>
+          <div class="form-grid-2">
+            ${inp("DTR PAX", "dtrPax", d.dtrPax, true)}
+            ${inp("JNG INT", "jngInt", d.jngInt, true)}
+          </div>
+          <div class="form-grid-2">
+            ${inp("JNG DOM", "jngDom", d.jngDom, true)}
+            ${inp("DTR C/S/M", "dtrCsm", d.dtrCsm, false)}
+          </div>
+          <div class="form-grid-1">
+            ${inp("JNG C/S/M", "jngCsm", d.jngCsm, false)}
+          </div>
+        `;
+      }
+    }
+
+    function saveFieldValue(flightId, field, val) {
+      if (!handlingData[flightId]) handlingData[flightId] = {};
+      handlingData[flightId][field] = val;
+      localStorage.setItem("fhr_data", JSON.stringify(handlingData));
+    }
+
+    function changeHandlingMode(flightId, mode) {
+      if (!handlingData[flightId]) handlingData[flightId] = {};
+      handlingData[flightId].mode = mode;
+      localStorage.setItem("fhr_data", JSON.stringify(handlingData));
+      renderFlightList();
+    }
+
+    function openAddFlightModal() {
+      document.getElementById("flightModalTitle").innerText = `Add Flight (${activeDay})`;
+      document.getElementById("modalFlightId").value = "";
+      document.getElementById("modalDay").value = activeDay;
+      document.getElementById("modalShift").value = activeShift;
+      document.getElementById("modalFlightNo").value = "";
+      document.getElementById("modalStaStd").value = "";
+      document.getElementById("modalSector").value = "";
+      document.getElementById("autoModeHint").innerText = "";
+      document.getElementById("flightModal").classList.add("open");
+    }
+
+    function openEditFlightModal(flightId) {
+      const key = getCurrentKey();
+      const flight = (templates[key] || []).find(f => f.id === flightId);
+      if (!flight) return;
+
+      document.getElementById("flightModalTitle").innerText = `Edit Flight (${activeDay})`;
+      document.getElementById("modalFlightId").value = flight.id;
+      document.getElementById("modalDay").value = activeDay;
+      document.getElementById("modalShift").value = activeShift;
+      document.getElementById("modalFlightNo").value = flight.flightNo;
+      document.getElementById("modalStaStd").value = flight.staStd;
+      document.getElementById("modalSector").value = formatSectorForMail(handlingData[flightId]?.sector || detectDefaultSector(flight.flightNo));
+      previewAutoMode(flight.flightNo);
+      document.getElementById("flightModal").classList.add("open");
+    }
+
+    function saveFlightTemplate() {
+      const id = document.getElementById("modalFlightId").value;
+      const targetDay = activeDay;
+      const targetShift = document.getElementById("modalShift").value;
+      const flightNo = document.getElementById("modalFlightNo").value.toUpperCase().trim();
+      const staStd = document.getElementById("modalStaStd").value.trim();
+      const sector = formatSectorForMail(document.getElementById("modalSector").value.toUpperCase().trim() || detectDefaultSector(flightNo));
+
+      if (!flightNo || !staStd) {
+        alert("Please enter Flight Number and STA/STD");
+        return;
+      }
+
+      const key = `${targetDay}_${targetShift}`;
+      if (!templates[key]) templates[key] = [];
+
+      let flightId = id ? parseInt(id) : Date.now();
+
+      if (id) {
+        const flight = templates[key].find(f => f.id == id);
+        if (flight) {
+          flight.flightNo = flightNo;
+          flight.staStd = staStd;
+        }
+      } else {
+        templates[key].push({ id: flightId, flightNo, staStd });
+        if (!handlingData[flightId]) handlingData[flightId] = {};
+        handlingData[flightId].mode = detectDefaultMode(flightNo);
+      }
+
+      if (sector) {
+        if (!handlingData[flightId]) handlingData[flightId] = {};
+        handlingData[flightId].sector = sector;
+      }
+
+      updateMemory("t_no", flightNo);
+      updateMemory("t_time", staStd);
+      if (sector) updateMemory("sec", sector);
+
+      localStorage.setItem("fhr_templates", JSON.stringify(templates));
+      localStorage.setItem("fhr_data", JSON.stringify(handlingData));
+      closeModal("flightModal");
+      renderFlightList();
+    }
+
+    function deleteFlight(flightId) {
+      if (!confirm("Remove this flight from schedule?")) return;
+      const key = getCurrentKey();
+      templates[key] = (templates[key] || []).filter(f => f.id !== flightId);
+      delete handlingData[flightId];
+      collapsedFlightIds.delete(flightId);
+
+      localStorage.setItem("fhr_templates", JSON.stringify(templates));
+      localStorage.setItem("fhr_data", JSON.stringify(handlingData));
+
+      const cardEl = document.getElementById(`card_${flightId}`);
+      if (cardEl) {
+        cardEl.remove();
+        const remaining = (templates[key] || []).length;
+        document.getElementById("flightCountBadge").innerText = `${remaining} Scheduled`;
+        document.getElementById("btnFlightCount").innerText = remaining;
+        if (remaining === 0) {
+          renderFlightList();
+        }
+      } else {
+        renderFlightList();
+      }
+    }
+
+    function sortFlightsByDeparture() {
+      const key = getCurrentKey();
+      if (!templates[key] || templates[key].length === 0) return;
+
+      templates[key].sort((a, b) => {
+        const stdA = parseInt((a.staStd.split("/")[1] || "").trim()) || 9999;
+        const stdB = parseInt((b.staStd.split("/")[1] || "").trim()) || 9999;
+        return stdA - stdB;
+      });
+
+      localStorage.setItem("fhr_templates", JSON.stringify(templates));
+      renderFlightList();
+    }
+
+    function clearShiftInputs() {
+      if (!confirm(`Clear all actual inputs (ATA, ATD, Pax, etc.) for ${activeDay} (${activeShift} Shift)?`)) return;
+      const key = getCurrentKey();
+      (templates[key] || []).forEach(f => {
+        const keepMode = handlingData[f.id]?.mode || detectDefaultMode(f.flightNo);
+        const keepSec = formatSectorForMail(detectDefaultSector(f.flightNo));
+        const keepType = detectDefaultType("");
+        handlingData[f.id] = { mode: keepMode, sector: keepSec, type: keepType };
+      });
+      localStorage.setItem("fhr_data", JSON.stringify(handlingData));
+      renderFlightList();
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("open");
+    }
+
+    function openMemoryModal() {
+      const listContainer = document.getElementById("memoryCategoriesList");
+      listContainer.innerHTML = MEM_CATEGORIES.map(cat => {
+        const count = (memory[cat.key] || []).length;
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--surface-variant); border-radius:6px; margin-bottom:6px;">
+            <div>
+              <div style="font-size:13px; font-weight:600;">${cat.name}</div>
+              <div style="font-size:11px; color:var(--text-muted);">${count} entries</div>
+            </div>
+            ${count > 0 ? `<button class="btn btn-clear" style="padding:4px 8px; font-size:10px;" onclick="clearMemoryCategory('${cat.key}')">Clear</button>` : ''}
+          </div>
+        `;
+      }).join("");
+      document.getElementById("memoryModal").classList.add("open");
+    }
+
+    function clearMemoryCategory(key) {
+      delete memory[key];
+      localStorage.setItem("fhr_memory", JSON.stringify(memory));
+      renderDataLists();
+      openMemoryModal();
+    }
+
+    function wipeAllMemory() {
+      if (!confirm("Wipe ALL autocomplete memory across all categories?")) return;
+      memory = {};
+      localStorage.setItem("fhr_memory", JSON.stringify(memory));
+      renderDataLists();
+      closeModal("memoryModal");
+    }
+
+    function computeDelay(staStd, atd, reason) {
+      const std = (staStd.split("/")[1] || "").trim();
+      if (!atd || atd.length !== 4 || std.length !== 4) {
+        return { message: "FLT DPTD ON SKD.", badgeClass: "status-ontime", diff: 0 };
+      }
+
+      const actH = parseInt(atd.substring(0, 2)), actM = parseInt(atd.substring(2, 4));
+      const skdH = parseInt(std.substring(0, 2)), skdM = parseInt(std.substring(2, 4));
+      let diff = (actH * 60 + actM) - (skdH * 60 + skdM);
+      if (diff < -720) diff += 1440;
+      else if (diff > 720) diff -= 1440;
+
+      const formatDiff = (m) => {
+        const abs = Math.abs(m);
+        const hrs = Math.floor(abs / 60);
+        const min = abs % 60;
+        return hrs > 0 ? `${String(hrs).padStart(2,'0')} HR ${String(min).padStart(2,'0')} MINS` : `${String(min).padStart(2,'0')} MNTS`;
+      };
+
+      if (diff > 0) {
+        const r = reason ? reason.toUpperCase().trim() : "DUE OPS";
+        return { message: `FLT DPTD ${formatDiff(diff)} B/SKD ${r}.`, badgeClass: "status-delayed", diff };
+      } else if (diff < 0) {
+        return { message: `FLT DPTD ${formatDiff(diff)} A/SKD.`, badgeClass: "status-early", diff };
+      }
+      return { message: "FLT DPTD ON SKD.", badgeClass: "status-ontime", diff: 0 };
+    }
+
+    function parsePaxCount(str) {
+      if (!str || !str.trim()) return { adt: 0, chd: 0, inf: 0, hasJcl: false };
+      const s = str.trim();
+      if (s.includes("/")) {
+        const parts = s.split("+");
+        const main = parts[0].split("/");
+        return {
+          adt: parseInt(main[0]) || 0,
+          chd: parseInt(main[1]) || 0,
+          inf: parseInt(parts[1]) || 0,
+          hasJcl: true
+        };
+      } else if (s.includes("+")) {
+        const parts = s.split("+");
+        return {
+          adt: parseInt(parts[0]) || 0,
+          chd: 0,
+          inf: parseInt(parts[1]) || 0,
+          hasJcl: false
+        };
+      }
+      return { adt: parseInt(s) || 0, chd: 0, inf: 0, hasJcl: false };
+    }
+
+    function formatPaxResult(sum, hasJcl) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return hasJcl ? `${pad(sum.adt)}/${pad(sum.chd)}+${pad(sum.inf)}` : `${pad(sum.adt)}+${pad(sum.inf)}`;
+    }
+
+    function addPax(p1, p2, p3 = null) {
+      const sum = {
+        adt: p1.adt + p2.adt + (p3 ? p3.adt : 0),
+        chd: p1.chd + p2.chd + (p3 ? p3.chd : 0),
+        inf: p1.inf + p2.inf + (p3 ? p3.inf : 0)
+      };
+      const hasJcl = p1.hasJcl || p2.hasJcl || (p3 ? p3.hasJcl : false);
+      return formatPaxResult(sum, hasJcl);
+    }
+
+    function getCalculatedDepTotal(mode, d) {
+      if (mode === "MODE2") {
+        return addPax(parsePaxCount(d.dtrPax), parsePaxCount(d.jngPax));
+      }
+      if (mode === "MODE3") {
+        return addPax(parsePaxCount(d.jngInt), parsePaxCount(d.jngDom));
+      }
+      if (mode === "MODE4") {
+        return addPax(parsePaxCount(d.dtrPax), parsePaxCount(d.jngInt), parsePaxCount(d.jngDom));
+      }
+      return null;
+    }
+
+    function getStaffSignOffText() {
+      const raw = (staticInfo.staffInfo || "DUTY OFFICER").trim();
+      const lines = raw.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+      if (lines.length > 0 && /^BEST REGARDS/i.test(lines[0])) {
+        return lines.join("\n").toUpperCase();
+      }
+      return `BEST REGARDS,\n${lines.join("\n").toUpperCase()}`;
+    }
+
+    // Combined BG Flights for Spreadsheet
+    function getCombinedBgFlightsForDay(day) {
+      const morningFlights = templates[`${day}_Morning`] || [];
+      const eveningFlights = templates[`${day}_Evening`] || [];
+      const allFlights = [...morningFlights, ...eveningFlights];
+
+      const bgMap = new Map();
+      allFlights.forEach(f => {
+        if (f.flightNo.toUpperCase().trim().startsWith("BG")) {
+          bgMap.set(f.id, f);
+        }
+      });
+
+      return Array.from(bgMap.values());
+    }
+
+    function getInitialSortedFlights(flights) {
+      const non6 = [];
+      const start6 = [];
+
+      flights.forEach(f => {
+        const is6 = /BG\s*6/i.test(f.flightNo) || /^6/i.test(f.flightNo);
+        if (is6) {
+          start6.push(f);
+        } else {
+          non6.push(f);
+        }
+      });
+
+      non6.sort((a, b) => {
+        const staA = parseInt((a.staStd.split("/")[0] || "").trim()) || 9999;
+        const staB = parseInt((b.staStd.split("/")[0] || "").trim()) || 9999;
+        if (staA !== staB) return staA - staB;
+        const stdA = parseInt((a.staStd.split("/")[1] || "").trim()) || 9999;
+        const stdB = parseInt((b.staStd.split("/")[1] || "").trim()) || 9999;
+        return stdA - stdB;
+      });
+
+      start6.sort((a, b) => {
+        const numA = parseInt((a.flightNo.match(/6\d+/) || [9999])[0]) || 9999;
+        const numB = parseInt((b.flightNo.match(/6\d+/) || [9999])[0]) || 9999;
+        return numA - numB;
+      });
+
+      return [...non6, ...start6];
+    }
+
+    function openExcelTableModal() {
+      const combinedBg = getCombinedBgFlightsForDay(activeDay);
+
+      if (combinedBg.length === 0) {
+        alert(`No Biman (BG) flights scheduled for ${activeDay} (Morning or Evening) to display in spreadsheet.`);
+        return;
+      }
+
+      const sorted = getInitialSortedFlights(combinedBg);
+      excelOrderedFlightIds = sorted.map(f => f.id);
+
+      const dateInp = document.getElementById("excelDateInput");
+      dateInp.value = getFormattedDateTag(activeDate);
+
+      renderExcelTableDOM();
+      document.getElementById("excelModal").classList.add("open");
+    }
+
+    function resetExcelDefaultSort() {
+      const combinedBg = getCombinedBgFlightsForDay(activeDay);
+      const sorted = getInitialSortedFlights(combinedBg);
+      excelOrderedFlightIds = sorted.map(f => f.id);
+      renderExcelTableDOM();
+    }
+
+    function updateExcelTableDate(val) {
+      const dateCell = document.getElementById("excelDateCell");
+      if (dateCell) dateCell.innerText = val;
+    }
+
+    function renderExcelTableDOM() {
+      const combinedBg = getCombinedBgFlightsForDay(activeDay);
+      const dateText = document.getElementById("excelDateInput").value || getFormattedDateTag(activeDate);
+
+      const orderedFlights = excelOrderedFlightIds
+        .map(id => combinedBg.find(f => f.id === id))
+        .filter(Boolean);
+
+      const rowCount = orderedFlights.length;
+
+      let html = `
+        <table class="excel-sheet-table" id="renderedExcelTable">
+          <thead>
+            <tr>
+              <th style="width:24px;">::</th>
+              <th style="min-width:105px;">DATE</th>
+              <th style="min-width:32px;">SL</th>
+              <th class="red-col" style="min-width:115px;">FLIGHT NO.</th>
+              <th class="red-col" style="min-width:85px;">A/C REG</th>
+              <th class="red-col" style="min-width:65px;">TYPE</th>
+              <th class="red-col" style="min-width:85px;">B/BRIDGE</th>
+              <th class="red-col" style="min-width:115px;">SECTOR</th>
+              <th style="min-width:65px;">STA<br>(LT)</th>
+              <th style="min-width:65px;">ATA<br>(LT)</th>
+              <th style="min-width:75px;">LA<br>(MNTS)</th>
+              <th style="min-width:65px;">STD<br>(LT)</th>
+              <th style="min-width:65px;">LSS<br>(LT)</th>
+              <th style="min-width:65px;">ATD<br>(LT)</th>
+              <th style="min-width:110px;">PAX<br>(JCL/YCL+INF)</th>
+              <th style="min-width:75px;">EBC<br>(BDT)</th>
+              <th style="min-width:340px;">REMARKS</th>
+            </tr>
+          </thead>
+          <tbody id="excelTableBody">
+      `;
+
+      orderedFlights.forEach((flight, idx) => {
+        const d = handlingData[flight.id] || {};
+        const mode = d.mode || detectDefaultMode(flight.flightNo);
+        const sched = flight.staStd.split("/");
+        const sta = (sched[0] || "").trim();
+        const std = (sched[1] || "").trim();
+        const ata = (d.ata || "").trim();
+        const atd = (d.atd || "").trim();
+        const reg = (d.reg || "").toUpperCase().trim();
+        
+        const type = (d.type || detectDefaultType(reg)).toUpperCase().trim();
+        const bayBridge = formatBayBridge(d.bay);
+        const rawSec = d.sector || detectDefaultSector(flight.flightNo);
+        const sector = formatSectorForSpreadsheet(rawSec);
+
+        const lss = (d.lss || "").trim();
+
+        let paxStr = "";
+        if (mode === "MODE1") {
+          paxStr = (d.jngPax || "").trim();
+        } else {
+          paxStr = getCalculatedDepTotal(mode, d) || (d.jngPax || d.jngInt || "").trim();
+        }
+
+        let ebcNum = "0";
+        if (d.ebc && d.ebc.trim()) {
+          const match = d.ebc.replace(/,/g, '').match(/\d+/);
+          ebcNum = match ? match[0] : (d.ebc.toUpperCase().includes("NIL") ? "0" : d.ebc.trim());
+        }
+
+        const delayInfo = computeDelay(flight.staStd, d.atd, d.delayReason);
+        let remarksText = "";
+        let remClass = "rem-ontime";
+
+        if (delayInfo.diff > 0) {
+          const r = d.delayReason ? d.delayReason.toUpperCase().trim() : "LATE ARRIVAL OF AIRCRAFT";
+          const abs = Math.abs(delayInfo.diff);
+          const hrs = Math.floor(abs / 60);
+          const min = abs % 60;
+          const timeStr = hrs > 0 ? `${hrs} HR ${min} MINS` : `${min} MNTS`;
+          remarksText = `FLT DPTD ${timeStr} DLY DUE TO ${r}.`;
+          remClass = "rem-delayed";
+        } else if (delayInfo.diff < 0) {
+          const abs = Math.abs(delayInfo.diff);
+          const hrs = Math.floor(abs / 60);
+          const min = abs % 60;
+          const timeStr = hrs > 0 ? `${hrs} HR ${min} MINS` : `${min} MNTS`;
+          remarksText = `FLT DPTD ${timeStr} A/SKD.`;
+          remClass = "rem-ontime";
+        } else {
+          remarksText = "FLT DPTD ON SKD.";
+          remClass = "rem-ontime";
+        }
+
+        const slNo = idx + 1;
+        const dateCellHtml = (idx === 0) ? `<td id="excelDateCell" rowspan="${rowCount}" style="font-weight:bold; background:#fff;">${dateText}</td>` : '';
+
+        html += `
+          <tr class="draggable-row" draggable="true" data-id="${flight.id}">
+            <td class="drag-handle-cell" title="Drag to re-order">☰</td>
+            ${dateCellHtml}
+            <td class="sl-cell" style="font-weight:bold;">${slNo}</td>
+            <td style="font-weight:bold;">${flight.flightNo}</td>
+            <td style="font-weight:bold;">${reg}</td>
+            <td>${type}</td>
+            <td>${bayBridge}</td>
+            <td>${sector}</td>
+            <td>${sta}</td>
+            <td>${ata}</td>
+            <td></td>
+            <td>${std}</td>
+            <td>${lss}</td>
+            <td>${atd}</td>
+            <td>${paxStr}</td>
+            <td>${ebcNum}</td>
+            <td class="${remClass}">${remarksText}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+          </tbody>
+        </table>
+      `;
+
+      document.getElementById("excelTableWrapper").innerHTML = html;
+      initExcelTableDragEvents();
+    }
+
+    let draggedRow = null;
+
+    function initExcelTableDragEvents() {
+      const rows = document.querySelectorAll("#excelTableBody tr.draggable-row");
+      rows.forEach(row => {
+        row.addEventListener("dragstart", (e) => {
+          draggedRow = row;
+          row.classList.add("dragging");
+          e.dataTransfer.effectAllowed = "move";
+        });
+
+        row.addEventListener("dragend", () => {
+          row.classList.remove("dragging");
+          rows.forEach(r => r.classList.remove("drag-over"));
+        });
+
+        row.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+          rows.forEach(r => r.classList.remove("drag-over"));
+          row.classList.add("drag-over");
+        });
+
+        row.addEventListener("drop", (e) => {
+          e.preventDefault();
+          row.classList.remove("drag-over");
+          if (draggedRow && draggedRow !== row) {
+            const fromId = parseInt(draggedRow.getAttribute("data-id"));
+            const toId = parseInt(row.getAttribute("data-id"));
+
+            const fromIdx = excelOrderedFlightIds.indexOf(fromId);
+            const toIdx = excelOrderedFlightIds.indexOf(toId);
+
+            if (fromIdx !== -1 && toIdx !== -1) {
+              excelOrderedFlightIds.splice(fromIdx, 1);
+              excelOrderedFlightIds.splice(toIdx, 0, fromId);
+              renderExcelTableDOM();
+            }
+          }
+        });
+      });
+    }
+
+    function copyExcelTableHtml() {
+      const table = document.getElementById("renderedExcelTable");
+      if (!table) return;
+
+      const clone = table.cloneNode(true);
+      clone.querySelectorAll("tr").forEach(tr => {
+        tr.removeAttribute("draggable");
+        tr.removeAttribute("class");
+        const firstCol = tr.children[0];
+        if (firstCol && (firstCol.innerText.includes("::") || firstCol.innerText.includes("☰"))) {
+          firstCol.remove();
+        }
+      });
+
+      clone.setAttribute("border", "1");
+      clone.style.borderCollapse = "collapse";
+      clone.style.fontFamily = "Arial, sans-serif";
+      clone.style.fontSize = "11pt";
+
+      clone.querySelectorAll("th").forEach(th => {
+        th.style.border = "1px solid #000000";
+        th.style.backgroundColor = "#EBE6DA";
+        th.style.padding = "6px 8px";
+        th.style.fontWeight = "bold";
+        th.style.textAlign = "center";
+      });
+
+      clone.querySelectorAll("th.red-col").forEach(th => {
+        th.style.color = "#FF0000";
+      });
+
+      clone.querySelectorAll("td").forEach(td => {
+        td.style.border = "1px solid #000000";
+        td.style.padding = "5px 8px";
+        td.style.textAlign = "center";
+        if (td.classList.contains("rem-ontime")) {
+          td.style.backgroundColor = "#4ADE80";
+          td.style.textAlign = "left";
+          td.style.fontWeight = "bold";
+        } else if (td.classList.contains("rem-delayed")) {
+          td.style.backgroundColor = "#FED7AA";
+          td.style.textAlign = "left";
+          td.style.fontWeight = "bold";
+        }
+      });
+
+      const htmlContent = clone.outerHTML;
+
+      const tsvRows = [];
+      const trs = clone.querySelectorAll("tr");
+      trs.forEach(tr => {
+        const cells = Array.from(tr.querySelectorAll("th, td")).map(c => `"${c.innerText.replace(/"/g, '""').trim()}"`);
+        tsvRows.push(cells.join("\t"));
+      });
+      const tsvContent = tsvRows.join("\n");
+
+      if (navigator.clipboard && window.ClipboardItem) {
+        const blobHtml = new Blob([htmlContent], { type: "text/html" });
+        const blobText = new Blob([tsvContent], { type: "text/plain" });
+        const data = [new ClipboardItem({ "text/html": blobHtml, "text/plain": blobText })];
+        navigator.clipboard.write(data).then(() => {
+          alert("Biman Excel Table copied! Press Ctrl+V in your Excel spreadsheet to paste.");
+        }).catch(() => {
+          copyTableFallback(clone);
+        });
+      } else {
+        copyTableFallback(clone);
+      }
+    }
+
+    function copyTableFallback(element) {
+      const tempDiv = document.createElement("div");
+      tempDiv.style.position = "absolute";
+      tempDiv.style.left = "-9999px";
+      tempDiv.appendChild(element);
+      document.body.appendChild(tempDiv);
+      const range = document.createRange();
+      range.selectNode(element);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      document.execCommand("copy");
+      window.getSelection().removeAllRanges();
+      document.body.removeChild(tempDiv);
+      alert("Excel Table copied to clipboard!");
+    }
+
+    // Report Generation
+    function buildReportStructures() {
+      const key = getCurrentKey();
+      const list = templates[key] || [];
+      const shiftTime = activeShift === "Morning" ? "FROM 0600LT TO 1400LT" : "FROM 1400LT TO 2200LT";
+      const fullDateStr = getFullMonthDate(activeDate);
+      const signOffText = getStaffSignOffText();
+
+      let telexText = `DEAR SIR,\n\nPLEASE BE INFORMED THAT, FOLLOWING FLIGHTS HANDLED ON ${fullDateStr} ${shiftTime}.\n\n`;
+      
+      let zimbraHtml = `
+<div style="font-family: 'Courier New', Courier, monospace; font-size: 13px; color: #000000; line-height: 1.35;">
+  <p style="margin: 0 0 12px 0; font-weight: bold;">DEAR SIR,</p>
+  <p style="margin: 0 0 16px 0; font-weight: bold;">PLEASE BE INFORMED THAT, FOLLOWING FLIGHTS HANDLED ON ${fullDateStr} ${shiftTime}.</p>
+      `.trim();
+
+      list.forEach((flight, i) => {
+        const d = handlingData[flight.id] || {};
+        const mode = d.mode || detectDefaultMode(flight.flightNo);
+        const isForeign = (mode === "MODE1");
+        const sched = flight.staStd.split("/");
+        const sta = (sched[0] || "----").trim();
+        const std = (sched[1] || "----").trim();
+        const ata = (d.ata || "----").trim();
+        const atd = (d.atd || "----").trim();
+
+        const delay = computeDelay(flight.staStd, d.atd, d.delayReason);
+        const capt = (d.capt || "---").toUpperCase().trim();
+        const reg = (d.reg || "---").toUpperCase().trim();
+        
+        const rawSec = d.sector || detectDefaultSector(flight.flightNo);
+        const sec = formatSectorForMail(rawSec);
+
+        const idxStr = String(i + 1).padStart(2, '0');
+        
+        telexText += `${idxStr}. ${flight.flightNo}: STA/STD: ${sta}LT/${std}LT, ATA/ATD: ${ata}LT/${atd}LT.\n`;
+        telexText += `${delay.message}\n`;
+        telexText += `CAPT: ${capt}, A/C REG: ${reg}, SEC: ${sec}.\n`;
+
+        const hasJcl = (d.arrPax && d.arrPax.includes("/")) || (d.dtrPax && d.dtrPax.includes("/")) || (d.jngPax && d.jngPax.includes("/"));
+        const defPax = hasJcl ? "00/00+00" : "00+00";
+        const arrP = d.arrPax ? d.arrPax.trim() : defPax;
+        const arrC = formatCsmValue(d.arrCsm || "NIL").toUpperCase().trim();
+        
+        const bayVal = formatBayForMail(d.bay);
+        const bay = "BAY: " + bayVal;
+        
+        const lss = "LSS: " + (d.lss ? `${d.lss.trim()} LT` : "NIL");
+        const ebc = "EBC: " + (d.ebc ? d.ebc.toUpperCase().trim() : "NIL");
+
+        const fL = (left, right) => `${(left || "").padEnd(25)} ${(right || "")}\n`;
+
+        let leftLines = isForeign ? [`ARR PAX: ${arrP}`, `C/S/M: ${arrC}`, bay] : [`ARR PAX: ${arrP}`, `C/S/M: ${arrC}`, bay, ebc, lss];
+        let rightLines = [];
+
+        if (mode === "MODE1") {
+          const depP = d.jngPax ? d.jngPax.trim() : defPax;
+          const depC = formatCsmValue(d.jngCsm || "NIL").toUpperCase().trim();
+          telexText += fL(`ARR PAX: ${arrP}`, `DEP PAX: ${depP}`);
+          telexText += fL(`C/S/M: ${arrC}`, `C/S/M: ${depC}`);
+          telexText += fL(bay, "");
+          rightLines.push(`DEP PAX: ${depP}`);
+          rightLines.push(`C/S/M: ${depC}`);
+        } else if (mode === "MODE2") {
+          const dtr = d.dtrPax ? d.dtrPax.trim() : defPax;
+          const jng = d.jngPax ? d.jngPax.trim() : defPax;
+          const tot = addPax(parsePaxCount(dtr), parsePaxCount(jng));
+          telexText += fL(`ARR PAX: ${arrP}`, `DEP PAX: ${tot}`);
+          telexText += fL(`C/S/M: ${arrC}`, `DTR PAX: ${dtr}`);
+          telexText += fL(bay, `JNG PAX: ${jng}`);
+          telexText += fL(ebc, `DTR C/S/M: ${formatCsmValue(d.dtrCsm || "NIL").toUpperCase().trim()}`);
+          telexText += fL(lss, `JNG C/S/M: ${formatCsmValue(d.jngCsm || "NIL").toUpperCase().trim()}`);
+          rightLines.push(`DEP PAX: ${tot}`);
+          rightLines.push(`DTR PAX: ${dtr}`);
+          rightLines.push(`JNG PAX: ${jng}`);
+          rightLines.push(`DTR C/S/M: ${(d.dtrCsm || "NIL").toUpperCase().trim()}`);
+          rightLines.push(`JNG C/S/M: ${(d.jngCsm || "NIL").toUpperCase().trim()}`);
+        } else if (mode === "MODE3") {
+          const jngI = d.jngInt ? d.jngInt.trim() : defPax;
+          const jngD = d.jngDom ? d.jngDom.trim() : defPax;
+          const tot = addPax(parsePaxCount(jngI), parsePaxCount(jngD));
+          telexText += fL(`ARR PAX: ${arrP}`, `DEP PAX: ${tot}`);
+          telexText += fL(`C/S/M: ${arrC}`, `JNG INT: ${jngI}`);
+          telexText += fL(bay, `JNG DOM: ${jngD}`);
+          telexText += fL(ebc, `C/S/M: ${formatCsmValue(d.jngCsm || "NIL").toUpperCase().trim()}`);
+          telexText += fL(lss, "");
+          rightLines.push(`DEP PAX: ${tot}`);
+          rightLines.push(`JNG INT: ${jngI}`);
+          rightLines.push(`JNG DOM: ${jngD}`);
+          rightLines.push(`C/S/M: ${(d.jngCsm || "NIL").toUpperCase().trim()}`);
+        } else if (mode === "MODE4") {
+          const dtr = d.dtrPax ? d.dtrPax.trim() : defPax;
+          const jngI = d.jngInt ? d.jngInt.trim() : defPax;
+          const jngD = d.jngDom ? d.jngDom.trim() : defPax;
+          const tot = addPax(parsePaxCount(dtr), parsePaxCount(jngI), parsePaxCount(jngD));
+          telexText += fL(`ARR PAX: ${arrP}`, `DEP PAX: ${tot}`);
+          telexText += fL(`C/S/M: ${arrC}`, `DTR PAX: ${dtr}`);
+          telexText += fL(bay, `JNG INT: ${jngI}`);
+          telexText += fL(ebc, `JNG DOM: ${jngD}`);
+          telexText += fL(lss, `DTR C/S/M: ${(d.dtrCsm || "NIL").toUpperCase().trim()}`);
+          telexText += fL("", `JNG C/S/M: ${(d.jngCsm || "NIL").toUpperCase().trim()}`);
+          rightLines.push(`DEP PAX: ${tot}`);
+          rightLines.push(`DTR PAX: ${dtr}`);
+          rightLines.push(`JNG INT: ${jngI}`);
+          rightLines.push(`JNG DOM: ${jngD}`);
+          rightLines.push(`DTR C/S/M: ${(d.dtrCsm || "NIL").toUpperCase().trim()}`);
+          rightLines.push(`JNG C/S/M: ${(d.jngCsm || "NIL").toUpperCase().trim()}`);
+        }
+
+        telexText += "\n";
+
+        zimbraHtml += `
+  <div style="margin-bottom: 12px;">
+    <div style="font-weight: bold;">${idxStr}. ${flight.flightNo}: STA/STD: ${sta}LT/${std}LT, ATA/ATD: ${ata}LT/${atd}LT.</div>
+    <div>${delay.message}</div>
+    <div>CAPT: ${capt}, A/C REG: ${reg}, SEC: ${sec}.</div>
+    <table style="width: 100%; max-width: 650px; border: 1px solid #000000; border-collapse: collapse; margin-top: 4px; font-family: 'Courier New', Courier, monospace; font-size: 13px;">
+      <tr>
+        <td style="width: 50%; vertical-align: top; border-right: 1px solid #000000; padding: 4px 8px; line-height: 1.35;">
+          ${leftLines.join("<br>")}
+        </td>
+        <td style="width: 50%; vertical-align: top; padding: 4px 8px; line-height: 1.35;">
+          ${rightLines.join("<br>")}
+        </td>
+      </tr>
+    </table>
+  </div>
+        `.trim();
+      });
+
+      telexText += `THIS IS FOR YOUR KIND INFORMATION.\n\n${signOffText}`;
+      
+      const zimbraSignOffHtml = signOffText.split("\n").map(line => `<p style="margin: 0; font-weight: bold;">${line}</p>`).join("");
+
+      zimbraHtml += `
+  <p style="margin: 12px 0 6px 0; font-weight: bold;">THIS IS FOR YOUR KIND INFORMATION.</p>
+  <div style="margin-top: 6px;">
+    ${zimbraSignOffHtml}
+  </div>
+</div>
+      `.trim();
+
+      return { telexText, zimbraHtml };
+    }
+
+    let currentReportData = { telexText: "", zimbraHtml: "" };
+
+    function generateReport() {
+      currentReportData = buildReportStructures();
+      document.getElementById("viewZimbra").innerHTML = currentReportData.zimbraHtml;
+      document.getElementById("viewZimbraSource").value = currentReportData.zimbraHtml;
+      document.getElementById("viewTelex").innerText = currentReportData.telexText;
+      switchReportTab('zimbra');
+      document.getElementById("reportModal").classList.add("open");
+    }
+
+    function switchReportTab(tab) {
+      document.getElementById("tabZimbra").className = `tab-btn ${tab === 'zimbra' ? 'active' : ''}`;
+      document.getElementById("tabZimbraSource").className = `tab-btn ${tab === 'source' ? 'active' : ''}`;
+      document.getElementById("tabTelex").className = `tab-btn ${tab === 'telex' ? 'active' : ''}`;
+
+      document.getElementById("viewZimbra").style.display = tab === 'zimbra' ? 'block' : 'none';
+      document.getElementById("viewZimbraSource").style.display = tab === 'source' ? 'block' : 'none';
+      document.getElementById("viewTelex").style.display = tab === 'telex' ? 'block' : 'none';
+    }
+
+    function copyZimbraRichHtml() {
+      const html = currentReportData.zimbraHtml;
+      const plain = currentReportData.telexText;
+
+      if (navigator.clipboard && window.ClipboardItem) {
+        const blobHtml = new Blob([html], { type: 'text/html' });
+        const blobText = new Blob([plain], { type: 'text/plain' });
+        const data = [new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText })];
+        navigator.clipboard.write(data).then(() => {
+          alert("Zimbra Rich Table copied! You can now Paste (Ctrl+V) directly into your Zimbra email compose window.");
+        }).catch(() => {
+          copyFallbackHtml();
+        });
+      } else {
+        copyFallbackHtml();
+      }
+    }
+
+    function copyFallbackHtml() {
+      const el = document.getElementById("viewZimbra");
+      const range = document.createRange();
+      range.selectNode(el);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      document.execCommand("copy");
+      window.getSelection().removeAllRanges();
+      alert("Zimbra Rich Table copied to clipboard!");
+    }
+
+    function copyZimbraSourceCode() {
+      navigator.clipboard.writeText(currentReportData.zimbraHtml).then(() => {
+        alert("Zimbra HTML source code copied to clipboard!");
+      });
+    }
+
+    function copyTelexText() {
+      navigator.clipboard.writeText(currentReportData.telexText).then(() => {
+        alert("Plaintext report copied to clipboard!");
+      });
+    }
+
+    // Word Document Export
+    function downloadWordDocument() {
+      if (typeof JSZip === "undefined") {
+        alert("JSZip library is loading. Please check internet connection.");
+        return;
+      }
+
+      const zip = new JSZip();
+      const key = getCurrentKey();
+      const list = templates[key] || [];
+      const signOffText = getStaffSignOffText();
+      const fullDateStr = getFullMonthDate(activeDate);
+      const shiftTime = activeShift === "Morning" ? "FROM 0600LT TO 1400LT" : "FROM 1400LT TO 2200LT";
+
+      const escapeXml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+
+      const paragraphXml = (text, isBold = false) => `
+        <w:p>
+          <w:pPr><w:spacing w:after="40" w:line="240" w:lineRule="auto"/></w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:cs="Courier New"/>
+              ${isBold ? '<w:b/>' : ''}
+              <w:sz w:val="18"/>
+            </w:rPr>
+            <w:t xml:space="preserve">${escapeXml(text)}</w:t>
+          </w:r>
+        </w:p>
+      `;
+
+      const tableXml = (leftLines, rightLines) => {
+        const leftPars = leftLines.map(l => paragraphXml(l)).join("");
+        const rightPars = rightLines.map(r => paragraphXml(r)).join("");
+        return `
+          <w:tbl>
+            <w:tblPr>
+              <w:tblW w:w="9200" w:type="dxa"/>
+              <w:tblBorders>
+                <w:top w:val="single" w:sz="6" w:space="0" w:color="000000"/>
+                <w:left w:val="single" w:sz="6" w:space="0" w:color="000000"/>
+                <w:bottom w:val="single" w:sz="6" w:space="0" w:color="000000"/>
+                <w:right w:val="single" w:sz="6" w:space="0" w:color="000000"/>
+                <w:insideV w:val="single" w:sz="6" w:space="0" w:color="000000"/>
+                <w:insideH w:val="none"/>
+              </w:tblBorders>
+              <w:tblLayout w:type="fixed"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="4600"/><w:gridCol w:w="4600"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="4600" w:type="dxa"/>
+                  <w:tcMar><w:top w:w="60" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tcMar>
+                </w:tcPr>
+                ${leftPars}
+              </w:tc>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="4600" w:type="dxa"/>
+                  <w:tcMar><w:top w:w="60" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tcMar>
+                </w:tcPr>
+                ${rightPars}
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+        `;
+      };
+
+      let bodyXml = "";
+      bodyXml += paragraphXml("DEAR SIR,", true);
+      bodyXml += paragraphXml(`PLEASE BE INFORMED THAT, FOLLOWING FLIGHTS HANDLED ON ${fullDateStr} ${shiftTime}.`, true);
+      bodyXml += paragraphXml("");
+
+      list.forEach((flight, i) => {
+        const d = handlingData[flight.id] || {};
+        const mode = d.mode || detectDefaultMode(flight.flightNo);
+        const isForeign = (mode === "MODE1");
+        const sched = flight.staStd.split("/");
+        const sta = (sched[0] || "----").trim();
+        const std = (sched[1] || "----").trim();
+        const ata = (d.ata || "----").trim();
+        const atd = (d.atd || "----").trim();
+
+        const delay = computeDelay(flight.staStd, d.atd, d.delayReason);
+        const capt = (d.capt || "---").toUpperCase().trim();
+        const reg = (d.reg || "---").toUpperCase().trim();
+        
+        const sec = formatSectorForMail(d.sector || detectDefaultSector(flight.flightNo));
+
+        const idxStr = String(i + 1).padStart(2, '0');
+        bodyXml += paragraphXml(`${idxStr}. ${flight.flightNo}: STA/STD: ${sta}LT/${std}LT, ATA/ATD: ${ata}LT/${atd}LT.`, true);
+        bodyXml += paragraphXml(delay.message);
+        bodyXml += paragraphXml(`CAPT: ${capt}, A/C REG: ${reg}, SEC: ${sec}.`);
+
+        const hasJcl = (d.arrPax && d.arrPax.includes("/")) || (d.dtrPax && d.dtrPax.includes("/")) || (d.jngPax && d.jngPax.includes("/"));
+        const defPax = hasJcl ? "00/00+00" : "00+00";
+        const arrP = d.arrPax ? d.arrPax.trim() : defPax;
+        const arrC = formatCsmValue(d.arrCsm || "NIL").toUpperCase().trim();
+        
+        const bayVal = formatBayForMail(d.bay);
+        const bay = "BAY: " + bayVal;
+        
+        const lss = "LSS: " + (d.lss ? `${d.lss.trim()} LT` : "NIL");
+        const ebc = "EBC: " + (d.ebc ? d.ebc.toUpperCase().trim() : "NIL");
+
+        let leftLines = isForeign ? [`ARR PAX: ${arrP}`, `C/S/M: ${arrC}`, bay] : [`ARR PAX: ${arrP}`, `C/S/M: ${arrC}`, bay, ebc, lss];
+        let rightLines = [];
+
+        if (mode === "MODE1") {
+          const depP = d.jngPax ? d.jngPax.trim() : defPax;
+          const depC = formatCsmValue(d.jngCsm || "NIL").toUpperCase().trim();
+          rightLines.push(`DEP PAX: ${depP}`);
+          rightLines.push(`C/S/M: ${depC}`);
+        } else if (mode === "MODE2") {
+          const dtr = d.dtrPax ? d.dtrPax.trim() : defPax;
+          const jng = d.jngPax ? d.jngPax.trim() : defPax;
+          const tot = addPax(parsePaxCount(dtr), parsePaxCount(jng));
+          rightLines.push(`DEP PAX: ${tot}`);
+          rightLines.push(`DTR PAX: ${dtr}`);
+          rightLines.push(`JNG PAX: ${jng}`);
+          rightLines.push(`DTR C/S/M: ${(d.dtrCsm || "NIL").toUpperCase().trim()}`);
+          rightLines.push(`JNG C/S/M: ${(d.jngCsm || "NIL").toUpperCase().trim()}`);
+        } else if (mode === "MODE3") {
+          const jngI = d.jngInt ? d.jngInt.trim() : defPax;
+          const jngD = d.jngDom ? d.jngDom.trim() : defPax;
+          const tot = addPax(parsePaxCount(jngI), parsePaxCount(jngD));
+          rightLines.push(`DEP PAX: ${tot}`);
+          rightLines.push(`JNG INT: ${jngI}`);
+          rightLines.push(`JNG DOM: ${jngD}`);
+          rightLines.push(`C/S/M: ${(d.jngCsm || "NIL").toUpperCase().trim()}`);
+        } else if (mode === "MODE4") {
+          const dtr = d.dtrPax ? d.dtrPax.trim() : defPax;
+          const jngI = d.jngInt ? d.jngInt.trim() : defPax;
+          const jngD = d.jngDom ? d.jngDom.trim() : defPax;
+          const tot = addPax(parsePaxCount(dtr), parsePaxCount(jngI), parsePaxCount(jngD));
+          rightLines.push(`DEP PAX: ${tot}`);
+          rightLines.push(`DTR PAX: ${dtr}`);
+          rightLines.push(`JNG INT: ${jngI}`);
+          rightLines.push(`JNG DOM: ${jngD}`);
+          rightLines.push(`DTR C/S/M: ${(d.dtrCsm || "NIL").toUpperCase().trim()}`);
+          rightLines.push(`JNG C/S/M: ${(d.jngCsm || "NIL").toUpperCase().trim()}`);
+        }
+
+        bodyXml += tableXml(leftLines, rightLines);
+        bodyXml += paragraphXml("");
+      });
+
+      bodyXml += paragraphXml("THIS IS FOR YOUR KIND INFORMATION.", true);
+      bodyXml += paragraphXml("");
+      
+      const lines = signOffText.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+      lines.forEach(line => {
+        bodyXml += paragraphXml(line, true);
+      });
+
+      const docXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    ${bodyXml}
+    <w:sectPr>
+      <w:pgSz w:w="12240" w:h="15840"/>
+      <w:pgMar w:top="1080" w:right="1080" w:bottom="1080" w:left="1080" w:header="720" w:footer="720" w:gutter="0"/>
+    </w:sectPr>
+  </w:body>
+</w:document>`;
+
+      const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`;
+
+      const relsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+      zip.file("[Content_Types].xml", contentTypesXml);
+      zip.file("_rels/.rels", relsXml);
+      zip.file("word/document.xml", docXml);
+
+      zip.generateAsync({ type: "blob" }).then((blob) => {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        const dateTag = getFormattedDateTag(activeDate);
+        link.download = `Flight_Report_${dateTag.replace(/\//g, '_')}_${activeShift}.docx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GDS Dashboard - Side-by-Side View</title>
+    <style>
+        /* Modern CSS Reset & Layout */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #f4f7f9; 
+            margin: 0; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h2 { margin: 0; font-size: 20px; letter-spacing: 1px; }
+
+        .main-wrapper {
+            display: flex;
+            flex: 1;
+            padding: 20px;
+            gap: 20px;
+            overflow: hidden; /* Prevents whole page scrolling */
+        }
+
+        /* Left Panel: Input */
+        .input-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        textarea {
+            flex: 1;
+            width: 100%;
+            border: 2px solid #dfe6e9;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: none;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        textarea:focus { outline: none; border-color: #3498db; }
+
+        button {
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover { background: #2980b9; }
+
+        /* Right Panel: Results */
+        .result-panel {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto; /* Scrollable results if lists are long */
+        }
+
+        .grid-2x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-bottom: 5px solid #2c3e50;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .card h3 { 
+            margin: 0; 
+            font-size: 13px; 
+            color: #7f8c8d; 
+            text-transform: uppercase; 
+        }
+
+        .main-count { 
+            font-size: 42px; 
+            font-weight: 900; 
+            margin: 10px 0; 
+            color: #2c3e50; 
+        }
+
+        .breakdown {
+            font-size: 14px;
+            color: #34495e;
+            border-top: 1px solid #f1f1f1;
+            padding-top: 10px;
+            font-weight: 600;
+        }
+
+        .breakdown b { color: #e67e22; font-weight: 800; }
+
+        .total-box {
+            background: #27ae60;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .total-box h3 { margin: 0; font-size: 14px; text-transform: uppercase; color: rgba(255,255,255,0.8); }
+        .total-box div { font-size: 48px; font-weight: 900; margin-top: 5px; }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h2>FLIGHT PASSENGER PARSER DASHBOARD</h2>
+</header>
+
+<div class="main-wrapper">
+    <div class="input-panel">
+        <textarea id="dataInput" placeholder="PASTE MANIFEST HERE..."></textarea>
+        <button onclick="processManifest()">PROCESS DATA</button>
+    </div>
+
+    <div class="result-panel">
+        <div class="grid-2x2">
+            <div class="card">
+                <h3>INT TR PAX</h3>
+                <div class="main-count" id="intTr">0</div>
+                <div class="breakdown" id="intTr_list">---</div>
+            </div>
+            <div class="card">
+                <h3>OB SAARC</h3>
+                <div class="main-count" id="saarc">0</div>
+                <div class="breakdown" id="saarc_list">---</div>
+            </div>
+            <div class="card">
+                <h3>OB OTHER</h3>
+                <div class="main-count" id="other">0</div>
+                <div class="breakdown" id="other_list">---</div>
+            </div>
+            <div class="card">
+                <h3>OB INTERLINE</h3>
+                <div class="main-count" id="inter">0</div>
+                <div class="breakdown" id="inter_list">---</div>
+            </div>
+        </div>
+        
+        <div class="total-box">
+            <h3>TOTAL MAPPED PASSENGERS</h3>
+            <div id="grandTotal">0</div>
+        </div>
+    </div>
+</div>
+
+<script>
+function processManifest() {
+    const rawText = document.getElementById('dataInput').value;
+    
+    const listIntTr = ["JED","RUH","MED","DMM","KWI","DOH","MCT","FCO","LHR","MAN","YYZ","DXB","SHJ","AUH"];
+    const listSaarc = ["CCU","DEL","KTM","KHI","MAA"];
+    const listOther = ["CAN","KUL","BKK"];
+
+    let data = {
+        intTr: { total: 0, details: {} },
+        saarc: { total: 0, details: {} },
+        other: { total: 0, details: {} },
+        inter: { total: 0, details: {} },
+        grandTotal: 0
+    };
+
+    const lines = rawText.split(/\r?\n/);
+    let parsingActive = false;
+
+    lines.forEach(line => {
+        let cleanLine = line.replace(/[\u00A0\u1680\u180e\u2000-\u200a\u202f\u205f\u3000]/g, " ");
+        let parts = cleanLine.trim().toUpperCase().split(/\s+/);
+
+        if (cleanLine.includes("OUTBOUND")) { parsingActive = true; return; }
+        if (cleanLine.includes("TOTAL LCL") || cleanLine.includes("INBOUND")) { parsingActive = false; }
+
+        if (parsingActive && parts.length >= 4 && parts[0].length === 3 && parts[0] !== "DES") {
+            const dest = parts[0];
+            const psgrCount = parseInt(parts[parts.length - 2]);
+
+            if (!isNaN(psgrCount)) {
+                let category = null;
+
+                if (parts[1].length === 2 && isNaN(parts[1])) {
+                    category = data.inter;
+                } 
+                else if (listIntTr.includes(dest)) { category = data.intTr; }
+                else if (listSaarc.includes(dest)) { category = data.saarc; }
+                else if (listOther.includes(dest)) { category = data.other; }
+
+                if (category) {
+                    category.total += psgrCount;
+                    category.details[dest] = (category.details[dest] || 0) + psgrCount;
+                    data.grandTotal += psgrCount;
+                }
+            }
+        }
+    });
+
+    const formatList = (details) => {
+        const entries = Object.entries(details);
+        if (entries.length === 0) return "No Data";
+        return entries
+            .map(([city, count]) => `<b>${city}</b>:${count}`)
+            .join(" | ");
+    };
+
+    document.getElementById('intTr').innerText = data.intTr.total;
+    document.getElementById('intTr_list').innerHTML = formatList(data.intTr.details);
+
+    document.getElementById('saarc').innerText = data.saarc.total;
+    document.getElementById('saarc_list').innerHTML = formatList(data.saarc.details);
+
+    document.getElementById('other').innerText = data.other.total;
+    document.getElementById('other_list').innerHTML = formatList(data.other.details);
+
+    document.getElementById('inter').innerText = data.inter.total;
+    document.getElementById('inter_list').innerHTML = formatList(data.inter.details);
+
+    document.getElementById('grandTotal').innerText = data.grandTotal;
+}
+</script>
+
+</body>
+</html>

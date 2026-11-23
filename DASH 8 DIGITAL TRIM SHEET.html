@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Biman Dash 8-400 Load Hub - LOCKED CONFIG</title>
+    <style>
+        :root { --biman-green: #006a4e; --seat-green: #48bb78; --seat-red: #f56565; --seat-yellow: #f6e05e; --header-blue: #334155; --btn-blue: #4f46e5; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f1f5f9; margin: 0; padding: 20px; font-size: 11px; color: #333; }
+        .container { width: 1580px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+        
+        .main-layout { display: grid; grid-template-columns: 560px 1fr; gap: 20px; }
+
+        .load-sheet-card { background: white; padding: 15px; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        table { border-collapse: collapse; width: 100%; border: 2px solid #000; }
+        th, td { border: 1px solid #000; padding: 3px; text-align: center; height: 26px; }
+        th { background: #f0f0f0; font-size: 9px; text-transform: uppercase; }
+        .label-cell { text-align: left; font-weight: bold; padding-left: 10px; background: #f9f9f9; width: 170px; }
+        .data-input { width: 92%; border: 1px solid #ddd; padding: 3px; text-align: right; font-weight: bold; font-family: 'Courier New', monospace; font-size: 13px; }
+        .result-box { border: 2px solid #000 !important; font-weight: bold; background: #ffffd0 !important; }
+        
+        .pax-inputs { display: flex; gap: 2px; justify-content: center; }
+        .pax-box { display: flex; flex-direction: column; width: 42px; font-size: 8px; font-weight: bold; color: #666; }
+        .pax-box input { width: 100%; text-align: center; border: 1px solid #bbb; padding: 3px 0; font-size: 12px; }
+
+        .dow-header { background: var(--header-blue); color: white; display: flex; justify-content: center; gap: 40px; align-items: center; padding: 15px; border-radius: 12px 12px 0 0; }
+        .dow-header label { font-weight: bold; text-transform: uppercase; font-size: 12px; }
+        .dow-header input { width: 110px; padding: 8px; border-radius: 6px; border: none; text-align: center; font-weight: bold; font-size: 18px; color: #000; }
+
+        .fuselage-card { background: white; padding: 25px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #ccc; display: flex; flex-direction: column; align-items: center; overflow-x: auto; }
+        .cabin-fuselage { display: flex; flex-direction: row-reverse; align-items: center; padding: 25px; background: #fdfdfd; border-radius: 120px 30px 30px 120px; border: 2px solid #94a3b8; }
+        .flight-deck { writing-mode: vertical-rl; text-orientation: mixed; background: var(--header-blue); color: white; padding: 30px 15px; border-radius: 5px 40px 40px 5px; font-weight: bold; font-size: 14px; margin-left: 15px; text-align: center; letter-spacing: 2px; }
+        
+        .row-unit { display: flex; flex-direction: column; align-items: center; border-right: 1px solid #e2e8f0; padding: 0 4px; position: relative; }
+        .row-label { font-size: 8px; font-weight: bold; color: #94a3b8; margin-bottom: 2px; }
+        .zone-divider { border-left: 3px dashed #94a3b8 !important; margin-right: 5px; padding-right: 2px; }
+
+        .seat { width: 24px; height: 24px; background: var(--seat-green); border: 1px solid rgba(0,0,0,0.1); border-radius: 4px; color: white; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: bold; cursor: pointer; margin: 1px 0; transition: background 0.1s; }
+        .seat.occupied { background: var(--seat-red); }
+        .seat.child { background: var(--seat-yellow); color: #333; border-color: #d69e2e; }
+        .aisle-gap { height: 12px; }
+
+        .btn-toggle-full { background: var(--btn-blue); color: white; border: none; padding: 12px 60px; border-radius: 30px; font-weight: bold; cursor: pointer; margin-top: 25px; text-transform: uppercase; }
+
+        .stability-dashboard { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 25px; }
+        .mac-card { text-align: center; padding: 15px; background: #fff; border: 2px solid #ddd; border-radius: 10px; }
+        .mac-val { font-size: 26px; font-weight: bold; color: var(--header-blue); margin: 5px 0; }
+        .status-tag { display: inline-block; padding: 4px 12px; font-size: 10px; font-weight: bold; border-radius: 4px; text-transform: uppercase; border: 1px solid #000; }
+
+        .ref-section { margin-top: 30px; border-top: 3px double #000; padding-top: 20px; }
+        .ref-grid { display: grid; grid-template-columns: 1.4fr 1fr 1.2fr 1fr 1fr; gap: 10px; }
+        .ref-card { background: white; border: 1px solid #999; padding: 5px; border-radius: 4px; }
+        .ref-card h4 { margin: 0 0 5px 0; font-size: 10px; background: #333; color: white; padding: 3px; text-align: center; }
+        .ref-scroll { height: 380px; overflow-y: auto; border: 1px solid #eee; }
+        .ref-table { border-collapse: collapse; width: 100%; font-size: 9px; }
+        .ref-table th, .ref-table td { border: 1px solid #ccc; padding: 2px; text-align: center; }
+        .ref-table th { background: #f4f4f4; position: sticky; top: 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="main-layout">
+        <div class="load-sheet-card">
+            <h3 style="margin: 0; color: var(--biman-green); text-align: center;">BIMAN BANGLADESH AIRLINES</h3>
+            <p style="text-align: center; font-weight: bold; margin: 2px 0; text-decoration: underline;">DASH 8-400 LOADING & TRIM SHEET</p>
+            <table>
+                <thead>
+                    <tr><th>DESCRIPTION</th><th style="width:145px">A/C/I</th><th>WT kg</th><th>INDEX</th></tr>
+                </thead>
+                <tbody id="load-body">
+                    <tr><td class="label-cell">OWE (Operating Empty)</td><td></td><td><input type="number" id="owe_wt_disp" class="data-input" readonly></td><td><input type="number" id="owe_idx_disp" class="data-input" readonly></td></tr>
+                    <tr><td class="label-cell">OBSERVER</td><td></td><td><input type="number" class="manual-wt data-input" oninput="calculate()"></td><td><input type="number" class="manual-idx data-input" oninput="calculate()"></td></tr>
+                    <tr><td class="label-cell">WARDROBE</td><td></td><td><input type="number" class="manual-wt data-input" oninput="calculate()"></td><td><input type="number" class="manual-idx data-input" oninput="calculate()"></td></tr>
+                    <script>
+                        const zoneLabels = ["1a", "1", "2", "3", "4", "5", "6", "7"];
+                        zoneLabels.forEach(z => {
+                            document.write(`
+                            <tr class="pax-row" data-zone="z${z}">
+                                <td class="label-cell">PAX COMPT ${z}</td>
+                                <td>
+                                    <div class="pax-inputs">
+                                        <div class="pax-box">A<input type="number" class="adl" value="0" min="0" oninput="syncTableToMap('z${z}')"></div>
+                                        <div class="pax-box">C<input type="number" class="chd" value="0" min="0" oninput="syncTableToMap('z${z}')"></div>
+                                        <div class="pax-box">I<input type="number" class="inf" value="0" min="0" oninput="calculate()"></div>
+                                    </div>
+                                </td>
+                                <td><input type="text" class="wt-disp data-input" readonly></td>
+                                <td><input type="text" class="idx-disp data-input" readonly></td>
+                            </tr>`);
+                        });
+                    </script>
+                    <tr class="bag-row" data-type="fwd"><td class="label-cell">FWD BAGGAGE</td><td></td><td><input type="number" class="bag-input data-input" oninput="calculate()"></td><td><input type="text" class="idx-disp data-input" readonly></td></tr>
+                    <tr class="bag-row" data-type="aft1"><td class="label-cell">AFT 1 BAGGAGE</td><td></td><td><input type="number" class="bag-input data-input" oninput="calculate()"></td><td><input type="text" class="idx-disp data-input" readonly></td></tr>
+                    <tr class="bag-row" data-type="aft2"><td class="label-cell">AFT 2 BAGGAGE</td><td></td><td><input type="number" class="bag-input data-input" oninput="calculate()"></td><td><input type="text" class="idx-disp data-input" readonly></td></tr>
+                    <tr class="summary-row"><td class="label-cell">ZERO FUEL WEIGHT</td><td>Pax: <span id="total_pax_count">0</span></td><td><input type="text" id="zfw_wt" class="result-box data-input" readonly></td><td><input type="text" id="zfw_idx" class="result-box data-input" readonly></td></tr>
+                    <tr><td class="label-cell">FUEL ON BOARD</td><td></td><td><input type="number" id="fuel_wt" class="data-input" oninput="calculate()"></td><td><input type="text" id="fuel_idx" class="data-input" readonly></td></tr>
+                    <tr class="summary-row"><td class="label-cell">RAMP WEIGHT</td><td></td><td><input type="text" id="ramp_wt" class="result-box data-input" readonly></td><td><input type="text" id="ramp_idx" class="result-box data-input" readonly></td></tr>
+                    <tr><td class="label-cell">TAXI FUEL</td><td></td><td><input type="number" id="taxi_wt" class="data-input" value="60" oninput="calculate()"></td><td>--</td></tr>
+                    <tr class="summary-row"><td class="label-cell">TAKE OFF WEIGHT</td><td></td><td><input type="text" id="tow_wt" class="result-box data-input" readonly></td><td><input type="text" id="tow_idx" class="result-box data-input" readonly></td></tr>
+                    <tr><td class="label-cell">EST FUEL USED</td><td></td><td><input type="number" id="trip_wt" class="data-input" oninput="calculate()"></td><td>--</td></tr>
+                    <tr class="summary-row"><td class="label-cell">LANDING WEIGHT</td><td></td><td><input type="text" id="law_wt" class="result-box data-input" readonly></td><td><input type="text" id="law_idx" class="result-box data-input" readonly></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="display:flex; flex-direction:column;">
+            <div class="dow-header">
+                <div><label>DOW Weight:</label> <input type="number" id="dowWeight" value="18169" oninput="calculate()"></div>
+                <div><label>DOW Index:</label> <input type="number" id="dowIndex" value="84.15" oninput="calculate()"></div>
+            </div>
+            <div class="fuselage-card">
+                <div class="cabin-fuselage">
+                    <div class="flight-deck">FLIGHT DECK</div>
+                    <div id="seatMap" style="display: flex; flex-direction: row-reverse;"></div>
+                </div>
+                <button class="btn-toggle-full" onclick="toggleFullCabin()">Toggle Full Flight</button>
+                <div class="stability-dashboard">
+                    <div class="mac-card"><div style="font-size:9px; color:#666">ZERO FUEL MAC</div><div id="mac-zfw" class="mac-val">--%</div><div id="status-zfw" class="status-tag">Waiting...</div></div>
+                    <div class="mac-card" style="border-color: var(--btn-blue);"><div style="font-size:9px; color:#666">TAKE-OFF MAC</div><div id="mac-tow" class="mac-val">--%</div><div id="status-tow" class="status-tag">Waiting...</div></div>
+                    <div class="mac-card" style="border-color: var(--biman-green);"><div style="font-size:9px; color:#666">LANDING MAC</div><div id="mac-law" class="mac-val">--%</div><div id="status-law" class="status-tag">Waiting...</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ref-section">
+        <div class="ref-grid">
+            <div class="ref-card"><h4>Pax Zone Index</h4><div class="ref-scroll" id="ref-pax"></div></div>
+            <div class="ref-card"><h4>FWD Baggage Index</h4><div class="ref-scroll" id="ref-fwd"></div></div>
+            <div class="ref-card"><h4>AFT 1 Baggage Index</h4><div class="ref-scroll" id="ref-aft1"></div></div>
+            <div class="ref-card"><h4>AFT 2 Baggage Index</h4><div class="ref-scroll" id="ref-aft2"></div></div>
+            <div class="ref-card"><h4>Fuel Index</h4><div class="ref-scroll" id="ref-fuel"></div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const PAX_INDEX_DATA = {
+    z1a: [-2.5, -4.9], z1: [-2.1, -4.2, -6.3, -8.4, -10.6, -12.7, -14.8, -16.9],
+    z2: [-1.5, -3.1, -4.6, -6.2, -7.7, -9.3, -10.8, -12.4, -13.9, -15.5, -17.0, -18.5],
+    z3: [-0.9, -1.7, -2.6, -3.5, -4.4, -5.2, -6.1, -7.0, -7.8, -8.7, -9.6, -10.4],
+    z4: [-0.2, -0.4, -0.6, -0.8, -1.0, -1.2, -1.4, -1.6, -1.8, -2.0, -2.1, -2.3],
+    z5: [0.5, 1.0, 1.4, 1.9, 2.4, 2.9, 3.4, 3.8, 4.3, 4.8, 5.3, 5.8],
+    z6: [1.2, 2.3, 3.5, 4.6, 5.8, 6.9, 8.1, 9.2, 10.4, 11.6, 12.7, 13.9],
+    z7: [1.6, 3.2, 4.8, 6.4]
+};
+const BAGG_TABLE = {
+    fwd: { kg: [25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 413], idx: [-0.9, -1.8, -2.7, -3.7, -4.6, -5.5, -6.4, -7.3, -8.2, -9.1, -10.0, -11.0, -11.9, -12.8, -13.7, -14.6, -15.1] },
+    aft1: { kg: [25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500, 525, 550, 575, 600, 625, 650, 675, 700, 725, 750, 775, 800, 825, 850, 875, 900, 925, 950, 975, 1000, 1025, 1050, 1075, 1100, 1125, 1150, 1175, 1200, 1225, 1250, 1275, 1300, 1325, 1350, 1375, 1400, 1425, 1450, 1475, 1500, 1525, 1550, 1575, 1610], idx: [0.9, 1.7, 2.6, 3.4, 4.3, 5.1, 6.0, 6.8, 7.7, 8.55, 9.4, 10.3, 11.1, 12.0, 12.8, 13.7, 14.5, 15.4, 16.2, 17.1, 18.0, 18.8, 19.7, 20.5, 21.4, 22.2, 23.1, 23.9, 24.8, 25.7, 26.5, 27.4, 28.2, 29.1, 29.9, 30.8, 31.6, 32.5, 33.3, 34.2, 35.1, 35.9, 36.8, 37.6, 38.5, 39.3, 40.2, 41.0, 41.9, 42.8, 43.6, 44.5, 45.3, 46.2, 47.0, 47.9, 48.7, 49.6, 50.4, 51.3, 52.2, 53.0, 53.9, 55.1] },
+    aft2: { kg: [25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 454], idx: [1.0, 2.0, 3.1, 4.1, 5.1, 6.1, 7.1, 8.1, 9.2, 10.2, 11.2, 12.2, 13.2, 14.2, 15.3, 16.3, 17.3, 18.3, 18.5] }
+};
+const FUEL_TABLE = { kg: [100, 500, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000, 3200, 3400, 3600, 3800, 4000, 4200, 4400, 4600, 4900, 5318], idx: [0.1, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.7, 2.9] };
+
+const rowToZone = { 1: "z1a", 2: "z1", 3: "z1", 4: "z2", 5: "z2", 6: "z2", 7: "z3", 8: "z3", 9: "z3", 10: "z4", 11: "z4", 12: "z4", 13: "z5", 14: "z5", 15: "z5", 16: "z6", 17: "z6", 18: "z6", 19: "z7" };
+const zoneDivs = [1, 3, 6, 9, 12, 15, 18];
+let seatStates = {};
+
+function initSeatMap() {
+    const map = document.getElementById("seatMap");
+    for (let r = 1; r <= 19; r++) {
+        const rowUnit = document.createElement("div");
+        rowUnit.className = "row-unit" + (zoneDivs.includes(r) ? " zone-divider" : "");
+        rowUnit.innerHTML = `<span class="row-label">${r}</span>`;
+        ["A", "B", "aisle", "C", "D"].forEach(pos => {
+            if (pos === "aisle") { rowUnit.innerHTML += `<div class="aisle-gap"></div>`; return; }
+            if (r === 1 && (pos === "C" || pos === "D")) return;
+            const sid = r + pos;
+            seatStates[sid] = { zone: rowToZone[r], type: 'empty' };
+            rowUnit.innerHTML += `<div id="s-${sid}" class="seat" onclick="toggleSeatClick('${sid}')">${sid}</div>`;
+        });
+        map.appendChild(rowUnit);
+    }
+}
+
+function toggleSeatClick(sid) {
+    const seat = seatStates[sid];
+    const el = document.getElementById("s-" + sid);
+    if (seat.type === 'empty') { seat.type = 'adult'; el.className = "seat occupied"; } 
+    else { seat.type = 'empty'; el.className = "seat"; }
+    const zid = seat.zone;
+    document.querySelector(`[data-zone="${zid}"] .adl`).value = Object.values(seatStates).filter(s => s.zone === zid && s.type === 'adult').length;
+    document.querySelector(`[data-zone="${zid}"] .chd`).value = Object.values(seatStates).filter(s => s.zone === zid && s.type === 'child').length;
+    calculate();
+}
+
+function syncTableToMap(zid) {
+    const adl = parseInt(document.querySelector(`[data-zone="${zid}"] .adl`).value) || 0;
+    const chd = parseInt(document.querySelector(`[data-zone="${zid}"] .chd`).value) || 0;
+    const seats = Object.keys(seatStates).filter(k => seatStates[k].zone === zid);
+    seats.forEach((sid, idx) => {
+        const el = document.getElementById("s-" + sid);
+        el.className = "seat";
+        if (idx < adl) { seatStates[sid].type = 'adult'; el.classList.add("occupied"); }
+        else if (idx < adl + chd) { seatStates[sid].type = 'child'; el.classList.add("child"); }
+        else { seatStates[sid].type = 'empty'; }
+    });
+    calculate();
+}
+
+function toggleFullCabin() {
+    const isAnyEmpty = Object.values(seatStates).some(s => s.type === 'empty');
+    Object.keys(PAX_INDEX_DATA).forEach(zid => {
+        const count = Object.keys(seatStates).filter(k => seatStates[k].zone === zid).length;
+        document.querySelector(`[data-zone="${zid}"] .adl`).value = isAnyEmpty ? count : 0;
+        document.querySelector(`[data-zone="${zid}"] .chd`).value = 0;
+        syncTableToMap(zid);
+    });
+}
+
+const cgLines = [{cg:12,m:-666.67,b:67333.55},{cg:14,m:-773.33,b:77866.67},{cg:16,m:-933.33,b:93466.67},{cg:18,m:-1076.92,b:108615.38},{cg:20,m:-1400,b:140600},{cg:22,m:-2000,b:200000},{cg:24,m:-2800,b:282000},{cg:26,m:-7000,b:702000},{cg:28,m:17500,b:-1751500},{cg:30,m:4242.42,b:-425212.12},{cg:32,m:2333.33,b:-233666.67},{cg:34,m:1555.56,b:-155111.11},{cg:36,m:1250,b:-125250},{cg:38,m:888.89,b:-87111.11}];
+function solveCG(W, X) {
+    let intercepts = cgLines.map(line => ({ cg: line.cg, xVal: (W - line.b) / line.m }));
+    for (let i = 0; i < intercepts.length - 1; i++) {
+        let i1 = intercepts[i], i2 = intercepts[i+1];
+        if ((X >= i1.xVal && X <= i2.xVal) || (X <= i1.xVal && X >= i2.xVal)) return i1.cg + (X - i1.xVal) * (i2.cg - i1.cg) / (i2.xVal - i1.xVal);
+    }
+    return intercepts[0].cg;
+}
+function getStability(cg) {
+    if (cg < 19 || cg > 32) return { text: "OUT OF BALANCE", color: "white", bg: "red" };
+    if (cg < 21) return { text: "Nose Heavy", color: "#856404", bg: "#fff3cd" };
+    if (cg > 26) return { text: "Tail Heavy", color: "#856404", bg: "#fff3cd" };
+    return { text: "Optimal", color: "#155724", bg: "#d4edda" };
+}
+function pickClosest(val, weightArr, indexArr) {
+    if (val <= 0) return 0;
+    if (val >= weightArr[weightArr.length-1]) return indexArr[indexArr.length-1];
+    let closest = 0; let minD = Math.abs(val - weightArr[0]);
+    for(let i=1; i<weightArr.length; i++){
+        let d = Math.abs(val - weightArr[i]);
+        if(d < minD) { minD = d; closest = i; }
+    }
+    return indexArr[closest];
+}
+
+function calculate() {
+    const dW = parseFloat(document.getElementById('dowWeight').value) || 0;
+    const dI = parseFloat(document.getElementById('dowIndex').value) || 0;
+    document.getElementById('owe_wt_disp').value = dW;
+    document.getElementById('owe_idx_disp').value = dI.toFixed(2);
+    
+    let wt = dW, idx = dI, totalP = 0;
+    document.querySelectorAll('.manual-wt').forEach((el, i) => {
+        wt += parseFloat(el.value) || 0;
+        idx += parseFloat(document.querySelectorAll('.manual-idx')[i].value) || 0;
+    });
+
+    document.querySelectorAll('.pax-row').forEach(row => {
+        const a = parseInt(row.querySelector('.adl').value) || 0, c = parseInt(row.querySelector('.chd').value) || 0, i = parseInt(row.querySelector('.inf').value) || 0;
+        const indexHeadcount = a + c; 
+        const totalHeadcount = a + c + i; 
+        const table = PAX_INDEX_DATA[row.dataset.zone];
+        const zIdx = indexHeadcount > 0 ? table[Math.min(indexHeadcount, table.length) - 1] : 0;
+        const zWt = (a * 75) + (c * 40) + (i * 10);
+        row.querySelector('.wt-disp').value = zWt;
+        row.querySelector('.idx-disp').value = zIdx.toFixed(2);
+        wt += zWt; idx += zIdx; totalP += totalHeadcount;
+    });
+
+    document.querySelectorAll('.bag-row').forEach(row => {
+        const bwt = parseFloat(row.querySelector('.bag-input').value) || 0;
+        const bidx = pickClosest(bwt, BAGG_TABLE[row.dataset.type].kg, BAGG_TABLE[row.dataset.type].idx);
+        row.querySelector('.idx-disp').value = bidx.toFixed(2); wt += bwt; idx += bidx;
+    });
+
+    document.getElementById('total_pax_count').innerText = totalP;
+    document.getElementById('zfw_wt').value = Math.round(wt);
+    document.getElementById('zfw_idx').value = idx.toFixed(2);
+
+    const fob = parseFloat(document.getElementById('fuel_wt').value) || 0;
+    const fidx = pickClosest(fob, FUEL_TABLE.kg, FUEL_TABLE.idx);
+    document.getElementById('fuel_idx').value = fidx.toFixed(2);
+    
+    const rampWt = wt + fob;
+    const rampIdx = idx + fidx;
+    document.getElementById('ramp_wt').value = Math.round(rampWt);
+    document.getElementById('ramp_idx').value = rampIdx.toFixed(2);
+
+    const taxi = parseFloat(document.getElementById('taxi_wt').value) || 0;
+    /** TAXI LOGIC: Ramp Index + Taxi Index **/
+    const tIdx = pickClosest(taxi, FUEL_TABLE.kg, FUEL_TABLE.idx);
+    const towWt = rampWt - taxi;
+    const towIdx = rampIdx - tIdx;
+    
+    document.getElementById('tow_wt').value = Math.round(towWt);
+    document.getElementById('tow_idx').value = towIdx.toFixed(2);
+
+    const trip = parseFloat(document.getElementById('trip_wt').value) || 0;
+    /** LANDING LOGIC: TOW Index - Trip Index **/
+    const tripIdx = pickClosest(trip, FUEL_TABLE.kg, FUEL_TABLE.idx);
+    const lawWt = towWt - trip;
+    const lawIdx = towIdx - tripIdx;
+
+    document.getElementById('law_wt').value = Math.round(lawWt);
+    document.getElementById('law_idx').value = lawIdx.toFixed(2);
+
+    updateMACUI("zfw", wt, idx);
+    updateMACUI("tow", towWt, towIdx);
+    updateMACUI("law", lawWt, lawIdx);
+}
+
+function updateMACUI(phase, W, X) {
+    const cg = solveCG(W, X);
+    const s = getStability(cg);
+    document.getElementById(`mac-${phase}`).innerText = cg.toFixed(1) + "%";
+    const tag = document.getElementById(`status-${phase}`);
+    tag.innerText = s.text; tag.style.color = s.color; tag.style.background = s.bg; tag.style.borderColor = s.color;
+}
+
+function initRefs() {
+    let pH = `<table class="ref-table"><tr><th>Zone</th><th>Pax</th><th>Idx</th></tr>`;
+    Object.keys(PAX_INDEX_DATA).forEach(z => PAX_INDEX_DATA[z].forEach((v, i) => pH += `<tr><td>${z.toUpperCase()}</td><td>${i+1}</td><td>${v}</td></tr>`));
+    document.getElementById('ref-pax').innerHTML = pH + `</table>`;
+    const bT = (id, d) => {
+        let h = `<table class="ref-table"><tr><th>kg</th><th>Idx</th></tr>`;
+        d.kg.forEach((k, i) => h += `<tr><td>${k}</td><td>${d.idx[i]}</td></tr>`);
+        document.getElementById(id).innerHTML = h + `</table>`;
+    };
+    bT('ref-fwd', BAGG_TABLE.fwd); bT('ref-aft1', BAGG_TABLE.aft1); bT('ref-aft2', BAGG_TABLE.aft2); bT('ref-fuel', FUEL_TABLE);
+}
+
+window.onload = () => { initSeatMap(); initRefs(); calculate(); };
+</script>
+</body>
+</html>

@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biman Flight Operations Suite</title>
+    <style>
+        /* ===================== SHARED / TAB-SWITCHER STYLES ===================== */
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #eef1f4;
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            background: #0f172a;
+            padding: 10px 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .tab-btn {
+            background: #1e293b;
+            color: #cbd5e1;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px 6px 0 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .tab-btn:hover {
+            background: #334155;
+            color: #ffffff;
+        }
+
+        .tab-btn.active {
+            background: #eef1f4;
+            color: #0f172a;
+        }
+
+        .app-panel {
+            display: none;
+        }
+
+        .app-panel.active {
+            display: block;
+        }
+
+        /* ===================== APP 1: MANIFEST SORTER (scoped) ===================== */
+        :root {
+            --primary: #006a4e; /* Biman Green */
+            --primary-dark: #004d38;
+            --accent: #f42a41;
+            --bg: #f8faf9;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --border: #cbd5e1;
+        }
+
+        #app-sorter {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 15px;
+        }
+
+        #app-sorter .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        #app-sorter header {
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #app-sorter header h1 {
+            margin: 0 0 4px 0;
+            font-size: 1.35rem;
+        }
+
+        #app-sorter header p {
+            margin: 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        #app-sorter .btn-import-all {
+            background: #16a34a;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        #app-sorter .btn-import-all:hover {
+            background: #15803d;
+        }
+
+        #app-sorter .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        #app-sorter .input-section {
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        #app-sorter .input-section label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        #app-sorter textarea {
+            width: 100%;
+            height: 90px;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.82rem;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        #app-sorter .btn-group {
+            margin-top: 8px;
+            display: flex;
+            gap: 10px;
+        }
+
+        #app-sorter .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #app-sorter .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        #app-sorter .btn-generate {
+            background: #0284c7;
+        }
+
+        #app-sorter .btn-generate:hover {
+            background: #0369a1;
+        }
+
+        #app-sorter .columns-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            align-items: start;
+        }
+
+        @media (max-width: 1200px) {
+            #app-sorter .columns-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            #app-sorter .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 650px) {
+            #app-sorter .columns-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        #app-sorter .column-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            min-width: 0;
+        }
+
+        #app-sorter .card-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+        }
+
+        #app-sorter .card-title h2 {
+            margin: 0;
+            font-size: 0.92rem;
+            color: var(--primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #app-sorter .action-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        #app-sorter .badge {
+            background: #e2e8f0;
+            color: var(--text);
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+        }
+
+        #app-sorter th {
+            background: #f1f5f9;
+            text-align: left;
+            padding: 5px 6px;
+            cursor: pointer;
+            user-select: none;
+            border-bottom: 2px solid var(--border);
+        }
+
+        #app-sorter th:hover {
+            background: #e2e8f0;
+        }
+
+        #app-sorter td {
+            padding: 5px 6px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        #app-sorter tr.draggable-row {
+            cursor: grab;
+            transition: background 0.15s ease;
+            height: 36px;
+        }
+
+        #app-sorter tr.draggable-row:hover {
+            background: #f1f5f9;
+        }
+
+        #app-sorter tr.draggable-row:active {
+            cursor: grabbing;
+        }
+
+        #app-sorter tr.dragging {
+            opacity: 0.3;
+            background: #cbd5e1;
+        }
+
+        #app-sorter tr.drag-over-top {
+            border-top: 3px solid var(--primary);
+        }
+
+        #app-sorter tr.drag-over-bottom {
+            border-bottom: 3px solid var(--primary);
+        }
+
+        #app-sorter .drag-handle {
+            color: #94a3b8;
+            font-size: 1rem;
+            cursor: grab;
+            padding-right: 4px;
+            user-select: none;
+            text-align: center;
+        }
+
+        #app-sorter .copy-btn {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        #app-sorter .copy-btn:hover {
+            background: #0284c7;
+        }
+
+        #app-sorter .time-sub {
+            font-size: 0.72rem;
+            color: #64748b;
+            display: block;
+        }
+
+        #app-sorter .btn-small {
+            padding: 3px 8px;
+            font-size: 0.75rem;
+        }
+
+        #app-sorter .generated-section {
+            display: none;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border);
+        }
+
+        #app-sorter .generated-section textarea {
+            height: 140px;
+            background: #0f172a;
+            color: #38bdf8;
+            font-size: 0.78rem;
+            margin-top: 4px;
+        }
+
+        /* ===================== APP 2: UNIFIED FLIGHT DATA CALCULATOR (scoped) ===================== */
+        #app-ufdc {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        #app-ufdc header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        #app-ufdc header h2 { margin: 0; font-size: 22px; letter-spacing: 1px; text-align: center; }
+
+        #app-ufdc .grid-inputs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            #app-ufdc .grid-inputs { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            #app-ufdc .grid-inputs { grid-template-columns: 1fr; }
+        }
+
+        #app-ufdc .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #app-ufdc .panel h3 { margin-top: 0; margin-bottom: 10px; font-size: 11px; color: #7f8c8d; text-transform: uppercase; border-left: 4px solid #3498db; padding-left: 8px; }
+
+        #app-ufdc textarea {
+            width: 100%;
+            height: 280px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 2px solid #dfe6e9;
+            border-radius: 6px;
+            resize: none;
+        }
+
+        #app-ufdc textarea:focus { outline: none; border-color: #3498db; }
+
+        #app-ufdc .action-area {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        #app-ufdc button {
+            padding: 14px 35px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #app-ufdc button:hover { background-color: #219653; }
+
+        #app-ufdc button:active { transform: scale(0.98); }
+
+        #app-ufdc .table-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+
+        #app-ufdc table {
+            border-collapse: collapse;
+            width: 100%;
+            background-color: #fff;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        #app-ufdc th,
+        #app-ufdc td {
+            border: 1px solid #aaa;
+            padding: 6px 4px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            white-space: nowrap;
+        }
+
+        #app-ufdc th {
+            background-color: #f2f2eb;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        #app-ufdc .header-main {
+            font-size: 13px;
+            background-color: #e6e6dc;
+        }
+
+        #app-ufdc .header-sub { background-color: #ebebe0; }
+
+        #app-ufdc .header-dept { background-color: #dff9fb; }
+
+        #app-ufdc .header-crew { background-color: #7f8c8d; color: white; font-weight: bold; font-size: 13px; }
+
+        #app-ufdc .flight-no { font-weight: bold; background-color: #f9f9f9; }
+
+        #app-ufdc .text-red { color: #cc0000; font-weight: bold; }
+
+        #app-ufdc .text-blue { color: #0056b3; font-weight: bold; }
+
+        #app-ufdc .text-green { color: #27ae60; font-weight: bold; }
+
+        #app-ufdc .status-match { background-color: #27ae60 !important; color: white !important; font-weight: bold; }
+
+        #app-ufdc .status-mismatch-tob { background-color: #cc0000 !important; color: white !important; font-weight: bold; }
+
+        #app-ufdc .status-default-sob { background-color: #1a252f !important; color: #4ade80 !important; font-weight: 900; font-size: 13px; }
+
+        #app-ufdc .copy-hint {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 10px;
+            font-style: italic;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<div class="tab-bar">
+    <button class="tab-btn active" id="tabBtn-sorter" onclick="switchApp('sorter')">LDM / Sabre Sorter</button>
+    <button class="tab-btn" id="tabBtn-ufdc" onclick="switchApp('ufdc')">Unified Flight Data Calculator</button>
+</div>
+
+<div id="app-sorter" class="app-panel active">
+
+<div class="container">
+    <header>
+        <div>
+            <h1>Biman Bangladesh Airlines (CGP Hub)</h1>
+            <p>Unified Flight Data Processor: LDM Sorter, Load Details & PCD Report Generator</p>
+        </div>
+        <button class="btn-import-all" onclick="importAllToCalculator()">Import All & Open Calculator ➔</button>
+    </header>
+
+    <div class="input-grid">
+        <!-- LDM INPUT -->
+        <div class="input-section">
+            <label><strong>Paste Forwarded LDM Email Content:</strong></label>
+            <textarea id="rawLdmInput" placeholder="Paste full LDM email text here..."></textarea>
+            <div class="btn-group">
+                <button class="btn" onclick="processEmailData()">Process LDMs</button>
+            </div>
+        </div>
+
+        <!-- SABRE INPUT -->
+        <div class="input-section">
+            <label><strong>Paste Sabre Email / System Data Below:</strong></label>
+            <textarea id="rawSabreInput" placeholder="Paste full email text or Sabre outputs here..."></textarea>
+            <div class="btn-group">
+                <button class="btn" onclick="processSabreData()">Process Reports</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4-COLUMN SIDE BY SIDE LAYOUT -->
+    <div class="columns-grid">
+        <!-- 1. ARRIVAL LDMS -->
+        <div class="column-card">
+            <div class="card-title">
+                <h2>Arrival LDMs (CGP)</h2>
+                <div class="action-header">
+                    <span id="arrCount" class="badge">0</span>
+                    <button class="btn btn-generate btn-small" onclick="generateTxt('arrTbody', 'arrTxtOutput')">TXT</button>
+                </div>
+            </div>
+            <table id="arrTable">
+                <thead>
+                    <tr>
+                        <th style="width: 20px;"></th>
+                        <th onclick="sortTable('arrTable', 1)">Flight / Date ↕</th>
+                        <th onclick="sortTable('arrTable', 2)">Route ↕</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="arrTbody"></tbody>
+            </table>
+
+            <div id="arrTxtOutput" class="generated-section">
+                <label><strong>Generated LDM Text:</strong></label>
+                <textarea id="arrTxtOutputBox" readonly></textarea>
+                <button class="copy-btn" style="margin-top:6px;" onclick="copyGeneratedTxt('arrTxtOutputBox', this)">Copy All</button>
+            </div>
+        </div>
+
+        <!-- 2. DEPARTURE LDMS -->
+        <div class="column-card">
+            <div class="card-title">
+                <h2>Departure LDMs (CGP)</h2>
+                <div class="action-header">
+                    <span id="depCount" class="badge">0</span>
+                    <button class="btn btn-generate btn-small" onclick="generateTxt('depTbody', 'depTxtOutput')">TXT</button>
+                </div>
+            </div>
+            <table id="depTable">
+                <thead>
+                    <tr>
+                        <th style="width: 20px;"></th>
+                        <th onclick="sortTable('depTable', 1)">Flight / Date ↕</th>
+                        <th onclick="sortTable('depTable', 2)">Route ↕</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="depTbody"></tbody>
+            </table>
+
+            <div id="depTxtOutput" class="generated-section">
+                <label><strong>Generated LDM Text:</strong></label>
+                <textarea id="depTxtOutputBox" readonly></textarea>
+                <button class="copy-btn" style="margin-top:6px;" onclick="copyGeneratedTxt('depTxtOutputBox', this)">Copy All</button>
+            </div>
+        </div>
+
+        <!-- 3. LOAD DETAIL REPORTS -->
+        <div class="column-card">
+            <div class="card-title">
+                <h2>Load Details</h2>
+                <div class="action-header">
+                    <span id="loadCount" class="badge">0</span>
+                    <button class="btn btn-generate btn-small" onclick="generateTxt('loadTbody', 'loadTxtOutput')">TXT</button>
+                </div>
+            </div>
+            <table id="loadTable">
+                <thead>
+                    <tr>
+                        <th style="width: 20px;"></th>
+                        <th onclick="sortTable('loadTable', 1)">Flight / Date ↕</th>
+                        <th onclick="sortTable('loadTable', 2)">Station ↕</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="loadTbody"></tbody>
+            </table>
+
+            <div id="loadTxtOutput" class="generated-section">
+                <label><strong>Generated Load Text:</strong></label>
+                <textarea id="loadTxtOutputBox" readonly></textarea>
+                <button class="copy-btn" style="margin-top:6px;" onclick="copyGeneratedTxt('loadTxtOutputBox', this)">Copy All</button>
+            </div>
+        </div>
+
+        <!-- 4. PCD REPORTS -->
+        <div class="column-card">
+            <div class="card-title">
+                <h2>PCD Reports</h2>
+                <div class="action-header">
+                    <span id="pcdCount" class="badge">0</span>
+                    <button class="btn btn-generate btn-small" onclick="generateTxt('pcdTbody', 'pcdTxtOutput')">TXT</button>
+                </div>
+            </div>
+            <table id="pcdTable">
+                <thead>
+                    <tr>
+                        <th style="width: 20px;"></th>
+                        <th onclick="sortTable('pcdTable', 1)">Flight / Date ↕</th>
+                        <th onclick="sortTable('pcdTable', 2)">Route ↕</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="pcdTbody"></tbody>
+            </table>
+
+            <div id="pcdTxtOutput" class="generated-section">
+                <label><strong>Generated PCD Text:</strong></label>
+                <textarea id="pcdTxtOutputBox" readonly></textarea>
+                <button class="copy-btn" style="margin-top:6px;" onclick="copyGeneratedTxt('pcdTxtOutputBox', this)">Copy All</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<div id="app-ufdc" class="app-panel">
+
+<header>
+    <h2>UNIFIED LDM PARSER & CALCULATOR DASHBOARD</h2>
+</header>
+
+<div class="grid-inputs">
+    <div class="panel">
+        <h3>1. Arrival LDM</h3>
+        <textarea id="arrivalLdmInput" placeholder="Paste raw Arrival LDM text blocks here..."></textarea>
+    </div>
+    <div class="panel">
+        <h3>2. Local Passenger Manifest</h3>
+        <textarea id="localManifestInput" placeholder="Paste local passenger manifests here (G*/BG...)"></textarea>
+    </div>
+    <div class="panel">
+        <h3>3. Outbound Passenger Manifest</h3>
+        <textarea id="outboundManifestInput" placeholder="Paste outbound connection manifests here (G*/BG...)"></textarea>
+    </div>
+    <div class="panel">
+        <h3>4. Departure LDM</h3>
+        <textarea id="departureLdmInput" placeholder="Paste raw Departure LDM text blocks here..."></textarea>
+    </div>
+</div>
+
+<div class="action-area">
+    <button onclick="processAllFlightData()">Process & Generate Rows</button>
+</div>
+
+<div class="table-section">
+    <h3>Master Excel Copy-Paste Table Preview</h3>
+    <div id="tableContainer">
+        <p style="color:#777; text-align:center; padding: 20px;">Provide your operational tracking records above to build template rows.</p>
+    </div>
+    <div class="copy-hint">* Click and drag select across the table rows to populate your Excel template sheet instantly.</div>
+</div>
+
+</div>
+
+<script>
+function switchApp(name) {
+    document.querySelectorAll('.app-panel').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('app-' + name).classList.add('active');
+    document.getElementById('tabBtn-' + name).classList.add('active');
+}
+</script>
+
+<script>
+/* =========================================================
+   APP 1 SCRIPT: MANIFEST SORTER (LDM / Sabre)
+   ========================================================= */
+
+function parseEmail(text) {
+    const messages = text.split(/---------- Forwarded message ----------/i);
+    const results = [];
+
+    messages.forEach(msg => {
+        if (!msg.includes('Subject:') || !msg.includes('LDM')) return;
+
+        const dateMatch = msg.match(/Date:\s*(.+)/i);
+        const dateStr = dateMatch ? dateMatch[1].trim() : '';
+        const timestamp = dateStr ? new Date(dateStr) : new Date(0);
+
+        const subjMatch = msg.match(/Subject:\s*(.+)/i);
+        const subject = subjMatch ? subjMatch[1].trim() : '';
+
+        const routeMatch = subject.match(/([A-Z]{3})\/([A-Z]{3})/);
+        const origin = routeMatch ? routeMatch[1] : '';
+        const dest = routeMatch ? routeMatch[2] : '';
+
+        const flightMatch = subject.match(/(BG\d+\/\d+|\w+\s+BG\d+\/\d+)/i);
+        const flight = flightMatch ? flightMatch[0] : subject;
+
+        const subjIndex = msg.indexOf('Subject:');
+        let ldmLines = [];
+        if (subjIndex !== -1) {
+            const lines = msg.substring(subjIndex).split('\n');
+            let capturing = false;
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                if (line.trim().startsWith('LDM') || capturing) {
+                    capturing = true;
+                    ldmLines.push(line);
+                }
+            }
+        }
+        const ldmContent = ldmLines.join('\n').trim();
+
+        if (ldmContent) {
+            results.push({
+                flight,
+                origin,
+                dest,
+                subject,
+                dateStr,
+                timestamp,
+                dayKey: timestamp.toISOString().split('T')[0],
+                content: ldmContent
+            });
+        }
+    });
+
+    return results;
+}
+
+function deduplicate(ldmList) {
+    const map = new Map();
+    ldmList.forEach(item => {
+        const key = `${item.flight}_${item.origin}_${item.dest}_${item.dayKey}`;
+        if (!map.has(key) || item.timestamp > map.get(key).timestamp) {
+            map.set(key, item);
+        }
+    });
+    return Array.from(map.values());
+}
+
+function processEmailData() {
+    const rawText = document.getElementById('rawLdmInput').value;
+    const parsed = parseEmail(rawText);
+
+    const arrivals = deduplicate(parsed.filter(x => x.dest === 'CGP'));
+    const departures = deduplicate(parsed.filter(x => x.origin === 'CGP'));
+
+    document.getElementById('arrCount').innerText = arrivals.length;
+    document.getElementById('depCount').innerText = departures.length;
+
+    document.getElementById('arrTxtOutput').style.display = 'none';
+    document.getElementById('depTxtOutput').style.display = 'none';
+
+    renderLdmTable('arrTbody', arrivals);
+    renderLdmTable('depTbody', departures);
+}
+
+function renderLdmTable(tbodyId, data) {
+    const tbody = document.getElementById(tbodyId);
+    tbody.innerHTML = '';
+
+    data.sort((a, b) => a.timestamp - b.timestamp);
+
+    data.forEach((item) => {
+        const tr = document.createElement('tr');
+        tr.className = 'draggable-row';
+        tr.draggable = true;
+        tr.dataset.content = item.content;
+
+        const timeDisplay = item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        tr.innerHTML = `
+            <td class="drag-handle" title="Drag to reorder">☰</td>
+            <td>
+                <strong>${item.flight}</strong>
+                <span class="time-sub">(${item.dayKey} ${timeDisplay})</span>
+            </td>
+            <td><strong>${item.origin}/${item.dest}</strong></td>
+            <td style="text-align: right;">
+                <button class="copy-btn" onclick="copySingleContent(this)">Copy</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    enableDragAndDrop(tbodyId);
+}
+
+function parseSabreEmail(text) {
+    const loadList = [];
+    const pcdList = [];
+
+    if (!text || !text.trim()) return { loadList, pcdList };
+
+    let blocks = text.split(/(?=G\*\s*\/BG|G\*\s*BG)/gi);
+
+    if (blocks.length <= 1) {
+        blocks = text.split(/\n\s*\n/);
+    }
+
+    blocks.forEach(block => {
+        const trimmed = block.trim();
+        if (!trimmed) return;
+
+        const isPcd = /PCD|OUTBOUND\s+PASSENGER\s+INFORMATION/i.test(trimmed);
+
+        const fltMatch = trimmed.match(/BG\s*(\d+)/i);
+        const dateMatch = trimmed.match(/(\d{1,2}[A-Z]{3})/i);
+        const stnMatch = trimmed.match(/([A-Z]{3})\/([A-Z]{3})/i) || trimmed.match(/([A-Z]{3})/i);
+
+        let flight = fltMatch ? `BG${fltMatch[1]}` : 'BG';
+        let date = dateMatch ? dateMatch[1].toUpperCase() : 'N/A';
+        let station = stnMatch ? stnMatch[0].toUpperCase() : 'N/A';
+
+        let route = station;
+        const fltRouteMatch = trimmed.match(/FLT-BG\s*\d+\s+([A-Z]{3})\s*-([A-Z]{3})/i);
+        if (fltRouteMatch) {
+            route = `${fltRouteMatch[1]}/${fltRouteMatch[2]}`;
+        }
+
+        let cleanContent = trimmed;
+        const sigIdx = cleanContent.search(/no-reply@sabre\.com/i);
+        if (sigIdx > 0) {
+            cleanContent = cleanContent.substring(0, sigIdx).trim();
+        }
+
+        const reportObj = { flight, date, station, route, content: cleanContent };
+
+        if (isPcd) {
+            pcdList.push(reportObj);
+        } else {
+            loadList.push(reportObj);
+        }
+    });
+
+    return { loadList, pcdList };
+}
+
+function processSabreData() {
+    const rawText = document.getElementById('rawSabreInput').value;
+    
+    if (!rawText.trim()) {
+        alert("Please paste data into the Sabre text box first!");
+        return;
+    }
+
+    const { loadList, pcdList } = parseSabreEmail(rawText);
+
+    if (loadList.length === 0 && pcdList.length === 0) {
+        alert("No valid flight data found. Make sure the pasted text contains flight information.");
+        return;
+    }
+
+    document.getElementById('loadCount').innerText = loadList.length;
+    document.getElementById('pcdCount').innerText = pcdList.length;
+
+    document.getElementById('loadTxtOutput').style.display = 'none';
+    document.getElementById('pcdTxtOutput').style.display = 'none';
+
+    renderSabreTable('loadTbody', loadList, false);
+    renderSabreTable('pcdTbody', pcdList, true);
+}
+
+function renderSabreTable(tbodyId, data, isPcd = false) {
+    const tbody = document.getElementById(tbodyId);
+    tbody.innerHTML = '';
+
+    data.forEach((item) => {
+        const tr = document.createElement('tr');
+        tr.className = 'draggable-row';
+        tr.draggable = true;
+        tr.dataset.content = item.content;
+
+        tr.innerHTML = `
+            <td class="drag-handle" title="Drag to reorder">☰</td>
+            <td>
+                <strong>${item.flight}</strong>
+                <span class="time-sub">(${item.date})</span>
+            </td>
+            <td><strong>${isPcd ? item.route : item.station}</strong></td>
+            <td style="text-align: right;">
+                <button class="copy-btn" onclick="copySingleContent(this)">Copy</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    enableDragAndDrop(tbodyId);
+}
+
+/* --- SILENT COPY ACTIONS (NO ALERTS) --- */
+function copySingleContent(btn) {
+    const tr = btn.closest('tr');
+    const content = tr.dataset.content;
+    navigator.clipboard.writeText(content).then(() => {
+        const origText = btn.innerText;
+        btn.innerText = "Copied!";
+        setTimeout(() => { btn.innerText = origText; }, 1200);
+    });
+}
+
+function copyGeneratedTxt(textareaId, btn) {
+    const textarea = document.getElementById(textareaId);
+    textarea.select();
+    navigator.clipboard.writeText(textarea.value).then(() => {
+        if (btn) {
+            const origText = btn.innerText;
+            btn.innerText = "Copied!";
+            setTimeout(() => { btn.innerText = origText; }, 1200);
+        }
+    });
+}
+
+function sortTable(tableId, colIdx) {
+    const table = document.getElementById(tableId);
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const isAsc = table.getAttribute('data-sort') !== 'asc';
+
+    rows.sort((a, b) => {
+        const valA = a.children[colIdx].innerText.trim();
+        const valB = b.children[colIdx].innerText.trim();
+        return isAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+    });
+
+    table.setAttribute('data-sort', isAsc ? 'asc' : 'desc');
+    rows.forEach(r => tbody.appendChild(r));
+}
+
+function enableDragAndDrop(tbodyId) {
+    const tbody = document.getElementById(tbodyId);
+    let draggedRow = null;
+
+    tbody.addEventListener('dragstart', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+        draggedRow = row;
+        row.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    });
+
+    tbody.addEventListener('dragend', (e) => {
+        const row = e.target.closest('tr');
+        if (row) row.classList.remove('dragging');
+        tbody.querySelectorAll('tr').forEach(r => {
+            r.classList.remove('drag-over-top', 'drag-over-bottom');
+        });
+        draggedRow = null;
+    });
+
+    tbody.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const targetRow = e.target.closest('tr');
+
+        if (targetRow && targetRow !== draggedRow && targetRow.parentNode === tbody) {
+            tbody.querySelectorAll('tr').forEach(r => {
+                r.classList.remove('drag-over-top', 'drag-over-bottom');
+            });
+
+            const rect = targetRow.getBoundingClientRect();
+            const midpoint = rect.top + rect.height / 2;
+
+            if (e.clientY < midpoint) {
+                targetRow.classList.add('drag-over-top');
+            } else {
+                targetRow.classList.add('drag-over-bottom');
+            }
+        }
+    });
+
+    tbody.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const targetRow = e.target.closest('tr');
+
+        if (targetRow && draggedRow && targetRow !== draggedRow && targetRow.parentNode === tbody) {
+            const rect = targetRow.getBoundingClientRect();
+            const midpoint = rect.top + rect.height / 2;
+
+            targetRow.classList.remove('drag-over-top', 'drag-over-bottom');
+
+            if (e.clientY < midpoint) {
+                tbody.insertBefore(draggedRow, targetRow);
+            } else {
+                tbody.insertBefore(draggedRow, targetRow.nextSibling);
+            }
+        }
+    });
+}
+
+/* --- DIRECT IMPORT SYSTEM MAPPING --- */
+const targetUfdcMap = {
+    'arrTbody': 'arrivalLdmInput',
+    'loadTbody': 'localManifestInput',
+    'pcdTbody': 'outboundManifestInput',
+    'depTbody': 'departureLdmInput'
+};
+
+function generateTxt(tbodyId, outputContainerId) {
+    const tbody = document.getElementById(tbodyId);
+    const rows = tbody.querySelectorAll('tr');
+    
+    if (rows.length === 0) {
+        alert("No data available to generate text.");
+        return;
+    }
+
+    let blocks = [];
+    rows.forEach((row) => {
+        let content = row.dataset.content;
+        if (content) blocks.push(content.trim());
+    });
+
+    const fileContent = blocks.join('\n\n');
+    const container = document.getElementById(outputContainerId);
+    const textarea = container.querySelector('textarea');
+    
+    textarea.value = fileContent;
+    container.style.display = 'block';
+    container.scrollIntoView({ behavior: 'smooth' });
+
+    // Directly populate into UFDC calculator field
+    const targetInputId = targetUfdcMap[tbodyId];
+    if (targetInputId) {
+        document.getElementById(targetInputId).value = fileContent;
+    }
+}
+
+function importAllToCalculator() {
+    ['arrTbody', 'loadTbody', 'pcdTbody', 'depTbody'].forEach(tbodyId => {
+        const tbody = document.getElementById(tbodyId);
+        const rows = tbody.querySelectorAll('tr');
+        if (rows.length > 0) {
+            let blocks = [];
+            rows.forEach((row) => {
+                let content = row.dataset.content;
+                if (content) blocks.push(content.trim());
+            });
+            const fileContent = blocks.join('\n\n');
+            const targetInputId = targetUfdcMap[tbodyId];
+            if (targetInputId) {
+                document.getElementById(targetInputId).value = fileContent;
+            }
+        }
+    });
+    switchApp('ufdc');
+}
+</script>
+
+<script>
+/* =========================================================
+   APP 2 SCRIPT: UNIFIED FLIGHT DATA CALCULATOR
+   ========================================================= */
+
+const listIntTr = ["JED","RUH","MED","DMM","KWI","DOH","MCT","FCO","LHR","MAN","YYZ","DXB","SHJ","AUH","NRT"];
+const listSaarc = ["CCU","DEL","KTM","KHI","MAA"];
+const listOther = ["CAN","KUL","BKK"];
+
+let globalFlightRows = [];
+
+function splitManifestBlocks(text) {
+    if (!text.trim()) return [];
+    
+    let normalized = text.replace(/\r\n/g, '\n');
+    const regex = /(G\*\/BG\d+)/gi;
+    let indices = [];
+    let match;
+    
+    while ((match = regex.exec(normalized)) !== null) {
+        indices.push(match.index);
+    }
+    
+    if (indices.length === 0) {
+        const ldmRegex = /(LDM\b)/gi;
+        while ((match = ldmRegex.exec(normalized)) !== null) {
+            indices.push(match.index);
+        }
+    }
+    
+    if (indices.length === 0) {
+        return [normalized.trim()];
+    }
+    
+    let blocks = [];
+    for (let i = 0; i < indices.length; i++) {
+        let start = indices[i];
+        let end = (i + 1 < indices.length) ? indices[i + 1] : normalized.length;
+        let content = normalized.substring(start, end).trim();
+        if (content) blocks.push(content);
+    }
+    return blocks;
+}
+
+function getFlightConfig(flightNoStr) {
+    const match = flightNoStr.match(/\d+/);
+    if (!match) return { isArrivalInt: false, isDepartureInt: false };
+    
+    const numStr = match[0];
+    const num = parseInt(numStr, 10);
+    const cleanNumStr = num.toString();
+    
+    if (cleanNumStr.startsWith('4') || cleanNumStr.startsWith('6')) {
+        return { isArrivalInt: false, isDepartureInt: false };
+    }
+    
+    return {
+        isArrivalInt: (num % 2 === 0),
+        isDepartureInt: (num % 2 !== 0)
+    };
+}
+
+function parseSingleOutboundBlock(textBlock) {
+    let outData = { intTr: 0, saarc: 0, other: 0, interline: 0 };
+    if (!textBlock) return outData;
+
+    const lines = textBlock.split('\n');
+    let parsingActive = false;
+
+    lines.forEach(line => {
+        let cleanLine = line.replace(/[\u00A0\u1680\u180e\u2000-\u200a\u202f\u205f\u3000]/g, " ");
+        let parts = cleanLine.trim().toUpperCase().split(/\s+/);
+
+        if (cleanLine.includes("OUTBOUND")) { parsingActive = true; return; }
+        if (cleanLine.includes("TOTAL LCL") || cleanLine.includes("INBOUND")) { parsingActive = false; }
+
+        if (parsingActive && parts.length >= 4 && parts[0].length === 3 && parts[0] !== "DES") {
+            const dest = parts[0];
+            const psgrCount = parseInt(parts[parts.length - 2], 10);
+
+            if (!isNaN(psgrCount)) {
+                if (parts[1].length === 2 && isNaN(parts[1])) {
+                    outData.interline += psgrCount;
+                } 
+                else if (listIntTr.includes(dest)) { outData.intTr += psgrCount; }
+                else if (listSaarc.includes(dest)) { outData.saarc += psgrCount; }
+                else if (listOther.includes(dest)) { outData.other += psgrCount; }
+            }
+        }
+    });
+    return outData;
+}
+
+function parseSingleLocalManifestBlock(textBlock) {
+    let localData = { jcl_rv: 0, ycl_rv: 0, jcl_nr: 0, ycl_nr: 0, inf: 0 };
+    if (!textBlock) return localData;
+
+    const lines = textBlock.split('\n');
+    for (let line of lines) {
+        if (line.toUpperCase().includes("LCL") && line.toUpperCase().includes("RV")) {
+            let clean = line.replace(/[\u00A0\u1680\u180e\u2000-\u200a\u202f\u205f\u3000]/g, " ").trim();
+            let digits = clean.match(/\b\d+\b/g);
+            
+            if (digits && digits.length >= 4) {
+                localData.jcl_rv = parseInt(digits[0], 10) || 0;
+                localData.ycl_rv = parseInt(digits[1], 10) || 0;
+                localData.jcl_nr = parseInt(digits[2], 10) || 0;
+                localData.ycl_nr = parseInt(digits[3], 10) || 0;
+            } else if (digits && digits.length === 2) {
+                localData.jcl_rv = 0;
+                localData.jcl_nr = 0;
+                localData.ycl_rv = parseInt(digits[0], 10) || 0;
+                localData.ycl_nr = parseInt(digits[1], 10) || 0;
+            }
+            break;
+        }
+    }
+    return localData;
+}
+
+function processAllFlightData() {
+    const arrLdmText = document.getElementById('arrivalLdmInput').value;
+    const localManifestText = document.getElementById('localManifestInput').value;
+    const outboundManifestText = document.getElementById('outboundManifestInput').value;
+    const depLdmText = document.getElementById('departureLdmInput').value;
+    
+    const arrLdmBlocks = splitManifestBlocks(arrLdmText);
+    const localBlocks = splitManifestBlocks(localManifestText);
+    const outboundBlocks = splitManifestBlocks(outboundManifestText);
+    const depLdmBlocks = splitManifestBlocks(depLdmText);
+
+    let maxRecordsLength = Math.max(arrLdmBlocks.length, localBlocks.length, outboundBlocks.length, depLdmBlocks.length);
+    globalFlightRows = [];
+
+    for (let i = 0; i < maxRecordsLength; i++) {
+        let arrBlock = arrLdmBlocks[i] || "";
+        let depBlock = depLdmBlocks[i] || "";
+        
+        let row = {
+            flightNo: "",
+            dom_jcl_rv: 0, dom_jcl_nr: 0, dom_ycl_rv: 0, dom_ycl_nr: 0, dom_in: 0,
+            int_jcl_rv: 0, int_jcl_nr: 0, int_ycl_rv: 0, int_ycl_nr: 0, int_inf: 0,
+            dom_cgo_arr: 0, int_cgo_arr: 0, ocs_mail_arr: 0,
+            dtr_pax: 0, dtr_inf: 0,
+            dep_dom_jcl_rv: 0, dep_dom_jcl_nr: 0, dep_dom_ycl_rv: 0, dep_dom_ycl_nr: 0,
+            dep_ob_interline: 0, dep_dom_inf: 0, dep_ob_saarc: 0, dep_ob_other: 0,
+            dep_int_tr_jcl: 0, dep_int_tr_ycl: 0,
+            dep_int_pax_jcl_rv: 0, dep_int_pax_jcl_nr: 0, dep_int_pax_ycl_rv: 0, dep_int_pax_ycl_nr: 0,
+            dep_int_inf: 0, dep_ib: 0, dep_dom_cgo: 0, dep_int_cgo: 0, dep_ocs_mail: 0,
+            dep_ebc_kg: 0, dep_ebc_bdt: 0,
+            xxcrew: 0, crew: 0, tob: 0, sob: 0
+        };
+
+        const targetBlockContext = arrBlock || depBlock || localBlocks[i] || outboundBlocks[i] || "";
+        const fltMatch = targetBlockContext.match(/BG\s*(\d+)/i);
+        
+        if (fltMatch) {
+            const fltNumStr = fltMatch[1];
+            row.flightNo = `BG${fltNumStr}/BG${fltNumStr}`;
+        } else {
+            row.flightNo = `FLIGHT ${i+1}`;
+        }
+
+        const config = getFlightConfig(row.flightNo);
+
+        if (arrBlock) {
+            const paxPadMatch = arrBlock.match(/PAX\/(\d+)\/(\d+)[\s\S]*?\.PAD\/(\d+)\/(\d+)/i);
+            let jcl_rv = 0, jcl_nr = 0, ycl_rv = 0, ycl_nr = 0;
+            if (paxPadMatch) {
+                jcl_rv = (parseInt(paxPadMatch[1], 10) || 0) - (parseInt(paxPadMatch[3], 10) || 0);
+                jcl_nr = parseInt(paxPadMatch[3], 10) || 0;
+                ycl_rv = (parseInt(paxPadMatch[2], 10) || 0) - (parseInt(paxPadMatch[4], 10) || 0);
+                ycl_nr = parseInt(paxPadMatch[4], 10) || 0;
+            }
+
+            let arrivalInfants = 0;
+            const cgpInfMatch = arrBlock.match(/-CGP\.([0-9/]+)/i);
+            if (cgpInfMatch) {
+                const parts = cgpInfMatch[1].split('/');
+                arrivalInfants = parseInt(parts[parts.length - 1], 10) || 0; 
+            }
+
+            if (config.isArrivalInt) {
+                row.int_jcl_rv = jcl_rv; row.int_jcl_nr = jcl_nr;
+                row.int_ycl_rv = ycl_rv; row.int_ycl_nr = ycl_nr;
+                row.int_inf = arrivalInfants;
+            } else {
+                row.dom_jcl_rv = jcl_rv; row.dom_jcl_nr = jcl_nr;
+                row.dom_ycl_rv = ycl_rv; row.dom_ycl_nr = ycl_nr;
+                row.dom_in = arrivalInfants;
+            }
+
+            const cmMatch = arrBlock.match(/C\s+(\d+)\s+M\s+(\d+)/i);
+            if (cmMatch) {
+                let cargoWeight = parseInt(cmMatch[1], 10) || 0;
+                let mailWeight = parseInt(cmMatch[2], 10) || 0;
+                if (config.isArrivalInt) row.int_cgo_arr = cargoWeight;
+                else row.dom_cgo_arr = cargoWeight;
+                row.ocs_mail_arr = mailWeight;
+            }
+
+            const arrSectorRegex = /([A-Z]{3})\.(\d+(?:\/\d+)+)/gi;
+            let arrSectorMatch;
+            while ((arrSectorMatch = arrSectorRegex.exec(arrBlock)) !== null) {
+                const station = arrSectorMatch[1].toUpperCase();
+                if (station !== "CGP") {
+                    const numbers = arrSectorMatch[2].split('/').map(num => parseInt(num, 10) || 0);
+                    if (numbers.length >= 3) {
+                        row.dtr_inf = numbers[numbers.length - 1];
+                    }
+                }
+            }
+
+            const nonCgpLineMatch = arrBlock.match(/(?:^|\s|-)(?!CGP\b)([A-Z]{3})\.[\s\S]*?\.PAX\/(\d+)\/(\d+)/i);
+            if (nonCgpLineMatch) {
+                row.dtr_pax = parseInt(nonCgpLineMatch[2], 10) + parseInt(nonCgpLineMatch[3], 10);
+            }
+
+            if (row.flightNo.match(/BG\s*06\d+/i)) {
+                row.dtr_pax = 0; row.dtr_inf = 0;
+            }
+        }
+
+        let cockpitCrew = 0;
+        let cabinCrew = 0;
+        let departureInfants = 0;
+        let totalDepPax = 0;
+
+        if (depBlock) {
+            const crewMatch = depBlock.match(/\.(\d+)\/(\d+)(?:\s|\.|$)/) || depBlock.match(/\.(\d+)\/(\d+)\s*$/m);
+            if (crewMatch) {
+                cockpitCrew = parseInt(crewMatch[1], 10) || 0;
+                cabinCrew = parseInt(crewMatch[2], 10) || 0;
+            }
+
+            const cmDepMatch = depBlock.match(/C\s+(\d+)\s+M\s+(\d+)/i);
+            if (cmDepMatch) {
+                let depCargo = parseInt(cmDepMatch[1], 10) || 0;
+                let depMail = parseInt(cmDepMatch[2], 10) || 0;
+                if (config.isDepartureInt) row.dep_int_cgo = depCargo;
+                else row.dep_dom_cgo = depCargo;
+                row.dep_ocs_mail = depMail;
+            }
+
+            if (!/EBC:\s*NIL/i.test(depBlock)) {
+                const ebcRegex = /(?:EBC\s*[:-\s]\s*)(\d+)\s*(?:KG|KGS)\s*(?:BDT|\/)?\s*(\d+)/i;
+                const ebcMatch = depBlock.match(ebcRegex);
+                if (ebcMatch) {
+                    row.dep_ebc_kg = parseInt(ebcMatch[1], 10) || 0;
+                    row.dep_ebc_bdt = parseInt(ebcMatch[2], 10) || 0;
+                }
+            }
+
+            const depSectorRegex = /([A-Z]{3})\.(\d+(?:\/\d+)+)/gi;
+            let depSectorMatch;
+            while ((depSectorMatch = depSectorRegex.exec(depBlock)) !== null) {
+                const rawContent = depSectorMatch[2];
+                const numbers = rawContent.split('/').map(num => parseInt(num, 10) || 0);
+                if (numbers.length >= 3) {
+                    departureInfants += numbers[numbers.length - 1];
+                }
+                totalDepPax += numbers.reduce((a, b) => a + b, 0);
+            }
+
+            row.sob = totalDepPax + (cockpitCrew + cabinCrew);
+        }
+
+        let currentLocalData = parseSingleLocalManifestBlock(localBlocks[i]);
+        let currentOutboundData = parseSingleOutboundBlock(outboundBlocks[i]);
+
+        let netYclRv = Math.max(0, currentLocalData.ycl_rv - currentOutboundData.saarc - currentOutboundData.interline - currentOutboundData.other - currentOutboundData.intTr);
+        let calculatedInfants = Math.max(0, departureInfants - row.dtr_inf);
+
+        if (config.isDepartureInt) {
+            row.dep_int_pax_jcl_rv = currentLocalData.jcl_rv; 
+            row.dep_int_pax_jcl_nr = currentLocalData.jcl_nr;
+            row.dep_int_pax_ycl_rv = netYclRv;
+            row.dep_int_pax_ycl_nr = currentLocalData.ycl_nr;
+            row.dep_int_inf = calculatedInfants;
+            row.dep_dom_inf = 0;
+        } else {
+            row.dep_dom_jcl_rv = currentLocalData.jcl_rv; 
+            row.dep_dom_jcl_nr = currentLocalData.jcl_nr;
+            row.dep_dom_ycl_rv = netYclRv;
+            row.dep_dom_ycl_nr = currentLocalData.ycl_nr;
+            row.dep_dom_inf = calculatedInfants;
+            row.dep_int_inf = 0;
+        }
+        
+        row.dep_ob_interline = currentOutboundData.interline;
+        row.dep_ob_saarc     = currentOutboundData.saarc;
+        row.dep_ob_other     = currentOutboundData.other;
+        row.dep_int_tr_ycl   = currentOutboundData.intTr; 
+
+        row.xxcrew = 0;
+        row.crew = cockpitCrew + cabinCrew;
+
+        row.tob = row.dtr_pax + row.dtr_inf + 
+                  row.dep_dom_jcl_rv + row.dep_dom_jcl_nr + row.dep_dom_ycl_rv + row.dep_dom_ycl_nr + 
+                  row.dep_ob_interline + row.dep_dom_inf + row.dep_ob_saarc + row.dep_ob_other + 
+                  row.dep_int_tr_jcl + row.dep_int_tr_ycl + 
+                  row.dep_int_pax_jcl_rv + row.dep_int_pax_jcl_nr + row.dep_int_pax_ycl_rv + row.dep_int_pax_ycl_nr + 
+                  row.dep_int_inf + row.dep_ib + row.crew;
+
+        if (!depBlock) {
+            row.sob = row.tob;
+        }
+
+        globalFlightRows.push(row);
+    }
+
+    renderUnifiedHTML();
+}
+
+function renderUnifiedHTML() {
+    if (globalFlightRows.length === 0) {
+        document.getElementById('tableContainer').innerHTML = `<p style="color:#777; text-align:center; padding: 20px;">No operational flights processed. Verify layout criteria metrics.</p>`;
+        return;
+    }
+
+    let html = `
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="4" class="header-main">FLIGHT NO.</th>
+                <th colspan="13" class="header-main">ARRIVAL</th>
+                <th colspan="2" rowspan="2" class="header-main" style="color:red;">DTR</th>
+                <th colspan="21" class="header-main header-dept">DEPARTURE</th>
+                <th rowspan="4" class="header-crew">XXCREW</th>
+                <th rowspan="4" class="header-crew" style="background-color:#fff5cc; color:#000;">CREW</th>
+                <th rowspan="4" class="header-crew">TOB</th>
+                <th rowspan="4" class="header-crew">NO OF FLT</th>
+                <th rowspan="4" class="header-crew" style="background-color:#1a252f; color:white;">SOB</th>
+            </tr>
+            <tr>
+                <th colspan="5" class="header-sub">DOM PAX</th>
+                <th colspan="5" class="header-sub" style="color:red;">INT'L PAX</th>
+                <th rowspan="3" class="header-sub">DOM<br>CGO</th>
+                <th rowspan="3" class="header-sub">INT'L<br>CGO</th>
+                <th rowspan="3" class="header-sub">OCS/<br>MAIL</th>
+                <th colspan="4" class="header-dept">DOM PAX</th>
+                <th rowspan="2" class="header-dept">OB<br>(INTERLINE)</th>
+                <th rowspan="2" class="header-dept">DOM<br>INF</th>
+                <th colspan="2" class="header-dept">OB(BG)</th>
+                <th colspan="2" class="header-dept">INT'L TR</th>
+                <th colspan="4" class="header-dept" style="color:red;">INT'L PAX</th>
+                <th rowspan="3" class="header-dept">INT'L<br>INF</th>
+                <th rowspan="3" class="header-dept">IB</th>
+                <th rowspan="3" class="header-dept">DOM<br>CGO</th>
+                <th rowspan="3" class="header-dept">INT'L<br>CGO</th>
+                <th rowspan="3" class="header-dept">OCS/<br>MAIL</th>
+                <th colspan="2" class="header-dept">EBC</th>
+            </tr>
+            <tr>
+                <th colspan="2" class="header-sub">JCL</th>
+                <th colspan="2" class="header-sub">YCL</th>
+                <th rowspan="2" class="header-sub">IN</th>
+                <th colspan="2" class="header-sub" style="color:red;">JCL</th>
+                <th colspan="2" class="header-sub" style="color:red;">YCL</th>
+                <th rowspan="2" class="header-sub">INF</th>
+                <th rowspan="2" style="color:red; font-size:11px; background-color:#ebebe0;">PAX</th>
+                <th rowspan="2" style="color:red; font-size:11px; background-color:#ebebe0;">INF</th>
+                <th colspan="2" class="header-dept">JCL</th>
+                <th colspan="2" class="header-dept">YCL</th>
+                <th rowspan="2" class="header-dept">SAARC</th>
+                <th rowspan="2" class="header-dept">OTHER</th>
+                <th rowspan="2" class="header-dept">JCL</th>
+                <th rowspan="2" class="header-dept">YCL</th>
+                <th colspan="2" class="header-dept" style="color:red;">JCL</th>
+                <th colspan="2" class="header-dept" style="color:red;">YCL</th>
+                <th rowspan="2">KG</th>
+                <th rowspan="2">BDT</th>
+            </tr>
+            <tr>
+                <th>RV</th><th>NR</th><th>RV</th><th>NR</th>
+                <th style="color:red;">RV</th><th style="color:red;">NR</th><th style="color:red;">RV</th><th style="color:red;">NR</th>
+                <th>RV</th><th>NR</th><th>RV</th><th>NR/BG</th>
+                <th style="color:red;">RV</th><th style="color:red;">NR</th><th style="color:red;">RV</th><th style="color:red;">NR</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+
+    globalFlightRows.forEach((row, idx) => {
+        let tobClass = "";
+        let sobClass = "status-default-sob";
+        
+        if (row.tob === row.sob) {
+            tobClass = "status-match";
+            sobClass = "status-match";
+        } else {
+            tobClass = "status-mismatch-tob";
+        }
+
+        html += `
+            <tr>
+                <td class="flight-no">${row.flightNo}</td>
+                <td>${row.dom_jcl_rv}</td>
+                <td>${row.dom_jcl_nr}</td>
+                <td>${row.dom_ycl_rv}</td>
+                <td>${row.dom_ycl_nr}</td>
+                <td>${row.dom_in}</td>
+                <td class="text-red">${row.int_jcl_rv}</td>
+                <td class="text-red">${row.int_jcl_nr}</td>
+                <td class="text-red">${row.int_ycl_rv}</td>
+                <td class="text-red">${row.int_ycl_nr}</td>
+                <td>${row.int_inf}</td>
+                <td>${row.dom_cgo_arr}</td>
+                <td>${row.int_cgo_arr}</td>
+                <td>${row.ocs_mail_arr}</td>
+                <td class="text-red">${row.dtr_pax}</td>
+                <td class="text-red">${row.dtr_inf}</td>
+                
+                <td class="text-blue">${row.dep_dom_jcl_rv}</td>
+                <td class="text-blue">${row.dep_dom_jcl_nr}</td>
+                <td class="text-blue">${row.dep_dom_ycl_rv}</td>
+                <td class="text-blue">${row.dep_dom_ycl_nr}</td>
+                <td class="text-green">${row.dep_ob_interline}</td>
+                <td class="text-green">${row.dep_dom_inf}</td>
+                <td class="text-green">${row.dep_ob_saarc}</td>
+                <td class="text-green">${row.dep_ob_other}</td>
+                <td class="text-blue">${row.dep_int_tr_jcl}</td>
+                <td class="text-blue">${row.dep_int_tr_ycl}</td>
+                <td class="text-red">${row.dep_int_pax_jcl_rv}</td>
+                <td class="text-red">${row.dep_int_pax_jcl_nr}</td>
+                <td class="text-red">${row.dep_int_pax_ycl_rv}</td>
+                <td class="text-red">${row.dep_int_pax_ycl_nr}</td>
+                <td>${row.dep_int_inf}</td>
+                <td>${row.dep_ib}</td>
+                <td>${row.dep_dom_cgo}</td>
+                <td>${row.dep_int_cgo}</td>
+                <td>${row.dep_ocs_mail}</td>
+                <td>${row.dep_ebc_kg}</td>
+                <td>${row.dep_ebc_bdt}</td>
+                
+                <td>${row.xxcrew}</td>
+                <td class="status-mismatch-tob" style="background-color:#cc0000; color:white;">${row.crew}</td>
+                <td class="${tobClass}">${row.tob}</td>
+                <td>1</td>
+                <td class="${sobClass}">${row.sob}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+        </tbody>
+    </table>
+    `;
+
+    document.getElementById('tableContainer').innerHTML = html;
+}
+</script>
+
+</body>
+</html>
