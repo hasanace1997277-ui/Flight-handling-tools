@@ -556,7 +556,7 @@
           </div>
           <div class="form-group full">
             <label for="projSrc">Link URL (src)</label>
-            <input type="text" id="projSrc" placeholder="Leave empty or paste URL / path" />
+            <input type="text" id="projSrc" placeholder="Paste GitHub Pages URL or relative path" />
           </div>
         </div>
         <div class="modal-foot" style="margin-top:12px;">
@@ -580,83 +580,82 @@
   </div>
 
   <script>
-    /* =====================================================================
-       MANUALLY ADD YOUR LINKS IN THE `src: ""` FIELDS BELOW
-       ===================================================================== */
+    const BASE_URL = "https://hasanace1997277-ui.github.io/Flight-handling-tools/";
+
     const DEFAULT_PROJECTS = [
       {
         title: "CGP Roster 6.0",
         icon: "📋",
         category: "ROSTER & OPS",
         file: "Digital Roster 6.0.html",
-        src: ""
+        src: BASE_URL + "Digital%20Roster%206.0.html"
       },
       {
         title: "MVT Generator (LT → UTC)",
         icon: "🕒",
         category: "ROSTER & OPS",
         file: "MVT GENERATOR.html",
-        src: ""
+        src: BASE_URL + "MVT%20GENERATOR.html"
       },
       {
         title: "Flight Ops Suite (UFDC 2.0)",
         icon: "📊",
         category: "LDM & MANIFEST",
         file: "UFDC 2.0.html",
-        src: ""
+        src: BASE_URL + "UFDC%202.0.html"
       },
       {
         title: "Manifest Extractor 4.0",
         icon: "📑",
         category: "LDM & MANIFEST",
         file: "MANIFEST EXTRACTOR 4.0.html",
-        src: ""
+        src: BASE_URL + "MANIFEST%20EXTRACTOR%204.0.html"
       },
       {
         title: "OB Passenger Counter",
         icon: "🧳",
         category: "LDM & MANIFEST",
         file: "ob passenger counter.html",
-        src: ""
+        src: BASE_URL + "ob%20passenger%20counter.html"
       },
       {
         title: "Any LDM Parser",
         icon: "🔄",
         category: "LDM & MANIFEST",
         file: "ANY LDM PARSER.html",
-        src: ""
+        src: BASE_URL + "ANY%20LDM%20PARSER.html"
       },
       {
         title: "Universal Loadsheet Parser",
         icon: "⚖️",
         category: "LOAD & TRIM",
         file: "Universal Loadsheet Parser.html",
-        src: ""
+        src: BASE_URL + "Universal%20Loadsheet%20Parser.html"
       },
       {
         title: "Dash 8 Digital Trim Sheet",
         icon: "✈️",
         category: "LOAD & TRIM",
         file: "DASH 8 DIGITAL TRIM SHEET.html",
-        src: "https://hasanace1997277-ui.github.io/Flight-handling-tools/DASH%208%20DIGITAL%20TRIM%20SHEET.html"
+        src: BASE_URL + "DASH%208%20DIGITAL%20TRIM%20SHEET.html"
       },
       {
         title: "HTML Block Editor",
         icon: "🧩",
         category: "DEV & TEXT",
         file: "HTML block view.html",
-        src: "https://hasanace1997277-ui.github.io/Flight-handling-tools/HTML%20block%20view.html"
+        src: BASE_URL + "HTML%20block%20view.html"
       },
       {
         title: "TXT File Combiner",
         icon: "📄",
         category: "DEV & TEXT",
         file: "TEXT COMBINER.html",
-        src: ""
+        src: BASE_URL + "TEXT%20COMBINER.html"
       }
     ];
 
-    const STORAGE_KEY = "flight_handling_portal_icons_v2";
+    const STORAGE_KEY = "flight_handling_portal_icons_v3";
     const VIEW_KEY = "flight_handling_portal_compact_v1";
     let projects = [];
     let activeCategory = "ALL";
