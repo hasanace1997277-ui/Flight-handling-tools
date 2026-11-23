@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FLIGHT HANDLING TOOLS - PROJECT PORTAL</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --secondary: #1e293b;
+      --accent: #38bdf8;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-2: #f1f5f9;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.4;
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px 16px 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Header */
+    .topbar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 16px 20px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand h1 {
+      margin: 0 0 2px;
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--secondary);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .brand p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn {
+      background: var(--surface);
+      color: var(--secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 13px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    .btn.active-toggle {
+      background: var(--secondary);
+      color: #ffffff;
+      border-color: var(--secondary);
+    }
+
+    .btn.active-toggle:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+      color: #ffffff;
+    }
+
+    .btn-danger {
+      color: var(--danger);
+      border-color: #fecaca;
+      background: #fef2f2;
+    }
+
+    .btn-danger:hover {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #ffffff;
+    }
+
+    /* Filter Bar */
+    .filterbar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 10px 14px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .search-box {
+      flex: 1 1 220px;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 7px 12px;
+      font-size: 0.84rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .search-box:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      background: var(--surface);
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tab {
+      background: var(--surface-2);
+      color: var(--muted);
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 6px 11px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab:hover {
+      color: var(--primary);
+      border-color: var(--accent);
+    }
+
+    .tab.active {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    /* Project Cards Grid */
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .project-card {
+      background: var(--surface);
+      color: var(--secondary);
+      border-radius: 15px;
+      padding: 20px 16px 16px;
+      border: 2px solid transparent;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+    }
+
+    .project-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-top {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .cat-badge {
+      background: #eff6ff;
+      color: var(--primary);
+      border: 1px solid #bfdbfe;
+      font-size: 0.66rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 999px;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+
+    .link-state {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .link-state.ready { color: var(--success); }
+    .link-state.empty { color: var(--muted); }
+
+    .tool-icon {
+      font-size: 2.2rem;
+      line-height: 1;
+      margin: 8px 0 6px;
+    }
+
+    .card-title {
+      margin: 0 0 3px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--secondary);
+    }
+
+    .card-file {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      word-break: break-word;
+    }
+
+    .card-footer {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .open-link {
+      text-decoration: none;
+      background: var(--primary);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.76rem;
+      padding: 6px 11px;
+      border-radius: 8px;
+      transition: background 0.2s ease;
+    }
+
+    .open-link:hover { background: var(--primary-hover); }
+
+    .open-link.disabled {
+      background: var(--surface-2);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .mini-btn {
+      background: var(--surface-2);
+      color: var(--secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .mini-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .mini-btn.del:hover {
+      background: #fef2f2;
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    /* Compact "All in One View" Mode */
+    .app.compact-view {
+      max-width: 1440px;
+      padding: 10px 12px 16px;
+      gap: 8px;
+    }
+
+    .app.compact-view .topbar {
+      padding: 10px 14px;
+      border-radius: 12px;
+    }
+
+    .app.compact-view .brand h1 {
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+    }
+
+    .app.compact-view .brand p {
+      font-size: 0.75rem;
+    }
+
+    .app.compact-view .filterbar {
+      padding: 7px 10px;
+      border-radius: 12px;
+    }
+
+    .app.compact-view .project-grid {
+      grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+      gap: 8px;
+    }
+
+    .app.compact-view .project-card {
+      padding: 9px 10px 8px;
+      border-radius: 11px;
+      gap: 6px;
+    }
+
+    .app.compact-view .cat-badge {
+      font-size: 0.58rem;
+      padding: 1px 5px;
+    }
+
+    .app.compact-view .tool-icon {
+      font-size: 1.35rem;
+      margin: 2px 0;
+    }
+
+    .app.compact-view .card-title {
+      font-size: 0.8rem;
+      margin: 0;
+    }
+
+    .app.compact-view .card-file {
+      display: none;
+    }
+
+    .app.compact-view .card-footer {
+      padding-top: 6px;
+      gap: 4px;
+    }
+
+    .app.compact-view .open-link {
+      font-size: 0.68rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .app.compact-view .mini-btn {
+      font-size: 0.66rem;
+      padding: 3px 6px;
+      border-radius: 6px;
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--primary);
+      border-radius: 15px;
+      width: 100%;
+      max-width: 560px;
+      padding: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      color: var(--secondary);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    .form-group label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--secondary);
+      text-transform: uppercase;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.85rem;
+      font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: var(--surface);
+    }
+
+    .code-export {
+      width: 100%;
+      height: 220px;
+      background: var(--secondary);
+      color: var(--accent);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      white-space: pre;
+      overflow: auto;
+    }
+
+    .modal-foot {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    @media (max-width: 520px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .project-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="appRoot">
+    <header class="topbar">
+      <div class="brand">
+        <h1>Flight Handling Tools</h1>
+        <p>Select a tool to launch the application</p>
+      </div>
+      <div class="toolbar">
+        <button class="btn" id="compactToggleBtn" type="button" onclick="toggleCompactView()">Fit All in One View</button>
+        <button class="btn btn-primary" type="button" onclick="openProjectModal()">+ Add Project</button>
+        <button class="btn" type="button" onclick="openExportModal()">Export Array Code</button>
+        <button class="btn btn-danger" type="button" onclick="resetToDefaults()">Reset Defaults</button>
+      </div>
+    </header>
+
+    <section class="filterbar">
+      <input type="search" id="searchInput" class="search-box" placeholder="Search tools or filenames..." oninput="renderGrid()" />
+      <div class="tabs" id="categoryTabs">
+        <button class="tab active" data-cat="ALL" onclick="setCategory('ALL')">ALL</button>
+        <button class="tab" data-cat="ROSTER & OPS" onclick="setCategory('ROSTER & OPS')">ROSTER &amp; OPS</button>
+        <button class="tab" data-cat="LDM & MANIFEST" onclick="setCategory('LDM & MANIFEST')">LDM &amp; MANIFEST</button>
+        <button class="tab" data-cat="LOAD & TRIM" onclick="setCategory('LOAD & TRIM')">LOAD &amp; TRIM</button>
+        <button class="tab" data-cat="DEV & TEXT" onclick="setCategory('DEV & TEXT')">DEV &amp; TEXT</button>
+      </div>
+    </section>
+
+    <main class="project-grid" id="projectGrid"></main>
+  </div>
+
+  <!-- Add / Edit Project Modal -->
+  <div class="modal-backdrop" id="projectModal">
+    <div class="modal">
+      <h2 id="modalTitle">Add New Project</h2>
+      <form id="projectForm" onsubmit="saveProject(event)">
+        <input type="hidden" id="editIndex" value="-1" />
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="projName">Project Title *</label>
+            <input type="text" id="projName" required placeholder="e.g. Boeing 737-800 Trim Sheet" />
+          </div>
+          <div class="form-group">
+            <label for="projIcon">Icon *</label>
+            <select id="projIcon">
+              <option value="✈️">✈️ Aircraft / Trim</option>
+              <option value="📋">📋 Roster / Checklist</option>
+              <option value="📊">📊 Analytics / Calculator</option>
+              <option value="📑">📑 LDM / Loadsheet</option>
+              <option value="🕒">🕒 Time / MVT</option>
+              <option value="🔄">🔄 Sync / Conversion</option>
+              <option value="🧳">🧳 Passengers / Baggage</option>
+              <option value="⚖️">⚖️ Weight &amp; Balance</option>
+              <option value="🧩">🧩 Code Blocks</option>
+              <option value="📄">📄 Text / Files</option>
+              <option value="🚀">🚀 App / Utility</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="projCat">Category *</label>
+            <select id="projCat">
+              <option value="ROSTER & OPS">ROSTER &amp; OPS</option>
+              <option value="LDM & MANIFEST">LDM &amp; MANIFEST</option>
+              <option value="LOAD & TRIM">LOAD &amp; TRIM</option>
+              <option value="DEV & TEXT">DEV &amp; TEXT</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="projFile">HTML Filename</label>
+            <input type="text" id="projFile" placeholder="e.g. b737-trim.html" />
+          </div>
+          <div class="form-group full">
+            <label for="projSrc">Link URL (src)</label>
+            <input type="text" id="projSrc" placeholder="Leave empty or paste URL / path" />
+          </div>
+        </div>
+        <div class="modal-foot" style="margin-top:12px;">
+          <button type="button" class="btn" onclick="closeModal('projectModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Export Updated Array Modal -->
+  <div class="modal-backdrop" id="exportModal">
+    <div class="modal">
+      <h2>Export Updated DEFAULT_PROJECTS</h2>
+      <textarea id="exportTextarea" class="code-export" readonly></textarea>
+      <div class="modal-foot">
+        <button type="button" class="btn" onclick="closeModal('exportModal')">Close</button>
+        <button type="button" class="btn btn-primary" onclick="copyExportCode()">Copy Code</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =====================================================================
+       MANUALLY ADD YOUR LINKS IN THE `src: ""` FIELDS BELOW
+       ===================================================================== */
+    const DEFAULT_PROJECTS = [
+      {
+        title: "CGP Roster 6.0",
+        icon: "📋",
+        category: "ROSTER & OPS",
+        file: "Digital Roster 6.0.html",
+        src: ""
+      },
+      {
+        title: "MVT Generator (LT → UTC)",
+        icon: "🕒",
+        category: "ROSTER & OPS",
+        file: "MVT GENERATOR.html",
+        src: ""
+      },
+      {
+        title: "Flight Ops Suite (UFDC 2.0)",
+        icon: "📊",
+        category: "LDM & MANIFEST",
+        file: "UFDC 2.0.html",
+        src: ""
+      },
+      {
+        title: "Manifest Extractor 4.0",
+        icon: "📑",
+        category: "LDM & MANIFEST",
+        file: "MANIFEST EXTRACTOR 4.0.html",
+        src: ""
+      },
+      {
+        title: "OB Passenger Counter",
+        icon: "🧳",
+        category: "LDM & MANIFEST",
+        file: "ob passenger counter.html",
+        src: ""
+      },
+      {
+        title: "Any LDM Parser",
+        icon: "🔄",
+        category: "LDM & MANIFEST",
+        file: "ANY LDM PARSER.html",
+        src: ""
+      },
+      {
+        title: "Universal Loadsheet Parser",
+        icon: "⚖️",
+        category: "LOAD & TRIM",
+        file: "Universal Loadsheet Parser.html",
+        src: ""
+      },
+      {
+        title: "Dash 8 Digital Trim Sheet",
+        icon: "✈️",
+        category: "LOAD & TRIM",
+        file: "DASH 8 DIGITAL TRIM SHEET.html",
+        src: ""
+      },
+      {
+        title: "HTML Block Editor",
+        icon: "🧩",
+        category: "DEV & TEXT",
+        file: "HTML block view.html",
+        src: ""
+      },
+      {
+        title: "TXT File Combiner",
+        icon: "📄",
+        category: "DEV & TEXT",
+        file: "TEXT COMBINER.html",
+        src: ""
+      }
+    ];
+
+    const STORAGE_KEY = "flight_handling_portal_icons_v1";
+    const VIEW_KEY = "flight_handling_portal_compact_v1";
+    let projects = [];
+    let activeCategory = "ALL";
+    let isCompactView = false;
+
+    function init() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          projects = JSON.parse(saved);
+        } catch (e) {
+          projects = JSON.parse(JSON.stringify(DEFAULT_PROJECTS));
+        }
+      } else {
+        projects = JSON.parse(JSON.stringify(DEFAULT_PROJECTS));
+      }
+
+      isCompactView = localStorage.getItem(VIEW_KEY) === "true";
+      applyCompactViewState();
+      renderGrid();
+    }
+
+    function toggleCompactView() {
+      isCompactView = !isCompactView;
+      localStorage.setItem(VIEW_KEY, String(isCompactView));
+      applyCompactViewState();
+    }
+
+    function applyCompactViewState() {
+      const appRoot = document.getElementById("appRoot");
+      const btn = document.getElementById("compactToggleBtn");
+      appRoot.classList.toggle("compact-view", isCompactView);
+      btn.classList.toggle("active-toggle", isCompactView);
+      btn.textContent = isCompactView ? "Normal Block Size" : "Fit All in One View";
+    }
+
+    function persist() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+    }
+
+    function setCategory(cat) {
+      activeCategory = cat;
+      document.querySelectorAll(".tab").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.cat === cat);
+      });
+      renderGrid();
+    }
+
+    function esc(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById("projectGrid");
+      const query = document.getElementById("searchInput").value.trim().toLowerCase();
+
+      const filtered = projects
+        .map((p, idx) => ({ ...p, _idx: idx }))
+        .filter(p => {
+          if (activeCategory !== "ALL" && p.category !== activeCategory) return false;
+          if (query) {
+            const hay = `${p.title} ${p.file} ${p.category}`.toLowerCase();
+            return hay.includes(query);
+          }
+          return true;
+        });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="project-card" style="text-align:center;color:var(--muted);">🔍</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(p => {
+        const hasLink = Boolean(p.src && p.src.trim());
+        const href = hasLink ? esc(p.src.trim()) : "#";
+        return `
+          <article class="project-card">
+            <div style="width:100%;">
+              <div class="card-top">
+                <span class="cat-badge">${esc(p.category)}</span>
+                <span class="link-state ${hasLink ? "ready" : "empty"}">${hasLink ? "●" : "○"}</span>
+              </div>
+              <div class="tool-icon">${esc(p.icon || "🚀")}</div>
+              <h2 class="card-title">${esc(p.title)}</h2>
+              <div class="card-file">${esc(p.file || "")}</div>
+            </div>
+            <div class="card-footer">
+              <a class="open-link ${hasLink ? "" : "disabled"}" href="${href}" ${hasLink ? 'target="_blank" rel="noopener"' : ""}>Open</a>
+              <button class="mini-btn" type="button" onclick="openProjectModal(${p._idx})">URL</button>
+              <button class="mini-btn del" type="button" onclick="deleteProject(${p._idx})">✕</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function openProjectModal(index = -1) {
+      document.getElementById("editIndex").value = index;
+      if (index >= 0 && projects[index]) {
+        const p = projects[index];
+        document.getElementById("modalTitle").textContent = "Edit Project / Add Link URL";
+        document.getElementById("projName").value = p.title;
+        document.getElementById("projIcon").value = p.icon || "🚀";
+        document.getElementById("projCat").value = p.category;
+        document.getElementById("projFile").value = p.file || "";
+        document.getElementById("projSrc").value = p.src || "";
+      } else {
+        document.getElementById("modalTitle").textContent = "Add New Project";
+        document.getElementById("projectForm").reset();
+        document.getElementById("projIcon").value = "🚀";
+        document.getElementById("projSrc").value = "";
+      }
+      document.getElementById("projectModal").classList.add("open");
+      document.getElementById("projSrc").focus();
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("open");
+    }
+
+    function saveProject(e) {
+      e.preventDefault();
+      const idx = parseInt(document.getElementById("editIndex").value, 10);
+      const item = {
+        title: document.getElementById("projName").value.trim(),
+        icon: document.getElementById("projIcon").value,
+        category: document.getElementById("projCat").value,
+        file: document.getElementById("projFile").value.trim(),
+        src: document.getElementById("projSrc").value.trim()
+      };
+
+      if (idx >= 0) {
+        projects[idx] = item;
+      } else {
+        projects.push(item);
+      }
+
+      persist();
+      renderGrid();
+      closeModal("projectModal");
+    }
+
+    function deleteProject(idx) {
+      if (confirm(`Delete "${projects[idx].title}"?`)) {
+        projects.splice(idx, 1);
+        persist();
+        renderGrid();
+      }
+    }
+
+    function openExportModal() {
+      const code = `const DEFAULT_PROJECTS = ${JSON.stringify(projects, null, 2)};`;
+      document.getElementById("exportTextarea").value = code;
+      document.getElementById("exportModal").classList.add("open");
+    }
+
+    function copyExportCode() {
+      const ta = document.getElementById("exportTextarea");
+      ta.select();
+      navigator.clipboard.writeText(ta.value);
+      alert("Copied DEFAULT_PROJECTS array!");
+    }
+
+    function resetToDefaults() {
+      if (confirm("Reset projects to DEFAULT_PROJECTS?")) {
+        localStorage.removeItem(STORAGE_KEY);
+        projects = JSON.parse(JSON.stringify(DEFAULT_PROJECTS));
+        renderGrid();
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
