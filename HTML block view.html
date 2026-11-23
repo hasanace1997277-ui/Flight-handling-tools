@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTML Block Editor — Snippet Patcher</title>
+  <style>
+    :root {
+      --bg: #0b0b0c;
+      --surface: #141416;
+      --surface-2: #1c1c20;
+      --border: #2e2e34;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --accent: #facc15;
+      --accent-hover: #eab308;
+      --accent-text: #09090b;
+      --css-badge: #38bdf8;
+      --html-badge: #fb923c;
+      --js-badge: #facc15;
+      --head-badge: #a78bfa;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.4;
+    }
+
+    .app {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Toolbar */
+    .topbar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 0.3px;
+    }
+
+    .file-pill {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--accent-text);
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+      color: var(--accent-text);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #052e16;
+      border-color: var(--success);
+      font-weight: 800;
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background: #16a34a;
+      color: #ffffff;
+    }
+
+    .btn-danger {
+      color: #fca5a5;
+      border-color: #7f1d1d;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: #450a0a;
+      border-color: var(--danger);
+      color: #ffffff;
+    }
+
+    /* Filter & Search Bar */
+    .filterbar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .search-wrap {
+      flex: 1 1 260px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 0.84rem;
+      font-family: var(--mono);
+    }
+
+    .search-wrap input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .cat-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .cat-tab {
+      background: var(--bg);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .cat-tab.active {
+      background: var(--accent);
+      color: var(--accent-text);
+      border-color: var(--accent);
+    }
+
+    /* Whole-Section Quick Bar */
+    .sectionbar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sectionbar-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .section-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px;
+    }
+
+    /* Smart Auto-Patch Panel */
+    .patchbar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .patchbar-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .patchbar-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .patchbar-sub {
+      font-size: 0.74rem;
+      font-weight: 400;
+      color: var(--muted);
+    }
+
+    .patchbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .patch-input {
+      width: 100%;
+      min-height: 76px;
+      max-height: 260px;
+      background: #09090b;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      line-height: 1.45;
+      resize: vertical;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    .patch-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* Dropzone / Empty State */
+    .dropzone {
+      border: 2px dashed var(--border);
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 48px 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .dropzone.dragover {
+      border-color: var(--accent);
+      background: #1c1a10;
+    }
+
+    .dropzone h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+
+    .dropzone p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+      max-width: 520px;
+    }
+
+    /* Blocks List */
+    .blocks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      overflow: hidden;
+    }
+
+    .block.modified {
+      border-color: var(--accent);
+    }
+
+    .block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      background: var(--surface-2);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .block-header:hover {
+      background: #232329;
+    }
+
+    .block-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .caret {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--accent);
+      width: 14px;
+      text-align: center;
+      flex: 0 0 auto;
+    }
+
+    .badge {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #09090b;
+      flex: 0 0 auto;
+    }
+
+    .badge-CSS { background: var(--css-badge); }
+    .badge-HTML { background: var(--html-badge); }
+    .badge-JS { background: var(--js-badge); }
+    .badge-HEAD, .badge-TAIL { background: var(--head-badge); }
+
+    .block-title {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .block-meta {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .mod-tag {
+      font-size: 0.66rem;
+      font-weight: 800;
+      background: var(--accent);
+      color: var(--accent-text);
+      padding: 1px 6px;
+      border-radius: 999px;
+    }
+
+    .block-actions {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex: 0 0 auto;
+    }
+
+    .mini-btn {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 7px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .mini-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .block-body {
+      display: none;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      padding: 8px;
+    }
+
+    .block.open .block-body {
+      display: block;
+    }
+
+    .code-editor {
+      width: 100%;
+      min-height: 140px;
+      background: #09090b;
+      color: #e4e4e7;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 10px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      line-height: 1.45;
+      tab-size: 2;
+      resize: vertical;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    .code-editor:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      width: 100%;
+      max-width: 820px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal-wide {
+      max-width: 1040px;
+    }
+
+    .modal h3 {
+      margin: 0;
+      color: var(--accent);
+      font-size: 0.95rem;
+    }
+
+    .modal-hint {
+      margin: 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .modal textarea {
+      width: 100%;
+      height: 360px;
+      background: #09090b;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    .modal-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .modal-foot-right {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    /* Confirmation Modal Diff Layout */
+    .match-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+
+    .match-select {
+      flex: 1 1 260px;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 5px 8px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+    }
+
+    .match-select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .diff-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    @media (max-width: 760px) {
+      .diff-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .diff-pane {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .diff-label {
+      font-size: 0.74rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .diff-label.old { color: #fca5a5; }
+    .diff-label.new { color: #86efac; }
+
+    .diff-code {
+      margin: 0;
+      height: 300px;
+      overflow: auto;
+      background: #09090b;
+      border-radius: 6px;
+      padding: 10px;
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      line-height: 1.45;
+      white-space: pre;
+    }
+
+    .diff-code.old {
+      border: 1px solid #7f1d1d;
+      color: #fecaca;
+    }
+
+    .diff-code.new {
+      border: 1px solid #166534;
+      color: #dcfce7;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      background: var(--accent);
+      color: var(--accent-text);
+      font-weight: 800;
+      font-size: 0.8rem;
+      padding: 8px 14px;
+      border-radius: 6px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 100;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1>HTML Block Editor</h1>
+        <span class="file-pill" id="fileInfo">No file loaded</span>
+      </div>
+      <div class="toolbar-actions">
+        <button class="btn" id="openFileBtn" type="button">Open HTML File</button>
+        <input type="file" id="fileInput" accept=".html,.htm,text/html" style="display:none;" />
+        <button class="btn" id="pasteHtmlBtn" type="button">Paste HTML</button>
+        <button class="btn" id="expandAllBtn" type="button" disabled>Expand All</button>
+        <button class="btn" id="collapseAllBtn" type="button" disabled>Collapse All</button>
+        <button class="btn" id="copyFullBtn" type="button" disabled>Copy Full HTML</button>
+        <button class="btn btn-primary" id="downloadBtn" type="button" disabled>Download HTML</button>
+      </div>
+    </header>
+
+    <section class="filterbar" id="filterBar" style="display:none;">
+      <div class="search-wrap">
+        <input type="search" id="searchInput" placeholder="Search inside block titles or code (e.g. exportPdf, .pdf-card, modal)..." />
+      </div>
+      <div class="cat-tabs" id="catTabs">
+        <button class="cat-tab active" data-cat="ALL" type="button">ALL</button>
+        <button class="cat-tab" data-cat="HEAD" type="button">HEAD</button>
+        <button class="cat-tab" data-cat="CSS" type="button">CSS</button>
+        <button class="cat-tab" data-cat="HTML" type="button">HTML</button>
+        <button class="cat-tab" data-cat="JS" type="button">JS</button>
+        <button class="cat-tab" data-cat="MODIFIED" type="button">MODIFIED</button>
+      </div>
+    </section>
+
+    <!-- Whole-Section Replace / Copy Bar -->
+    <section class="sectionbar" id="sectionBar" style="display:none;">
+      <span class="sectionbar-label">Whole Sections:</span>
+      <div class="section-group">
+        <span class="badge badge-CSS">CSS</span>
+        <button class="mini-btn" type="button" data-copy-section="CSS">Copy All</button>
+        <button class="mini-btn" type="button" data-replace-section="CSS">Replace Whole CSS</button>
+      </div>
+      <div class="section-group">
+        <span class="badge badge-HTML">BODY</span>
+        <button class="mini-btn" type="button" data-copy-section="HTML">Copy All</button>
+        <button class="mini-btn" type="button" data-replace-section="HTML">Replace Whole Body</button>
+      </div>
+      <div class="section-group">
+        <span class="badge badge-JS">JS</span>
+        <button class="mini-btn" type="button" data-copy-section="JS">Copy All</button>
+        <button class="mini-btn" type="button" data-replace-section="JS">Replace Whole JS</button>
+      </div>
+    </section>
+
+    <!-- Smart Auto-Detect & Patch Panel -->
+    <section class="patchbar" id="patchBar" style="display:none;">
+      <div class="patchbar-head">
+        <div class="patchbar-title">
+          <span>Smart Auto-Patch</span>
+          <span class="patchbar-sub">Paste any JS function, CSS rule, HTML element, or whole section — auto-detects the target and asks to confirm before replacing.</span>
+        </div>
+        <div class="patchbar-actions">
+          <button class="btn" id="patchClipBtn" type="button">Paste from Clipboard</button>
+          <button class="btn" id="patchClearBtn" type="button">Clear</button>
+          <button class="btn btn-primary" id="patchDetectBtn" type="button">Detect &amp; Replace...</button>
+        </div>
+      </div>
+      <textarea class="patch-input" id="patchInput" spellcheck="false" placeholder="Paste updated code snippet here (e.g. function renderBlocks() { ... }, .topbar { ... }, <header class=&quot;topbar&quot;>...</header>) — press Ctrl+Enter to detect"></textarea>
+    </section>
+
+    <div class="dropzone" id="dropzone">
+      <h2>Drop your HTML file here</h2>
+      <p>Splits your single-file HTML app into collapsible CSS, HTML, and JS blocks. Copy or replace any individual block, replace whole sections, or paste a snippet to auto-detect and patch.</p>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="btn btn-primary" id="dropOpenBtn" type="button">Choose HTML File</button>
+        <button class="btn" id="dropPasteBtn" type="button">Paste Raw HTML</button>
+      </div>
+    </div>
+
+    <main class="blocks-list" id="blocksList"></main>
+  </div>
+
+  <!-- Paste Raw HTML Modal -->
+  <div class="modal-backdrop" id="pasteModal">
+    <div class="modal">
+      <h3>Paste Full HTML Code</h3>
+      <textarea id="pasteTextarea" placeholder="Paste your entire <!DOCTYPE html>... file here"></textarea>
+      <div class="modal-foot">
+        <div class="modal-foot-right">
+          <button class="btn" id="pasteCancelBtn" type="button">Cancel</button>
+          <button class="btn btn-primary" id="pasteLoadBtn" type="button">Parse Into Blocks</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Replace Whole Section Modal -->
+  <div class="modal-backdrop" id="sectionModal">
+    <div class="modal">
+      <h3 id="sectionModalTitle">Replace Whole Section</h3>
+      <p class="modal-hint" id="sectionModalHint"></p>
+      <textarea id="sectionTextarea" spellcheck="false"></textarea>
+      <div class="modal-foot">
+        <button class="btn" id="sectionPasteClipBtn" type="button">Paste from Clipboard</button>
+        <div class="modal-foot-right">
+          <button class="btn" id="sectionCancelBtn" type="button">Cancel</button>
+          <button class="btn btn-primary" id="sectionApplyBtn" type="button">Apply &amp; Re-split Blocks</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Auto-Patch Modal -->
+  <div class="modal-backdrop" id="confirmPatchModal">
+    <div class="modal modal-wide">
+      <h3>Confirm Auto-Detected Replacement</h3>
+      <div class="match-meta-row">
+        <span class="badge" id="confirmBadge">JS</span>
+        <span id="confirmSummary" style="font-size:0.82rem;font-weight:700;"></span>
+        <select class="match-select" id="confirmTargetSelect" title="Switch target if needed"></select>
+      </div>
+      <div class="diff-grid">
+        <div class="diff-pane">
+          <div class="diff-label old">
+            <span>Current Code (will be replaced)</span>
+            <span id="confirmOldLines"></span>
+          </div>
+          <pre class="diff-code old" id="confirmOldCode"></pre>
+        </div>
+        <div class="diff-pane">
+          <div class="diff-label new">
+            <span>New Code (your pasted snippet)</span>
+            <span id="confirmNewLines"></span>
+          </div>
+          <pre class="diff-code new" id="confirmNewCode"></pre>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <span class="modal-hint" id="confirmHint">Review the replacement above. Nothing changes until you confirm.</span>
+        <div class="modal-foot-right">
+          <button class="btn" id="confirmCancelBtn" type="button">Cancel</button>
+          <button class="btn btn-success" id="confirmApplyBtn" type="button">Confirm &amp; Replace</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      let currentFileName = "index.html";
+      let blocks = [];
+      let activeCategory = "ALL";
+      let searchQuery = "";
+      let activeReplaceSection = null; // "CSS" | "HTML" | "JS"
+      let pendingCandidates = [];
+      let pendingSnippet = "";
+
+      const el = {
+        fileInfo: document.getElementById("fileInfo"),
+        openFileBtn: document.getElementById("openFileBtn"),
+        dropOpenBtn: document.getElementById("dropOpenBtn"),
+        fileInput: document.getElementById("fileInput"),
+        pasteHtmlBtn: document.getElementById("pasteHtmlBtn"),
+        dropPasteBtn: document.getElementById("dropPasteBtn"),
+        expandAllBtn: document.getElementById("expandAllBtn"),
+        collapseAllBtn: document.getElementById("collapseAllBtn"),
+        copyFullBtn: document.getElementById("copyFullBtn"),
+        downloadBtn: document.getElementById("downloadBtn"),
+        filterBar: document.getElementById("filterBar"),
+        sectionBar: document.getElementById("sectionBar"),
+        patchBar: document.getElementById("patchBar"),
+        patchInput: document.getElementById("patchInput"),
+        patchClipBtn: document.getElementById("patchClipBtn"),
+        patchClearBtn: document.getElementById("patchClearBtn"),
+        patchDetectBtn: document.getElementById("patchDetectBtn"),
+        searchInput: document.getElementById("searchInput"),
+        catTabs: document.getElementById("catTabs"),
+        dropzone: document.getElementById("dropzone"),
+        blocksList: document.getElementById("blocksList"),
+        pasteModal: document.getElementById("pasteModal"),
+        pasteTextarea: document.getElementById("pasteTextarea"),
+        pasteCancelBtn: document.getElementById("pasteCancelBtn"),
+        pasteLoadBtn: document.getElementById("pasteLoadBtn"),
+        sectionModal: document.getElementById("sectionModal"),
+        sectionModalTitle: document.getElementById("sectionModalTitle"),
+        sectionModalHint: document.getElementById("sectionModalHint"),
+        sectionTextarea: document.getElementById("sectionTextarea"),
+        sectionPasteClipBtn: document.getElementById("sectionPasteClipBtn"),
+        sectionCancelBtn: document.getElementById("sectionCancelBtn"),
+        sectionApplyBtn: document.getElementById("sectionApplyBtn"),
+        confirmPatchModal: document.getElementById("confirmPatchModal"),
+        confirmBadge: document.getElementById("confirmBadge"),
+        confirmSummary: document.getElementById("confirmSummary"),
+        confirmTargetSelect: document.getElementById("confirmTargetSelect"),
+        confirmOldCode: document.getElementById("confirmOldCode"),
+        confirmNewCode: document.getElementById("confirmNewCode"),
+        confirmOldLines: document.getElementById("confirmOldLines"),
+        confirmNewLines: document.getElementById("confirmNewLines"),
+        confirmCancelBtn: document.getElementById("confirmCancelBtn"),
+        confirmApplyBtn: document.getElementById("confirmApplyBtn"),
+        toast: document.getElementById("toast")
+      };
+
+      let toastTimer = null;
+      function showToast(msg) {
+        el.toast.textContent = msg;
+        el.toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.toast.classList.remove("show"), 2400);
+      }
+
+      function esc(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function escapeRegExp(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      }
+
+      /* ---------------- Lossless Smart HTML Block Parser ---------------- */
+      function parseHtmlToBlocks(rawText) {
+        const lines = rawText.replace(/\r\n/g, "\n").split("\n");
+        const result = [];
+        let mode = "HEAD"; // HEAD | CSS | HTML | JS | TAIL
+        let current = null;
+        let idCounter = 1;
+
+        function startBlock(category, title, startLine) {
+          if (current && current.lines.length > 0) {
+            result.push(finalizeBlock(current));
+          }
+          current = {
+            id: idCounter++,
+            category,
+            title,
+            startLine,
+            lines: [],
+            open: false
+          };
+        }
+
+        function finalizeBlock(b) {
+          const code = b.lines.join("\n");
+          return {
+            id: b.id,
+            category: b.category,
+            title: b.title,
+            startLine: b.startLine,
+            code,
+            originalCode: code,
+            open: b.open
+          };
+        }
+
+        startBlock("HEAD", "Document Head & Meta", 1);
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const trimmed = line.trim();
+          const indent = line.search(/\S|$/);
+          const lineNum = i + 1;
+
+          // Transitions between major sections
+          if (mode === "HEAD" && /<style\b/i.test(trimmed)) {
+            startBlock("CSS", "<style> Base / Variables", lineNum);
+            current.lines.push(line);
+            mode = "CSS";
+            continue;
+          }
+
+          if (mode === "CSS" && /<\/style>/i.test(trimmed)) {
+            current.lines.push(line);
+            startBlock("HEAD", "Closing <\/head>", lineNum + 1);
+            mode = "HEAD";
+            continue;
+          }
+
+          if (mode === "HEAD" && /<body\b/i.test(trimmed)) {
+            startBlock("HTML", "<body> Opening & Layout", lineNum);
+            current.lines.push(line);
+            mode = "HTML";
+            continue;
+          }
+
+          if (mode === "HTML" && /<script\b[^>]*>/i.test(trimmed) && !/<script\b[^>]*src=/i.test(trimmed)) {
+            startBlock("JS", "<script> Setup & Constants", lineNum);
+            current.lines.push(line);
+            mode = "JS";
+            continue;
+          }
+
+          if (mode === "JS" && /<\/script>/i.test(trimmed)) {
+            current.lines.push(line);
+            startBlock("TAIL", "Closing <\/body> & <\/html>", lineNum + 1);
+            mode = "TAIL";
+            continue;
+          }
+
+          // Sub-block splitting inside CSS
+          if (mode === "CSS" && current.lines.length >= 4 && indent <= 4) {
+            const commentMatch = trimmed.match(/^\/\*\s*(.+?)\s*\*\/$/);
+            if (commentMatch) {
+              startBlock("CSS", commentMatch[1], lineNum);
+              current.lines.push(line);
+              continue;
+            }
+            if (/^@(media|page|keyframes)\b/i.test(trimmed)) {
+              startBlock("CSS", trimmed.replace(/\{$/, "").trim(), lineNum);
+              current.lines.push(line);
+              continue;
+            }
+          }
+
+          // Sub-block splitting inside HTML
+          if (mode === "HTML" && current.lines.length >= 3 && indent <= 6) {
+            const htmlComment = trimmed.match(/^<!--\s*(.+?)\s*-->$/);
+            if (htmlComment) {
+              startBlock("HTML", htmlComment[1], lineNum);
+              current.lines.push(line);
+              continue;
+            }
+            const tagMatch = trimmed.match(/^<(header|main|footer|section|nav|form)\b([^>]*)>/i);
+            if (tagMatch) {
+              const idAttr = tagMatch[2].match(/id="([^"]+)"/i);
+              const clsAttr = tagMatch[2].match(/class="([^"]+)"/i);
+              const label = idAttr ? `<${tagMatch[1]} #${idAttr[1]}>` : (clsAttr ? `<${tagMatch[1]} .${clsAttr[1].split(" ")[0]}>` : `<${tagMatch[1]}>`);
+              startBlock("HTML", label, lineNum);
+              current.lines.push(line);
+              continue;
+            }
+          }
+
+          // Sub-block splitting inside JS
+          if (mode === "JS" && current.lines.length >= 4 && indent <= 6) {
+            const jsBanner = trimmed.match(/^\/\*\s*[-=*]*\s*(.+?)\s*[-=*]*\s*\*\/$/);
+            if (jsBanner) {
+              startBlock("JS", jsBanner[1], lineNum);
+              current.lines.push(line);
+              continue;
+            }
+            const fnMatch = trimmed.match(/^(?:async\s+)?function\s+([A-Za-z0-9_$]+)\s*\(/);
+            if (fnMatch) {
+              startBlock("JS", `function ${fnMatch[1]}()`, lineNum);
+              current.lines.push(line);
+              continue;
+            }
+          }
+
+          current.lines.push(line);
+        }
+
+        if (current && current.lines.length > 0) {
+          result.push(finalizeBlock(current));
+        }
+        return result;
+      }
+
+      function getFullHtml() {
+        return blocks.map((b) => b.code).join("\n");
+      }
+
+      function getSectionCode(category) {
+        return blocks
+          .filter((b) => b.category === category)
+          .map((b) => b.code)
+          .join("\n");
+      }
+
+      /* ---------------- Whole-Section Replacement Logic ---------------- */
+      function normalizeSectionCode(category, rawInput, existingSectionCode) {
+        let next = rawInput.replace(/\r\n/g, "\n");
+        const existingLines = existingSectionCode ? existingSectionCode.split("\n") : [];
+
+        if (category === "CSS") {
+          const hasOpen = /<style\b/i.test(next);
+          const hasClose = /<\/style>/i.test(next);
+          const openLine = existingLines.find((l) => /<style\b/i.test(l)) || "  <style>";
+          const closeLine = [...existingLines].reverse().find((l) => /<\/style>/i.test(l)) || "  <\/style>";
+          if (!hasOpen) next = `${openLine}\n${next}`;
+          if (!hasClose) next = `${next}\n${closeLine}`;
+        } else if (category === "JS") {
+          const hasOpen = /<script\b/i.test(next);
+          const hasClose = /<\/script>/i.test(next);
+          const openLine = existingLines.find((l) => /<script\b/i.test(l)) || "  <script>";
+          const closeLine = [...existingLines].reverse().find((l) => /<\/script>/i.test(l)) || "  <\/script>";
+          if (!hasOpen) next = `${openLine}\n${next}`;
+          if (!hasClose) next = `${next}\n${closeLine}`;
+        } else if (category === "HTML") {
+          const hasOpen = /<body\b/i.test(next);
+          const openLine = existingLines.find((l) => /<body\b/i.test(l)) || "<body>";
+          if (!hasOpen) next = `${openLine}\n${next}`;
+          if (blocks.some((b) => b.category === "TAIL" && /<\/body>/i.test(b.code))) {
+            next = next.replace(/\n?\s*<\/body>\s*$/i, "");
+          }
+        }
+
+        return next;
+      }
+
+      function replaceWholeSection(category, rawInput) {
+        const firstIdx = blocks.findIndex((b) => b.category === category);
+        const existingCode = getSectionCode(category);
+        const normalized = normalizeSectionCode(category, rawInput, existingCode);
+
+        let updatedFullHtml = "";
+        if (firstIdx !== -1) {
+          const before = blocks.slice(0, firstIdx).map((b) => b.code);
+          const after = blocks
+            .slice(firstIdx)
+            .filter((b) => b.category !== category)
+            .map((b) => b.code);
+          updatedFullHtml = [...before, normalized, ...after].join("\n");
+        } else {
+          const tailIdx = blocks.findIndex((b) => b.category === "TAIL");
+          if (tailIdx !== -1) {
+            const before = blocks.slice(0, tailIdx).map((b) => b.code);
+            const after = blocks.slice(tailIdx).map((b) => b.code);
+            updatedFullHtml = [...before, normalized, ...after].join("\n");
+          } else {
+            updatedFullHtml = [getFullHtml(), normalized].join("\n");
+          }
+        }
+
+        const prevOriginalByCat = new Map();
+        blocks.forEach((b) => {
+          if (b.category !== category) {
+            prevOriginalByCat.set(`${b.category}::${b.title}::${b.code}`, b.originalCode);
+          }
+        });
+
+        const reparsed = parseHtmlToBlocks(updatedFullHtml);
+        reparsed.forEach((b) => {
+          if (b.category === category) {
+            b.originalCode = "";
+          } else {
+            const key = `${b.category}::${b.title}::${b.code}`;
+            if (prevOriginalByCat.has(key)) {
+              b.originalCode = prevOriginalByCat.get(key);
+            }
+          }
+        });
+
+        blocks = reparsed;
+        renderBlocks();
+        const label = category === "HTML" ? "BODY" : category;
+        showToast(`Replaced whole ${label} section`);
+      }
+
+      /* ---------------- Smart Auto-Detect & Patch Engine ---------------- */
+      function findBraceBlockEnd(code, startIdx) {
+        const openBrace = code.indexOf("{", startIdx);
+        if (openBrace === -1) return -1;
+
+        let depth = 0;
+        let inSingle = false;
+        let inDouble = false;
+        let inTemplate = false;
+        let inLineComment = false;
+        let inBlockComment = false;
+
+        for (let i = openBrace; i < code.length; i++) {
+          const ch = code[i];
+          const next = code[i + 1];
+
+          if (inLineComment) {
+            if (ch === "\n") inLineComment = false;
+            continue;
+          }
+          if (inBlockComment) {
+            if (ch === "*" && next === "/") {
+              inBlockComment = false;
+              i++;
+            }
+            continue;
+          }
+          if (inSingle) {
+            if (ch === "\\") { i++; continue; }
+            if (ch === "'") inSingle = false;
+            continue;
+          }
+          if (inDouble) {
+            if (ch === "\\") { i++; continue; }
+            if (ch === "\"") inDouble = false;
+            continue;
+          }
+          if (inTemplate) {
+            if (ch === "\\") { i++; continue; }
+            if (ch === "`") inTemplate = false;
+            continue;
+          }
+
+          if (ch === "/" && next === "/") { inLineComment = true; i++; continue; }
+          if (ch === "/" && next === "*") { inBlockComment = true; i++; continue; }
+          if (ch === "'") { inSingle = true; continue; }
+          if (ch === "\"") { inDouble = true; continue; }
+          if (ch === "`") { inTemplate = true; continue; }
+
+          if (ch === "{") {
+            depth++;
+          } else if (ch === "}") {
+            depth--;
+            if (depth === 0) {
+              let end = i + 1;
+              if (code[end] === ";") end++;
+              return end;
+            }
+          }
+        }
+        return -1;
+      }
+
+      function findHtmlElementEnd(code, startIdx, tagName) {
+        const voidTags = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"]);
+        const firstClose = code.indexOf(">", startIdx);
+        if (firstClose === -1) return -1;
+        if (voidTags.has(tagName.toLowerCase()) || code[firstClose - 1] === "/") {
+          return firstClose + 1;
+        }
+
+        const tagRe = new RegExp(`<(\\/)?${escapeRegExp(tagName)}\\b[^>]*>`, "gi");
+        tagRe.lastIndex = startIdx;
+        let depth = 0;
+        let m;
+        while ((m = tagRe.exec(code)) !== null) {
+          const isClosing = Boolean(m[1]);
+          const isSelfClosing = m[0].endsWith("/>");
+          if (isClosing) {
+            depth--;
+            if (depth === 0) return m.index + m[0].length;
+          } else if (!isSelfClosing) {
+            depth++;
+          }
+        }
+        return -1;
+      }
+
+      function detectPatchCandidates(rawSnippet) {
+        const snippet = rawSnippet.replace(/\r\n/g, "\n").trim();
+        if (!snippet) return [];
+
+        const candidates = [];
+        const seenKeys = new Set();
+
+        function addCandidate(c) {
+          const key = `${c.type}::${c.section || ""}::${c.blockId || ""}::${c.start ?? ""}::${c.end ?? ""}`;
+          if (seenKeys.has(key)) return;
+          seenKeys.add(key);
+          candidates.push(c);
+        }
+
+        // 1. Whole section detection
+        if (/^<style\b/i.test(snippet) && /<\/style>\s*$/i.test(snippet)) {
+          addCandidate({
+            score: 100,
+            type: "section",
+            section: "CSS",
+            category: "CSS",
+            label: "Whole CSS Section (<style>...<\/style>)",
+            summary: "Whole CSS Section",
+            oldCode: getSectionCode("CSS")
+          });
+        }
+        if (/^<script\b/i.test(snippet) && /<\/script>\s*$/i.test(snippet)) {
+          addCandidate({
+            score: 100,
+            type: "section",
+            section: "JS",
+            category: "JS",
+            label: "Whole JS Section (<script>...<\/script>)",
+            summary: "Whole JS Section",
+            oldCode: getSectionCode("JS")
+          });
+        }
+        if (/^<body\b/i.test(snippet)) {
+          addCandidate({
+            score: 100,
+            type: "section",
+            section: "HTML",
+            category: "HTML",
+            label: "Whole Body Section (<body>...)",
+            summary: "Whole Body (HTML) Section",
+            oldCode: getSectionCode("HTML")
+          });
+        }
+
+        // 2. JS Function / Arrow Function / Class detection
+        const jsFnMatch = snippet.match(/^(?:(?:export\s+)?(?:async\s+)?function\s+([A-Za-z0-9_$]+)\s*\(|(?:const|let|var)\s+([A-Za-z0-9_$]+)\s*=\s*(?:async\s+)?(?:function\b|\([^)]*\)\s*=>|[A-Za-z0-9_$]+\s*=>)|class\s+([A-Za-z0-9_$]+)\b)/m);
+        if (jsFnMatch) {
+          const fnName = jsFnMatch[1] || jsFnMatch[2] || jsFnMatch[3];
+          const sigRe = new RegExp(
+            `^[ \\t]*(?:(?:export\\s+)?(?:async\\s+)?function\\s+${escapeRegExp(fnName)}\\s*\\(|(?:const|let|var)\\s+${escapeRegExp(fnName)}\\s*=\\s*(?:async\\s+)?(?:function\\b|\\([^)]*\\)\\s*=>|[A-Za-z0-9_$]+\\s*=>)|class\\s+${escapeRegExp(fnName)}\\b)`,
+            "m"
+          );
+
+          blocks.filter((b) => b.category === "JS").forEach((b) => {
+            const m = sigRe.exec(b.code);
+            if (!m) return;
+            const end = findBraceBlockEnd(b.code, m.index);
+            if (end !== -1) {
+              const matchedText = b.code.slice(m.index, end);
+              addCandidate({
+                score: 95,
+                type: "range",
+                blockId: b.id,
+                start: m.index,
+                end,
+                category: "JS",
+                label: `JS Function "${fnName}" in [${b.title}]`,
+                summary: `Exact JS match: ${fnName}() inside "${b.title}"`,
+                oldCode: matchedText
+              });
+            }
+          });
+        }
+
+        // 3. CSS Selector / At-rule detection
+        const cssFirstLine = snippet.split("\n").find((l) => l.trim() && !l.trim().startsWith("/*")) || "";
+        const cssHeaderMatch = cssFirstLine.trim().match(/^([^{;]+)\{/);
+        if (cssHeaderMatch && !/^</.test(snippet) && !/\bfunction\b|\bconst\b|\blet\b|\bvar\b/.test(cssHeaderMatch[1])) {
+          const selector = cssHeaderMatch[1].trim();
+          const selRe = new RegExp(`^[ \\t]*${escapeRegExp(selector)}\\s*\\{`, "m");
+          blocks.filter((b) => b.category === "CSS").forEach((b) => {
+            const m = selRe.exec(b.code);
+            if (!m) return;
+            const end = findBraceBlockEnd(b.code, m.index);
+            if (end !== -1) {
+              addCandidate({
+                score: 92,
+                type: "range",
+                blockId: b.id,
+                start: m.index,
+                end,
+                category: "CSS",
+                label: `CSS Rule "${selector}" in [${b.title}]`,
+                summary: `Exact CSS rule: ${selector} inside "${b.title}"`,
+                oldCode: b.code.slice(m.index, end)
+              });
+            }
+          });
+        }
+
+        // 4. HTML Element detection (by id or tag+class)
+        const htmlTagMatch = snippet.match(/^<([a-zA-Z][a-zA-Z0-9-]*)\b([^>]*)>/);
+        if (htmlTagMatch && !/^(style|script|body|html|head)$/i.test(htmlTagMatch[1])) {
+          const tagName = htmlTagMatch[1];
+          const attrs = htmlTagMatch[2] || "";
+          const idMatch = attrs.match(/\bid\s*=\s*["']([^"']+)["']/i);
+          const clsMatch = attrs.match(/\bclass\s*=\s*["']([^"']+)["']/i);
+
+          blocks.filter((b) => b.category === "HTML" || b.category === "HEAD").forEach((b) => {
+            let m = null;
+            let desc = "";
+            if (idMatch) {
+              const re = new RegExp(`[ \\t]*<${escapeRegExp(tagName)}\\b[^>]*\\bid\\s*=\\s*["']${escapeRegExp(idMatch[1])}["'][^>]*>`, "i");
+              m = re.exec(b.code);
+              desc = `<${tagName} id="${idMatch[1]}">`;
+            } else if (clsMatch) {
+              const firstCls = clsMatch[1].trim().split(/\s+/)[0];
+              const re = new RegExp(`[ \\t]*<${escapeRegExp(tagName)}\\b[^>]*\\bclass\\s*=\\s*["'][^"']*\\b${escapeRegExp(firstCls)}\\b[^"']*["'][^>]*>`, "i");
+              m = re.exec(b.code);
+              desc = `<${tagName} class="${firstCls}">`;
+            }
+
+            if (m) {
+              const end = findHtmlElementEnd(b.code, m.index, tagName);
+              if (end !== -1) {
+                addCandidate({
+                  score: idMatch ? 94 : 86,
+                  type: "range",
+                  blockId: b.id,
+                  start: m.index,
+                  end,
+                  category: b.category,
+                  label: `HTML Element ${desc} in [${b.title}]`,
+                  summary: `Exact HTML element: ${desc} inside "${b.title}"`,
+                  oldCode: b.code.slice(m.index, end)
+                });
+              }
+            }
+          });
+        }
+
+        // 5. Fallback: Block-level similarity (comment banners, first lines, token overlap)
+        const snippetLines = snippet.split("\n").map((l) => l.trim()).filter(Boolean);
+        const firstLine = snippetLines[0] || "";
+        const snippetTokens = new Set((snippet.match(/[A-Za-z0-9_$-]{3,}/g) || []).slice(0, 60));
+
+        blocks.forEach((b) => {
+          let score = 0;
+          const bLines = b.code.split("\n").map((l) => l.trim()).filter(Boolean);
+          if (firstLine && bLines[0] === firstLine) score += 50;
+          if (firstLine && b.title.toLowerCase() && firstLine.toLowerCase().includes(b.title.toLowerCase())) score += 25;
+
+          if (snippetTokens.size > 0) {
+            let hits = 0;
+            snippetTokens.forEach((tok) => {
+              if (b.code.includes(tok)) hits++;
+            });
+            score += Math.round((hits / snippetTokens.size) * 40);
+          }
+
+          if (score >= 22) {
+            addCandidate({
+              score,
+              type: "block",
+              blockId: b.id,
+              category: b.category,
+              label: `Whole Block [${b.category}] ${b.title} (${score}% match)`,
+              summary: `Block match: "${b.title}"`,
+              oldCode: b.code
+            });
+          }
+        });
+
+        candidates.sort((a, b) => b.score - a.score);
+
+        // Always append remaining blocks as manual override options at the bottom
+        blocks.forEach((b) => {
+          addCandidate({
+            score: 0,
+            type: "block",
+            blockId: b.id,
+            category: b.category,
+            label: `Replace Block: [${b.category}] ${b.title}`,
+            summary: `Manual target: "${b.title}"`,
+            oldCode: b.code
+          });
+        });
+
+        return candidates;
+      }
+
+      function renderConfirmModal(index) {
+        const c = pendingCandidates[index];
+        if (!c) return;
+        el.confirmBadge.className = `badge badge-${c.category}`;
+        el.confirmBadge.textContent = c.category;
+        el.confirmSummary.textContent = c.summary;
+        el.confirmOldCode.textContent = c.oldCode || "(empty)";
+        el.confirmNewCode.textContent = pendingSnippet;
+        el.confirmOldLines.textContent = `${(c.oldCode ? c.oldCode.split("\n").length : 0)} lines`;
+        el.confirmNewLines.textContent = `${pendingSnippet.split("\n").length} lines`;
+      }
+
+      function openConfirmPatchModal() {
+        const raw = el.patchInput.value;
+        if (!raw.trim()) {
+          showToast("Paste a code snippet first");
+          el.patchInput.focus();
+          return;
+        }
+        pendingSnippet = raw.replace(/\r\n/g, "\n");
+        pendingCandidates = detectPatchCandidates(pendingSnippet);
+        if (pendingCandidates.length === 0) {
+          showToast("Load an HTML file first");
+          return;
+        }
+
+        el.confirmTargetSelect.innerHTML = pendingCandidates
+          .map((c, idx) => `<option value="${idx}">${esc(c.label)}</option>`)
+          .join("");
+        el.confirmTargetSelect.value = "0";
+        renderConfirmModal(0);
+        el.confirmPatchModal.classList.add("open");
+      }
+
+      function applyConfirmedPatch() {
+        const idx = Number(el.confirmTargetSelect.value);
+        const c = pendingCandidates[idx];
+        if (!c) return;
+
+        el.confirmPatchModal.classList.remove("open");
+
+        if (c.type === "section") {
+          replaceWholeSection(c.section, pendingSnippet);
+        } else if (c.type === "range") {
+          const b = blocks.find((x) => x.id === c.blockId);
+          if (b) {
+            const oldIndent = (b.code.slice(c.start, c.end).match(/^[ \t]*/) || [""])[0];
+            let replacement = pendingSnippet;
+            if (oldIndent && !/^[ \t]/.test(replacement)) {
+              replacement = replacement
+                .split("\n")
+                .map((line) => (line.trim() ? oldIndent + line : line))
+                .join("\n");
+            }
+            b.code = b.code.slice(0, c.start) + replacement + b.code.slice(c.end);
+            b.open = true;
+            renderBlocks();
+            showToast(`Patched ${c.summary}`);
+          }
+        } else if (c.type === "block") {
+          const b = blocks.find((x) => x.id === c.blockId);
+          if (b) {
+            b.code = pendingSnippet;
+            b.open = true;
+            renderBlocks();
+            showToast(`Replaced block "${b.title}"`);
+          }
+        }
+
+        el.patchInput.value = "";
+        pendingCandidates = [];
+        pendingSnippet = "";
+      }
+
+      function updateToolbarState() {
+        const hasBlocks = blocks.length > 0;
+        el.dropzone.style.display = hasBlocks ? "none" : "flex";
+        el.filterBar.style.display = hasBlocks ? "flex" : "none";
+        el.sectionBar.style.display = hasBlocks ? "flex" : "none";
+        el.patchBar.style.display = hasBlocks ? "flex" : "none";
+        el.expandAllBtn.disabled = !hasBlocks;
+        el.collapseAllBtn.disabled = !hasBlocks;
+        el.copyFullBtn.disabled = !hasBlocks;
+        el.downloadBtn.disabled = !hasBlocks;
+
+        if (hasBlocks) {
+          const totalLines = getFullHtml().split("\n").length;
+          const modCount = blocks.filter((b) => b.code !== b.originalCode).length;
+          el.fileInfo.textContent = `${currentFileName} • ${blocks.length} blocks • ${totalLines.toLocaleString()} lines` + (modCount ? ` • ${modCount} modified` : "");
+        } else {
+          el.fileInfo.textContent = "No file loaded";
+        }
+      }
+
+      function renderBlocks() {
+        updateToolbarState();
+        const q = searchQuery.trim().toLowerCase();
+
+        const visible = blocks.filter((b) => {
+          if (activeCategory === "MODIFIED") {
+            if (b.code === b.originalCode) return false;
+          } else if (activeCategory !== "ALL" && b.category !== activeCategory) {
+            return false;
+          }
+          if (q) {
+            return b.title.toLowerCase().includes(q) || b.code.toLowerCase().includes(q);
+          }
+          return true;
+        });
+
+        if (blocks.length > 0 && visible.length === 0) {
+          el.blocksList.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);">No blocks match your search/filter.</div>`;
+          return;
+        }
+
+        el.blocksList.innerHTML = visible.map((b) => {
+          const isMod = b.code !== b.originalCode;
+          const lineCount = b.code.split("\n").length;
+          const rowsAttr = Math.min(28, Math.max(6, lineCount + 1));
+          return `
+            <article class="block ${b.open ? "open" : ""} ${isMod ? "modified" : ""}" data-block-id="${b.id}">
+              <div class="block-header" data-toggle="${b.id}">
+                <div class="block-left">
+                  <span class="caret">${b.open ? "▼" : "▶"}</span>
+                  <span class="badge badge-${b.category}">${b.category}</span>
+                  <span class="block-title">${esc(b.title)}</span>
+                  <span class="block-meta">(${lineCount} lines)</span>
+                  ${isMod ? `<span class="mod-tag">MODIFIED</span>` : ""}
+                </div>
+                <div class="block-actions">
+                  <button class="mini-btn" type="button" data-copy="${b.id}" title="Copy this block to send to AI">Copy</button>
+                  <button class="mini-btn" type="button" data-replace="${b.id}" title="Replace this block with clipboard snippet">Replace from Clipboard</button>
+                  ${isMod && b.originalCode ? `<button class="mini-btn btn-danger" type="button" data-revert="${b.id}" title="Revert to original">Revert</button>` : ""}
+                </div>
+              </div>
+              <div class="block-body">
+                ${b.open ? `<textarea class="code-editor" rows="${rowsAttr}" spellcheck="false" data-editor="${b.id}">${esc(b.code)}</textarea>` : ""}
+              </div>
+            </article>
+          `;
+        }).join("");
+      }
+
+      function loadHtmlContent(text, filename) {
+        currentFileName = filename || "edited-file.html";
+        blocks = parseHtmlToBlocks(text);
+        activeCategory = "ALL";
+        searchQuery = "";
+        el.searchInput.value = "";
+        el.patchInput.value = "";
+        el.catTabs.querySelectorAll(".cat-tab").forEach((t) => {
+          t.classList.toggle("active", t.dataset.cat === "ALL");
+        });
+        renderBlocks();
+        showToast(`Loaded ${blocks.length} collapsible blocks`);
+      }
+
+      /* ---------------- File Open & Drag/Drop ---------------- */
+      function handleFile(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => loadHtmlContent(e.target.result, file.name);
+        reader.readAsText(file);
+      }
+
+      el.openFileBtn.addEventListener("click", () => el.fileInput.click());
+      el.dropOpenBtn.addEventListener("click", () => el.fileInput.click());
+      el.fileInput.addEventListener("change", (e) => {
+        handleFile(e.target.files[0]);
+        el.fileInput.value = "";
+      });
+
+      ["dragenter", "dragover"].forEach((ev) => {
+        el.dropzone.addEventListener(ev, (e) => {
+          e.preventDefault();
+          el.dropzone.classList.add("dragover");
+        });
+      });
+      ["dragleave", "drop"].forEach((ev) => {
+        el.dropzone.addEventListener(ev, (e) => {
+          e.preventDefault();
+          el.dropzone.classList.remove("dragover");
+        });
+      });
+      el.dropzone.addEventListener("drop", (e) => {
+        const file = e.dataTransfer.files && e.dataTransfer.files[0];
+        handleFile(file);
+      });
+
+      /* ---------------- Paste Raw HTML Modal ---------------- */
+      function openPasteModal() {
+        el.pasteTextarea.value = "";
+        el.pasteModal.classList.add("open");
+        el.pasteTextarea.focus();
+      }
+      el.pasteHtmlBtn.addEventListener("click", openPasteModal);
+      el.dropPasteBtn.addEventListener("click", openPasteModal);
+      el.pasteCancelBtn.addEventListener("click", () => el.pasteModal.classList.remove("open"));
+      el.pasteLoadBtn.addEventListener("click", () => {
+        const raw = el.pasteTextarea.value;
+        if (!raw.trim()) return;
+        el.pasteModal.classList.remove("open");
+        loadHtmlContent(raw, "pasted.html");
+      });
+
+      /* ---------------- Smart Auto-Patch Events ---------------- */
+      el.patchDetectBtn.addEventListener("click", openConfirmPatchModal);
+      el.patchClearBtn.addEventListener("click", () => {
+        el.patchInput.value = "";
+        el.patchInput.focus();
+      });
+      el.patchClipBtn.addEventListener("click", async () => {
+        try {
+          const clip = await navigator.clipboard.readText();
+          if (!clip) {
+            showToast("Clipboard is empty");
+            return;
+          }
+          el.patchInput.value = clip.replace(/\r\n/g, "\n");
+          openConfirmPatchModal();
+        } catch (err) {
+          showToast("Clipboard blocked — paste with Ctrl+V / Cmd+V");
+          el.patchInput.focus();
+        }
+      });
+      el.patchInput.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+          e.preventDefault();
+          openConfirmPatchModal();
+        }
+      });
+      el.confirmTargetSelect.addEventListener("change", (e) => {
+        renderConfirmModal(Number(e.target.value));
+      });
+      el.confirmCancelBtn.addEventListener("click", () => {
+        el.confirmPatchModal.classList.remove("open");
+      });
+      el.confirmApplyBtn.addEventListener("click", applyConfirmedPatch);
+
+      /* ---------------- Whole-Section Bar & Modal ---------------- */
+      el.sectionBar.addEventListener("click", async (e) => {
+        const copySecBtn = e.target.closest("[data-copy-section]");
+        if (copySecBtn) {
+          const cat = copySecBtn.dataset.copySection;
+          const code = getSectionCode(cat);
+          if (!code) {
+            showToast(`No ${cat === "HTML" ? "BODY" : cat} section found`);
+            return;
+          }
+          await navigator.clipboard.writeText(code);
+          showToast(`Copied whole ${cat === "HTML" ? "BODY" : cat} section`);
+          return;
+        }
+
+        const repSecBtn = e.target.closest("[data-replace-section]");
+        if (repSecBtn) {
+          const cat = repSecBtn.dataset.replaceSection;
+          activeReplaceSection = cat;
+          const labels = {
+            CSS: {
+              title: "Replace Whole CSS Section",
+              hint: "Paste your new CSS with or without <style>...<\/style> tags. Missing wrapper tags will be kept automatically."
+            },
+            HTML: {
+              title: "Replace Whole Body (HTML) Section",
+              hint: "Paste your new body markup with or without <body> tags. The closing <\/body> and <script> sections stay intact."
+            },
+            JS: {
+              title: "Replace Whole JS Section",
+              hint: "Paste your new JavaScript with or without <script>...<\/script> tags. Missing wrapper tags will be kept automatically."
+            }
+          };
+          el.sectionModalTitle.textContent = labels[cat].title;
+          el.sectionModalHint.textContent = labels[cat].hint;
+          el.sectionTextarea.value = getSectionCode(cat);
+          el.sectionModal.classList.add("open");
+          el.sectionTextarea.focus();
+          el.sectionTextarea.select();
+        }
+      });
+
+      el.sectionPasteClipBtn.addEventListener("click", async () => {
+        try {
+          const clip = await navigator.clipboard.readText();
+          if (!clip) {
+            showToast("Clipboard is empty");
+            return;
+          }
+          el.sectionTextarea.value = clip.replace(/\r\n/g, "\n");
+          showToast("Pasted from clipboard");
+        } catch (err) {
+          showToast("Clipboard blocked — press Ctrl+V / Cmd+V in the box");
+          el.sectionTextarea.focus();
+        }
+      });
+
+      el.sectionCancelBtn.addEventListener("click", () => {
+        el.sectionModal.classList.remove("open");
+        activeReplaceSection = null;
+      });
+
+      el.sectionApplyBtn.addEventListener("click", () => {
+        if (!activeReplaceSection) return;
+        const val = el.sectionTextarea.value;
+        el.sectionModal.classList.remove("open");
+        replaceWholeSection(activeReplaceSection, val);
+        activeReplaceSection = null;
+      });
+
+      /* ---------------- Block Interactions ---------------- */
+      el.blocksList.addEventListener("click", async (e) => {
+        const copyBtn = e.target.closest("[data-copy]");
+        if (copyBtn) {
+          e.stopPropagation();
+          const b = blocks.find((x) => x.id === Number(copyBtn.dataset.copy));
+          if (b) {
+            await navigator.clipboard.writeText(b.code);
+            showToast(`Copied "${b.title}"`);
+          }
+          return;
+        }
+
+        const replaceBtn = e.target.closest("[data-replace]");
+        if (replaceBtn) {
+          e.stopPropagation();
+          const b = blocks.find((x) => x.id === Number(replaceBtn.dataset.replace));
+          if (!b) return;
+          try {
+            const clip = await navigator.clipboard.readText();
+            if (!clip) {
+              showToast("Clipboard is empty");
+              return;
+            }
+            b.code = clip.replace(/\r\n/g, "\n");
+            b.open = true;
+            renderBlocks();
+            showToast(`Replaced "${b.title}" from clipboard`);
+          } catch (err) {
+            b.open = true;
+            renderBlocks();
+            showToast("Clipboard blocked — paste directly into the open editor");
+          }
+          return;
+        }
+
+        const revertBtn = e.target.closest("[data-revert]");
+        if (revertBtn) {
+          e.stopPropagation();
+          const b = blocks.find((x) => x.id === Number(revertBtn.dataset.revert));
+          if (b) {
+            b.code = b.originalCode;
+            renderBlocks();
+            showToast(`Reverted "${b.title}"`);
+          }
+          return;
+        }
+
+        const header = e.target.closest("[data-toggle]");
+        if (header) {
+          const b = blocks.find((x) => x.id === Number(header.dataset.toggle));
+          if (b) {
+            b.open = !b.open;
+            renderBlocks();
+          }
+        }
+      });
+
+      el.blocksList.addEventListener("input", (e) => {
+        const ta = e.target.closest("[data-editor]");
+        if (!ta) return;
+        const b = blocks.find((x) => x.id === Number(ta.dataset.editor));
+        if (!b) return;
+        b.code = ta.value;
+        const card = ta.closest(".block");
+        const isMod = b.code !== b.originalCode;
+        card.classList.toggle("modified", isMod);
+        updateToolbarState();
+      });
+
+      // Allow Tab key inside code textareas
+      el.blocksList.addEventListener("keydown", (e) => {
+        const ta = e.target.closest("[data-editor]");
+        if (!ta || e.key !== "Tab") return;
+        e.preventDefault();
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        ta.value = ta.value.substring(0, start) + "  " + ta.value.substring(end);
+        ta.selectionStart = ta.selectionEnd = start + 2;
+        ta.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+
+      /* ---------------- Search, Filter, Expand/Collapse, Export ---------------- */
+      el.searchInput.addEventListener("input", (e) => {
+        searchQuery = e.target.value;
+        renderBlocks();
+      });
+
+      el.catTabs.addEventListener("click", (e) => {
+        const tab = e.target.closest("[data-cat]");
+        if (!tab) return;
+        activeCategory = tab.dataset.cat;
+        el.catTabs.querySelectorAll(".cat-tab").forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        renderBlocks();
+      });
+
+      el.expandAllBtn.addEventListener("click", () => {
+        blocks.forEach((b) => { b.open = true; });
+        renderBlocks();
+      });
+
+      el.collapseAllBtn.addEventListener("click", () => {
+        blocks.forEach((b) => { b.open = false; });
+        renderBlocks();
+      });
+
+      el.copyFullBtn.addEventListener("click", async () => {
+        await navigator.clipboard.writeText(getFullHtml());
+        showToast("Copied full HTML to clipboard");
+      });
+
+      el.downloadBtn.addEventListener("click", () => {
+        const blob = new Blob([getFullHtml()], { type: "text/html;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = currentFileName.replace(/\.html?$/i, "") + "-updated.html";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast("Downloaded updated HTML");
+      });
+    })();
+  </script>
+</body>
+</html>
