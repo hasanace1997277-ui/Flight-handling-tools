@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MVT Generator (LT → UTC)</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #eef2f7;
+    margin: 0;
+    padding: 8px;
+  }
+  .container {
+    max-width: 380px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 12px 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  }
+  h2 { text-align: center; margin-bottom: 12px; font-size: 18px; color: #333; }
+  .section { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+  .section label { font-weight: 600; display: block; margin-bottom: 2px; font-size: 12px; }
+  input { width: 70%; padding: 4px 6px; border-radius: 4px; border: 1px solid #ccc; font-size: 12px; }
+  h3 { grid-column: span 2; margin-top: 8px; margin-bottom: 5px; font-size: 13px; color: #555; border-bottom: 1px solid #ddd; padding-bottom: 2px; }
+  button { width: 100%; padding: 8px; font-size: 13px; border-radius: 6px; border: none; background: #007bff; color: #fff; cursor: pointer; transition: background 0.3s ease; margin-top: 5px; }
+  button:hover { background: #0056b3; }
+  textarea { width: 100%; height: 80px; font-family: monospace; padding: 6px; border-radius: 6px; border: 1px solid #ccc; margin-top: 5px; resize: none; font-size: 12px; }
+  #si { width: 100% !important; height: 50px !important; font-size: 12px; }
+  @media (max-width: 450px) { .section { grid-template-columns: 1fr; } input { width: 95%; } }
+  ::placeholder { color: #999; }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h2>MVT Generator (LT → UTC)</h2>
+
+  <!-- Flight Info Section -->
+  <div class="section">
+    <div><label>Flight No</label><input id="flight" placeholder="BG122"></div>
+    <div><label>Date</label><input id="date" placeholder="27"></div>
+    <div><label>Aircraft</label><input id="aircraft" placeholder="S2-AHN"></div>
+    <div><label>Station</label><input id="station" placeholder="MCT"></div>
+    <div><label>AD (LT)</label><input id="adLT" placeholder="1240"></div>
+    <div><label>AB (LT)</label><input id="abLT" placeholder="1247"></div>
+    <div><label>EET (HHMM)</label><input id="eet" placeholder="0350"></div>
+    <div><label>Destination</label><input id="dest" placeholder="CGP"></div>
+    <div><label>Delay Code</label><input id="delaycode" placeholder="0140"></div>
+    <div><label>Total Delay</label><input id="delay" placeholder="93"></div>
+  </div>
+
+  <!-- PAX Section -->
+  <h3>PAX</h3>
+  <div class="section">
+    <div><label>DTR PAX</label><input id="dtrPax" placeholder="12/198+6"></div>
+    <div><label>JNG PAX</label><input id="jngPax" placeholder="10/190+0"></div>
+    <div><label>DTR Sector</label><input id="dtrSector" placeholder="DAC-MCT"></div>
+    <div><label>JNG Sector</label><input id="jngSector" placeholder="CGP-MCT"></div>
+  </div>
+
+  <!-- C/S/M Section -->
+  <h3>C/S/M</h3>
+  <div class="section">
+    <div><label>DTR C/S/M</label><input id="dtrCgo" placeholder="4500"></div>
+    <div><label>JNG C/S/M</label><input id="jngCgo" placeholder="3800"></div>
+  </div>
+
+  <!-- SI -->
+  <div class="section">
+    <div style="grid-column: span 2;"><label>Supplementary Info</label><textarea id="si" placeholder="DD LIAC"></textarea></div>
+  </div>
+
+  <button onclick="generateMVT()">Generate MVT (UTC)</button>
+  <button onclick="copyMVT()">Copy MVT</button>
+
+  <label>Generated MVT (UTC)</label>
+  <textarea id="output"></textarea>
+</div>
+
+<script>
+// HHMM → minutes
+function toMinutes(t){return parseInt(t.substring(0,2))*60 + parseInt(t.substring(2,4));}
+// minutes → HHMM
+function toHHMM(mins){mins=(mins+1440)%1440;let h=Math.floor(mins/60);let m=mins%60;return String(h).padStart(2,'0')+String(m).padStart(2,'0');}
+// minutes → HH:MM
+function toHHColonMM(mins){let h=Math.floor(mins/60);let m=mins%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
+// LT → UTC
+function ltToUtc(timeLT){return toHHMM(toMinutes(timeLT)-360);}
+// add EET
+function addEET(abUTC,eet){return toHHMM(toMinutes(abUTC)+toMinutes(eet));}
+// Format EET
+function formatEET(eet){return toHHColonMM(toMinutes(eet));}
+// Parse PAX
+function parsePax(paxStr){if(!paxStr)return{J:0,Y:0,Inf:0};let [jy,inf]=paxStr.split('+');let [J,Y]=jy.split('/');return{J:parseInt(J)||0,Y:parseInt(Y)||0,Inf:parseInt(inf)||0};}
+// Format PAX
+function formatPax(paxObj){const J=String(paxObj.J).padStart(2,'0');const Y=String(paxObj.Y).padStart(2,'0');const Inf=String(paxObj.Inf).padStart(2,'0');return `${J}/${Y}+${Inf}`;}
+
+function generateMVT() {
+
+  // Convert & calculate times
+  const adUTC = adLT.value ? ltToUtc(adLT.value) : "";
+  const abUTC = abLT.value ? ltToUtc(abLT.value) : "";
+  const eaUTC = (abUTC && eet.value) ? addEET(abUTC, eet.value) : "";
+  const eetDisplay = eet.value ? formatEET(eet.value) + " HRS" : "";
+
+  let lines = [];
+
+  // ---- MVT ----
+  lines.push("MVT");
+
+  // ---- Flight info ----
+  let flightLine = "";
+  if (flight.value) flightLine += flight.value;
+  if (date.value) flightLine += "/" + date.value;
+  if (aircraft.value) flightLine += "." + aircraft.value;
+  if (station.value) flightLine += "." + station.value;
+  if (flightLine) lines.push(flightLine);
+
+  // ---- AD / AB / EA ----
+  let timeLine = "";
+  if (adUTC) timeLine += "AD " + adUTC;
+  if (abUTC) timeLine += "/" + abUTC;
+  if (eaUTC) timeLine += " EA " + eaUTC;
+  if (dest.value) timeLine += " " + dest.value;
+  if (timeLine) lines.push(timeLine);
+
+  // ---- EET with JNG sector ----
+  if (eetDisplay) {
+    let eetLine = "EET " + eetDisplay;
+    if (jngSector.value) eetLine += " (" + jngSector.value + ")";
+    lines.push(eetLine);
+  }
+
+  // ---- DL ----
+  if (
+    delay.value &&
+    delaycode.value &&
+    !(delay.value === "00" && delaycode.value === "0000")
+  ) {
+    lines.push(`DL${delaycode.value}/${delay.value}`);
+  }
+
+  // ---- PAX ----
+  let dtr = parsePax(dtrPax.value);
+  let jng = parsePax(jngPax.value);
+  let total = {
+    J: dtr.J + jng.J,
+    Y: dtr.Y + jng.Y,
+    Inf: dtr.Inf + jng.Inf
+  };
+
+  if (dtrPax.value) {
+    let line = `DTR PAX: ${formatPax(dtr)}`;
+    if (dtrSector.value) line += ` (${dtrSector.value})`;
+    lines.push(line);
+  }
+
+  if (jngPax.value) {
+    let line = `JNG PAX: ${formatPax(jng)}`;
+    if (jngSector.value) line += ` (${jngSector.value})`;
+    lines.push(line);
+  }
+
+  if (dtrPax.value || jngPax.value) {
+    lines.push(`TOTAL PAX: ${formatPax(total)}`);
+  }
+
+  // ---- C/S/M ----
+  if (dtrCgo.value) {
+    let line = `DTR C/S/M: ${dtrCgo.value}`;
+    if (dtrSector.value) line += ` (${dtrSector.value})`;
+    lines.push(line);
+  }
+
+  if (jngCgo.value) {
+    let line = `JNG C/S/M: ${jngCgo.value}`;
+    if (jngSector.value) line += ` (${jngSector.value})`;
+    lines.push(line);
+  }
+
+  // ---- SI ----
+  if (si.value) {
+    lines.push(`SI ${si.value}`);
+  }
+
+  // ---- FINAL OUTPUT (ALL CAPS) ----
+  output.value = lines.join("\n").toUpperCase();
+}
+
+// Copy MVT
+function copyMVT(){
+  const mvtText = document.getElementById('output');
+  mvtText.select();
+  mvtText.setSelectionRange(0,99999);
+  navigator.clipboard.writeText(mvtText.value).then(()=>{
+    alert('MVT copied to clipboard!');
+  });
+}
+</script>
+</body>
+</html>
