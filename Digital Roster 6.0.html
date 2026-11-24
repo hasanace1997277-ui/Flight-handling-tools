@@ -1,0 +1,1956 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biman Bangladesh Airlines - CGP Ground Handling Roster</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['"Courier New"', 'Courier', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        /* Custom ultra-compact scrollbars */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+
+        .task-card {
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
+        .task-card.dragging {
+            opacity: 0.4;
+            border-style: dashed;
+            border-color: #eab308;
+        }
+        .task-card.drag-over {
+            border-color: #ca8a04;
+            background-color: #fefce8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col text-xs antialiased selection:bg-yellow-400 selection:text-black">
+
+    <!-- COMPACT BLACK & YELLOW HEADER -->
+    <header class="bg-black text-white border-b-2 border-yellow-400 sticky top-0 z-30 shadow-md">
+        <div class="max-w-[98%] mx-auto px-2 py-1.5 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center space-x-2">
+                <div class="bg-yellow-400 text-black font-black px-2 py-1 rounded text-sm tracking-wider">
+                    CGP
+                </div>
+                <div>
+                    <h1 class="text-xs sm:text-sm font-bold tracking-tight text-white flex items-center gap-1.5">
+                        Biman Bangladesh Airlines
+                        <span class="text-[9px] bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 font-semibold px-1.5 py-0.2 rounded uppercase">Roster 5.0</span>
+                    </h1>
+                    <p class="text-[10px] text-slate-400">Shah Amanat Int'l Airport &bull; Ground Handling Controller Board</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+                <div class="bg-slate-900 border border-slate-800 px-2 py-1 rounded flex items-center space-x-1.5">
+                    <span class="text-slate-400 font-semibold text-[10px]">Date:</span>
+                    <input type="date" id="rosterDate" onchange="onDateChange()" class="bg-transparent font-bold text-yellow-400 outline-none cursor-pointer text-xs">
+                </div>
+                <button type="button" onclick="copyRosterFromLastWeek()" class="bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 px-2.5 py-1 rounded font-semibold transition flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                    Copy Prev Week
+                </button>
+                <button type="button" onclick="openStaffModal()" class="bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 px-2.5 py-1 rounded font-semibold transition flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    Staff Directory
+                </button>
+                <button type="button" onclick="openStaffHistoryModal()" class="bg-slate-900 hover:bg-slate-800 text-yellow-400 border border-yellow-400/50 px-2.5 py-1 rounded font-bold transition flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Staff History
+                </button>
+                <button type="button" onclick="openAnalyticsModal()" class="bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 px-2.5 py-1 rounded font-semibold transition flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    Analytics
+                </button>
+                <button type="button" onclick="openBackupModal()" class="bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 px-2.5 py-1 rounded font-semibold transition flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    Backup/Restore
+                </button>
+                <button type="button" onclick="generateTextOutputModal()" class="bg-yellow-400 hover:bg-yellow-300 text-black px-3 py-1 rounded font-bold shadow transition flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Export .TXT
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ULTRA-COMPACT METRICS BAR -->
+    <div class="bg-white border-b border-slate-200 py-1 shadow-sm">
+        <div class="max-w-[98%] mx-auto px-2 grid grid-cols-4 gap-2 text-[11px]">
+            <div class="flex items-center justify-between bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">
+                <span class="text-slate-500 font-medium">Date:</span>
+                <strong id="displayActiveDate" class="text-slate-900 font-bold">-----</strong>
+            </div>
+            <div class="flex items-center justify-between bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">
+                <span class="text-slate-500 font-medium">Shifts:</span>
+                <strong id="statShiftsCount" class="text-slate-900 font-bold">0</strong>
+            </div>
+            <div class="flex items-center justify-between bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">
+                <span class="text-slate-500 font-medium">Flights:</span>
+                <strong id="statFlightsCount" class="text-slate-900 font-bold">0</strong>
+            </div>
+            <div class="flex items-center justify-between bg-yellow-50 border border-yellow-300 px-2 py-0.5 rounded">
+                <span class="text-slate-700 font-medium">Total Workload:</span>
+                <strong id="statTotalWorkload" class="text-yellow-700 font-black">0 WL</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTROL PANEL -->
+    <main class="max-w-[98%] mx-auto w-full px-2 py-2 flex-1 space-y-2">
+
+        <!-- SECTION 1: SHIFT CONFIGURATION (COMPACT) -->
+        <section class="bg-white rounded-lg border border-slate-200 p-2 shadow-sm space-y-1.5">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <h2 class="text-xs font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-yellow-400"></span> 1. Shift Configuration
+                    </h2>
+                    <span class="text-[10px] text-slate-400">| Define duty shifts</span>
+                </div>
+                <button type="button" onclick="toggleShiftForm()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-semibold px-2 py-0.5 rounded border border-slate-300 transition flex items-center gap-1">
+                    <span>+</span> Add Shift
+                </button>
+            </div>
+
+            <!-- INLINE SHIFT FORM -->
+            <form id="shiftForm" onsubmit="handleCreateShift(event)" class="hidden bg-slate-50 border border-slate-200 p-2 rounded grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 text-[10px]">Shift Name / Code</label>
+                    <input type="text" id="shiftNameInput" placeholder="e.g. SHIFT - A" required class="w-full bg-white border border-slate-300 rounded p-1 text-xs outline-none focus:border-yellow-400">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 text-[10px]">Shift Time Range (0000 - 2359)</label>
+                    <input type="text" id="shiftTimeInput" placeholder="e.g. 0600 - 1400" required class="w-full bg-white border border-slate-300 rounded p-1 text-xs outline-none focus:border-yellow-400">
+                </div>
+                <div class="flex items-end space-x-1">
+                    <button type="submit" class="flex-1 bg-black text-yellow-400 font-bold p-1 rounded hover:bg-slate-800 transition text-xs">Save Shift</button>
+                    <button type="button" onclick="toggleShiftForm()" class="bg-white border border-slate-300 font-semibold px-2 p-1 rounded hover:bg-slate-100 transition text-xs">Cancel</button>
+                </div>
+            </form>
+
+            <!-- ACTIVE SHIFTS BADGES -->
+            <div id="shiftsContainer" class="flex flex-wrap gap-1.5 text-[11px]"></div>
+        </section>
+
+        <!-- SECTION 2: FLIGHT SCHEDULE & SIDE-BY-SIDE DUTY ASSIGNMENT -->
+        <section class="bg-white rounded-lg border border-slate-200 p-2 shadow-sm space-y-2">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                <div>
+                    <h2 class="text-xs font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-black"></span> 2. Flight Schedule & Task Matrix
+                    </h2>
+                    <p class="text-[10px] text-slate-500">Assign staff by name &bull; License verification &bull; Real-time WL score</p>
+                </div>
+                <button type="button" onclick="openFlightModal()" class="bg-black hover:bg-slate-800 text-yellow-400 text-[11px] font-bold px-2.5 py-1 rounded shadow-sm transition flex items-center gap-1">
+                    <span>+</span> Add Flight Card
+                </button>
+            </div>
+
+            <!-- DYNAMIC FLIGHT CARDS -->
+            <div id="flightsList" class="space-y-2"></div>
+        </section>
+
+        <!-- SECTION 3 & 4 COMBINED HIGH-DENSITY GRID: WORKLOAD TABLE & DISTRIBUTION CHART -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-2">
+            
+            <!-- SECTION 3: STAFF WORKLOAD SCORE TRACKER -->
+            <section class="bg-white rounded-lg border border-slate-200 p-2 shadow-sm space-y-1.5">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                    <h2 class="text-xs font-bold text-slate-900 tracking-tight">3. Staff Workload Tally (Today)</h2>
+                    <div class="flex items-center space-x-1">
+                        <button type="button" onclick="exportTodayWorkloadToExcel()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-2 py-0.5 rounded text-[10px] transition flex items-center gap-1" title="Export daily workload to Excel">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Excel
+                        </button>
+                        <span class="text-[10px] bg-yellow-100 text-yellow-900 font-bold px-1.5 py-0.5 rounded border border-yellow-300">Live</span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded border border-slate-200 max-h-72 overflow-y-auto">
+                    <table class="w-full text-left text-[11px]" id="workloadLiveTable">
+                        <thead class="bg-slate-100 text-slate-800 font-bold uppercase border-b border-slate-200 sticky top-0 z-10">
+                            <tr>
+                                <th class="p-1.5">G-Num</th>
+                                <th class="p-1.5">Staff Name</th>
+                                <th class="p-1.5">Licenses</th>
+                                <th class="p-1.5 text-center">Duties</th>
+                                <th class="p-1.5 text-center">Workload</th>
+                                <th class="p-1.5 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="workloadTableBody" class="divide-y divide-slate-200 bg-white"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- SECTION 4: GRAPHICAL WORKLOAD DISTRIBUTION CHART -->
+            <section class="bg-white rounded-lg border border-slate-200 p-2 shadow-sm space-y-1.5">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                    <h2 class="text-xs font-bold text-slate-900 tracking-tight">4. Workload Ranking Chart</h2>
+                    <span class="text-[10px] bg-slate-100 text-slate-700 font-semibold px-1.5 py-0.5 rounded">Highest to Lowest</span>
+                </div>
+                <div id="workloadChartContainer" class="space-y-1 max-h-72 overflow-y-auto p-1"></div>
+            </section>
+
+        </div>
+
+    </main>
+
+    <!-- MODAL 1: FLIGHT MODAL -->
+    <div id="flightModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-2">
+        <div class="bg-white rounded-lg border border-slate-300 max-w-lg w-full p-4 space-y-3 shadow-2xl max-h-[95vh] overflow-y-auto text-xs">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                <h3 class="font-bold text-slate-900" id="flightModalTitle">Add Flight Card</h3>
+                <button type="button" onclick="closeFlightModal()" class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
+            </div>
+
+            <form id="flightForm" onsubmit="saveFlight(event)" class="space-y-2.5">
+                <input type="hidden" id="flightId">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-0.5 text-[10px]">Shift</label>
+                        <select id="flightShiftSelect" class="w-full bg-slate-50 border border-slate-300 rounded p-1.5 outline-none focus:ring-1 focus:ring-black"></select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-0.5 text-[10px]">Flight No. *</label>
+                        <input type="text" id="flightNoInput" placeholder="e.g. BG611/BG612" required class="w-full bg-slate-50 border border-slate-300 rounded p-1.5 uppercase outline-none focus:ring-1 focus:ring-black">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-0.5 text-[10px]">Aircraft Reg.</label>
+                        <input type="text" id="aircraftRegInput" placeholder="S2-AKF" class="w-full bg-slate-50 border border-slate-300 rounded p-1.5 uppercase outline-none focus:ring-1 focus:ring-black">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-0.5 text-[10px]">Captain</label>
+                        <input type="text" id="captainInput" placeholder="CAPTAIN" class="w-full bg-slate-50 border border-slate-300 rounded p-1.5 uppercase outline-none focus:ring-1 focus:ring-black">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-0.5 text-[10px]">Sector</label>
+                        <input type="text" id="sectorInput" placeholder="DAC-CGP-DAC" class="w-full bg-slate-50 border border-slate-300 rounded p-1.5 uppercase outline-none focus:ring-1 focus:ring-black">
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 p-2 rounded grid grid-cols-4 gap-1.5">
+                    <div>
+                        <label class="block font-bold text-[9px] text-slate-500 uppercase">STA (HHMM)</label>
+                        <input type="text" id="staInput" maxlength="4" placeholder="0845" class="w-full bg-white border border-slate-300 rounded p-1 text-center font-mono font-bold text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-[9px] text-slate-500 uppercase">STD (HHMM)</label>
+                        <input type="text" id="stdInput" maxlength="4" placeholder="0910" class="w-full bg-white border border-slate-300 rounded p-1 text-center font-mono font-bold text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-[9px] text-slate-500 uppercase">ATA (HHMM)</label>
+                        <input type="text" id="ataInput" maxlength="4" placeholder="0900" class="w-full bg-white border border-slate-300 rounded p-1 text-center font-mono font-bold text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-[9px] text-slate-500 uppercase">ATD (HHMM)</label>
+                        <input type="text" id="atdInput" maxlength="4" placeholder="0925" class="w-full bg-white border border-slate-300 rounded p-1 text-center font-mono font-bold text-xs">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-0.5 text-[10px]">Delay Reason</label>
+                    <input type="text" id="delayReasonInput" placeholder="LATE INBOUND / ATC CLEARANCE" class="w-full bg-slate-50 border border-slate-300 rounded p-1.5 uppercase outline-none focus:ring-1 focus:ring-black">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-0.5 text-[10px]">Flight Notes</label>
+                    <textarea id="flightNotesInput" rows="2" placeholder="VIP ON BOARD, SPECIAL BAGGAGE..." class="w-full bg-slate-50 border border-slate-300 rounded p-1.5 uppercase outline-none focus:ring-1 focus:ring-black text-xs"></textarea>
+                </div>
+
+                <div class="flex justify-end space-x-1.5 pt-2 border-t border-slate-100">
+                    <button type="button" onclick="closeFlightModal()" class="bg-white border border-slate-300 text-slate-700 font-semibold px-3 py-1 rounded hover:bg-slate-100 transition">Cancel</button>
+                    <button type="submit" class="bg-black text-yellow-400 font-bold px-3 py-1 rounded hover:bg-slate-800 transition">Save Flight</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: STAFF DIRECTORY & LICENSES -->
+    <div id="staffModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-2">
+        <div class="bg-white rounded-lg border border-slate-300 max-w-3xl w-full p-4 space-y-3 shadow-2xl flex flex-col max-h-[90vh] text-xs">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                <div>
+                    <h3 class="font-bold text-slate-900">Ground Handling Staff Directory & Licenses</h3>
+                    <p class="text-[10px] text-slate-500">Manage Staff, G-Numbers, Designations, and Task Qualifications</p>
+                </div>
+                <button type="button" onclick="closeStaffModal()" class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
+            </div>
+
+            <!-- ADD STAFF FORM -->
+            <form onsubmit="addStaffMember(event)" class="grid grid-cols-1 sm:grid-cols-5 gap-2 bg-slate-50 border border-slate-200 p-2.5 rounded text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-0.5 text-[10px]">G-Number *</label>
+                    <input type="text" id="newStaffGNum" placeholder="G12345" required class="w-full bg-white border border-slate-300 rounded p-1.5 uppercase font-mono">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-0.5 text-[10px]">Staff Name *</label>
+                    <input type="text" id="newStaffName" placeholder="FULL NAME" required class="w-full bg-white border border-slate-300 rounded p-1.5 uppercase">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-0.5 text-[10px]">Designation</label>
+                    <input type="text" id="newStaffDesignation" list="designationList" placeholder="TRAFFIC OFFICER" class="w-full bg-white border border-slate-300 rounded p-1.5 uppercase">
+                    <datalist id="designationList">
+                        <option value="TRAFFIC OFFICER"></option>
+                        <option value="SR. TRAFFIC ASST."></option>
+                        <option value="TRAFFIC ASST."></option>
+                        <option value="RAMP SUPERVISOR"></option>
+                        <option value="BAGGAGE HANDLER"></option>
+                        <option value="EQUIPMENT OPERATOR"></option>
+                        <option value="LOAD CONTROLLER"></option>
+                        <option value="GROUND HANDLING"></option>
+                    </datalist>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-0.5 text-[10px]">Licenses / Certs</label>
+                    <input type="text" id="newStaffLicenses" placeholder="TRIM, DGR, DCS" class="w-full bg-white border border-slate-300 rounded p-1.5 uppercase font-mono" title="Comma separated licenses, e.g. TRIM, DGR, DCS">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-black text-yellow-400 font-bold rounded p-1.5 hover:bg-slate-800 transition uppercase text-[11px]">+ Add Staff</button>
+                </div>
+            </form>
+
+            <div class="overflow-y-auto flex-1 border border-slate-200 rounded">
+                <table class="w-full text-left text-[11px]">
+                    <thead class="bg-slate-100 text-slate-800 font-bold uppercase border-b border-slate-200 sticky top-0">
+                        <tr>
+                            <th class="p-2 border-r border-slate-200">G-Number</th>
+                            <th class="p-2 border-r border-slate-200">Name</th>
+                            <th class="p-2 border-r border-slate-200">Designation</th>
+                            <th class="p-2 border-r border-slate-200">Licenses Held</th>
+                            <th class="p-2 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staffDirectoryBody" class="divide-y divide-slate-200 bg-white"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: EXPORT .TXT REPORT MODAL -->
+    <div id="txtOutputModal" class="fixed inset-0 bg-neutral-900/80 hidden z-50 flex items-center justify-center p-2 font-mono">
+        <div class="bg-white border-2 border-black max-w-4xl w-full p-4 space-y-3 shadow-2xl flex flex-col max-h-[92vh] text-black">
+            <div class="flex justify-between items-center border-b-2 border-black pb-1.5">
+                <h3 class="font-bold uppercase tracking-wider text-xs">TELETYPE FORMATTED TEXT (.TXT) ROSTER EXPORT</h3>
+                <button type="button" onclick="closeTxtModal()" class="font-bold text-xs hover:bg-black hover:text-white px-2 py-0.5 border border-black">X</button>
+            </div>
+            <div class="flex-1 overflow-y-auto border border-black p-2.5 bg-white">
+                <pre id="txtOutputPre" class="text-xs text-black whitespace-pre leading-relaxed select-all font-mono"></pre>
+            </div>
+            <div class="flex flex-wrap justify-between items-center gap-2 pt-1 border-t-2 border-black text-xs">
+                <span class="text-neutral-600 uppercase font-bold text-[10px]">Ready for teletype / dispatch</span>
+                <div class="flex flex-wrap gap-1.5">
+                    <button type="button" onclick="copyTxtOutput()" class="border border-black bg-neutral-100 hover:bg-black hover:text-white px-2.5 py-1 font-bold uppercase transition">Copy Text</button>
+                    <button type="button" onclick="downloadTxtFile()" class="border border-black bg-neutral-100 hover:bg-black hover:text-white px-2.5 py-1 font-bold uppercase transition">Download .TXT</button>
+                    <button type="button" onclick="copyForWord()" class="border border-black bg-yellow-400 text-black hover:bg-yellow-300 px-2.5 py-1 font-bold uppercase transition">Copy for Word</button>
+                    <button type="button" onclick="downloadWordDoc()" class="border border-black bg-black text-yellow-400 hover:bg-slate-800 px-2.5 py-1 font-bold uppercase transition">Download .DOC</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: WORKLOAD ANALYTICS -->
+    <div id="analyticsModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-2">
+        <div class="bg-white rounded-lg border border-slate-900 max-w-4xl w-full p-4 space-y-3 shadow-2xl flex flex-col max-h-[92vh] text-xs">
+            <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                    <span class="bg-yellow-400 text-black font-black px-1.5 py-0.5 rounded text-xs">WL</span>
+                    Multi-Day Workload Analytics
+                </h3>
+                <button type="button" onclick="closeAnalyticsModal()" class="text-slate-400 hover:text-slate-800 font-bold p-1">✕</button>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 p-2.5 rounded space-y-2">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="text-slate-500 font-bold text-[10px]">FROM:</span>
+                        <input type="date" id="analyticsStartDate" onchange="calculateAnalytics()" class="bg-white border border-slate-300 rounded p-1 font-bold text-xs">
+                        <span class="text-slate-500 font-bold text-[10px]">TO:</span>
+                        <input type="date" id="analyticsEndDate" onchange="calculateAnalytics()" class="bg-white border border-slate-300 rounded p-1 font-bold text-xs">
+                        <button type="button" onclick="calculateAnalytics()" class="bg-black text-yellow-400 px-2.5 py-1 rounded font-bold">Apply</button>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="setAnalyticsPreset('today')" class="bg-white hover:bg-slate-100 border border-slate-300 px-2 py-0.5 rounded text-[11px] font-semibold">Today</button>
+                        <button type="button" onclick="setAnalyticsPreset('last7')" class="bg-white hover:bg-slate-100 border border-slate-300 px-2 py-0.5 rounded text-[11px] font-semibold">7 Days</button>
+                        <button type="button" onclick="setAnalyticsPreset('last14')" class="bg-white hover:bg-slate-100 border border-slate-300 px-2 py-0.5 rounded text-[11px] font-semibold">14 Days</button>
+                        <button type="button" onclick="setAnalyticsPreset('last30')" class="bg-white hover:bg-slate-100 border border-slate-300 px-2 py-0.5 rounded text-[11px] font-semibold">30 Days</button>
+                    </div>
+                </div>
+
+                <div id="analyticsStaffCheckboxes" class="max-h-20 overflow-y-auto flex flex-wrap gap-1 p-1 bg-white rounded border border-slate-200"></div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                <div class="bg-slate-900 text-white p-2 rounded">
+                    <span class="text-slate-400 block text-[10px]">Combined WL</span>
+                    <strong id="analyticsCombinedWL" class="text-yellow-400 font-bold text-sm font-mono">0 WL</strong>
+                </div>
+                <div class="bg-slate-900 text-white p-2 rounded">
+                    <span class="text-slate-400 block text-[10px]">Avg WL / Day</span>
+                    <strong id="analyticsAvgWLPerDay" class="text-yellow-400 font-bold text-sm font-mono">0.0 WL/d</strong>
+                </div>
+                <div class="bg-slate-900 text-white p-2 rounded">
+                    <span class="text-slate-400 block text-[10px]">Total Duties</span>
+                    <strong id="analyticsCombinedDuties" class="text-white font-bold text-sm font-mono">0 Duties</strong>
+                </div>
+                <div class="bg-slate-900 text-white p-2 rounded">
+                    <span class="text-slate-400 block text-[10px]">Avg WL / Duty</span>
+                    <strong id="analyticsAvgWLPerDuty" class="text-yellow-400 font-bold text-sm font-mono">0.0 WL</strong>
+                </div>
+            </div>
+
+            <div class="overflow-y-auto flex-1 border border-slate-200 rounded">
+                <table class="w-full text-left text-[11px]">
+                    <thead class="bg-slate-100 text-slate-800 font-bold uppercase border-b border-slate-200 sticky top-0">
+                        <tr>
+                            <th class="p-1.5 border-r border-slate-200">G-Num</th>
+                            <th class="p-1.5 border-r border-slate-200">Staff Name</th>
+                            <th class="p-1.5 border-r border-slate-200 text-center">Active Days</th>
+                            <th class="p-1.5 border-r border-slate-200 text-center">Duties</th>
+                            <th class="p-1.5 border-r border-slate-200 text-center bg-yellow-50">Total WL</th>
+                            <th class="p-1.5 border-r border-slate-200 text-center">Avg WL/d</th>
+                            <th class="p-1.5 text-center">Avg WL/duty</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analyticsTableBody" class="divide-y divide-slate-200 bg-white"></tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end pt-1 border-t border-slate-100">
+                <button type="button" onclick="closeAnalyticsModal()" class="bg-black text-yellow-400 px-3 py-1 rounded font-bold uppercase text-[11px]">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: FULL BROWSER DATA BACKUP & RESTORE -->
+    <div id="backupModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-2">
+        <div class="bg-white rounded-lg border border-slate-900 max-w-xl w-full p-4 space-y-3 shadow-2xl text-xs">
+            <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                <h3 class="font-bold text-slate-900">Database Backup & Recovery</h3>
+                <button type="button" onclick="closeBackupModal()" class="text-slate-400 hover:text-slate-800 font-bold p-1">✕</button>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 p-2.5 rounded flex items-center justify-between">
+                <span class="text-slate-600 font-medium">Local Browser Database:</span>
+                <div class="space-x-2 font-mono font-bold">
+                    <span class="bg-white border px-2 py-0.5 rounded"><span id="backupStatDates">0</span> Dates</span>
+                    <span class="bg-white border px-2 py-0.5 rounded"><span id="backupStatStaff">0</span> Staff</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="downloadBackupFile()" class="bg-black hover:bg-slate-800 text-yellow-400 font-bold py-2 px-3 rounded transition uppercase">Download .JSON Backup</button>
+                <input type="file" id="backupFileInput" accept=".json" onchange="handleBackupImport(event)" class="hidden">
+                <button type="button" onclick="document.getElementById('backupFileInput').click()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-2 px-3 rounded transition uppercase">Restore From .JSON</button>
+            </div>
+
+            <div class="flex justify-end pt-1 border-t border-slate-100">
+                <button type="button" onclick="closeBackupModal()" class="bg-slate-100 text-slate-800 px-3 py-1 rounded">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: INDIVIDUAL STAFF DUTY HISTORY REPORT (DENSE TABLE + EXCEL EXPORT) -->
+    <div id="staffHistoryModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-2">
+        <div class="bg-white rounded-lg border border-slate-900 max-w-5xl w-full p-4 space-y-3 shadow-2xl flex flex-col max-h-[95vh] text-xs">
+            
+            <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-yellow-400 text-black font-black px-2 py-0.5 rounded text-xs tracking-wider">
+                        DUTY LOG
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm">Individual Staff Duty History</h3>
+                        <p class="text-[10px] text-slate-500">Day-by-day table matrix across all stored rosters</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeStaffHistoryModal()" class="text-slate-400 hover:text-slate-800 font-bold p-1">✕</button>
+            </div>
+
+            <!-- CONTROLS ROW -->
+            <div class="bg-slate-50 border border-slate-200 p-2 rounded flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center space-x-2">
+                    <label class="font-bold text-slate-700 uppercase text-[10px]">Select Staff:</label>
+                    <select id="historyStaffSelect" onchange="renderIndividualStaffHistory(this.value)" class="bg-white border border-slate-300 rounded p-1 font-bold text-slate-900 text-xs min-w-[220px] outline-none">
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="exportStaffHistoryToExcel()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-2.5 py-1 rounded transition flex items-center gap-1 text-[11px]">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        Export to Excel (.XLS)
+                    </button>
+                    <button type="button" onclick="openStaffHistorySeparatePage()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-2.5 py-1 rounded border border-yellow-500 transition flex items-center gap-1 text-[11px]">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        Print / PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- COMPACT SUMMARY BAR -->
+            <div class="bg-slate-900 text-white px-3 py-1.5 rounded grid grid-cols-4 gap-2 text-center text-xs">
+                <div>
+                    <span class="text-slate-400 block text-[10px]">Staff Member</span>
+                    <strong id="historyStaffName" class="text-yellow-400 font-bold uppercase truncate block">-----</strong>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-[10px]">Active Days</span>
+                    <strong id="historyActiveDays" class="text-white font-bold font-mono">0 Days</strong>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-[10px]">Total Duties</span>
+                    <strong id="historyTotalDuties" class="text-white font-bold font-mono">0 Duties</strong>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-[10px]">Total Workload</span>
+                    <strong id="historyTotalWL" class="text-yellow-400 font-black font-mono">0 WL</strong>
+                </div>
+            </div>
+
+            <!-- DENSE HISTORY TABLE (NO UNNECESSARY PADDING) -->
+            <div class="overflow-y-auto flex-1 border border-slate-200 rounded max-h-[58vh]">
+                <table class="w-full text-left text-[11px]" id="staffHistoryExportTable">
+                    <thead class="bg-slate-100 text-slate-800 font-bold uppercase border-b border-slate-200 sticky top-0 z-10">
+                        <tr>
+                            <th class="p-1.5 border-r border-slate-200 w-24">Date</th>
+                            <th class="p-1.5 border-r border-slate-200 w-20">Flight</th>
+                            <th class="p-1.5 border-r border-slate-200 w-24">Sector</th>
+                            <th class="p-1.5 border-r border-slate-200 w-20">Shift</th>
+                            <th class="p-1.5 border-r border-slate-200">Assigned Tasks</th>
+                            <th class="p-1.5 border-r border-slate-200 w-20 text-center">Flight WL</th>
+                            <th class="p-1.5 text-center w-20 bg-yellow-50">Day WL</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody" class="divide-y divide-slate-200 bg-white"></tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end pt-1 border-t border-slate-100">
+                <button type="button" onclick="closeStaffHistoryModal()" class="bg-black text-yellow-400 font-bold px-3 py-1 rounded uppercase text-[11px]">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP SCRIPT -->
+    <script>
+        const KNOWN_LICENSES = ["TRIM", "DGR", "DCS", "RAMP", "BDG", "BAB"];
+        let currentDateStr = new Date().toISOString().split('T')[0];
+        let staffDirectory = [];
+        let currentRosterData = { shifts: [], flights: [] };
+
+        let selectedAnalyticsStaff = new Set();
+        let currentHistoryGNum = null;
+        let draggedTaskInfo = null;
+
+        window.onload = function() {
+            document.getElementById('rosterDate').value = currentDateStr;
+            loadStaffDirectory();
+            loadRosterForDate(currentDateStr);
+        };
+
+        function onDateChange() {
+            const inputVal = document.getElementById('rosterDate').value;
+            if (!inputVal) return;
+            currentDateStr = inputVal;
+            loadRosterForDate(currentDateStr);
+        }
+
+        function getSortedStaffDirectory() {
+            return [...staffDirectory].sort((a, b) => {
+                return (a.name || '').localeCompare(b.name || '');
+            });
+        }
+
+        // STAFF DIRECTORY & LICENSE MANAGEMENT
+        function loadStaffDirectory() {
+            const saved = localStorage.getItem('biman_cgp_staff_directory');
+            if (saved) {
+                try {
+                    staffDirectory = JSON.parse(saved);
+                    staffDirectory.forEach(s => {
+                        if (!Array.isArray(s.licenses)) {
+                            s.licenses = s.licenses ? String(s.licenses).split(',').map(x => x.trim().toUpperCase()).filter(Boolean) : [];
+                        }
+                    });
+                } catch(e) {
+                    staffDirectory = [];
+                }
+            } else {
+                staffDirectory = [];
+                saveStaffDirectory();
+            }
+            renderStaffDirectory();
+        }
+
+        function saveStaffDirectory() {
+            localStorage.setItem('biman_cgp_staff_directory', JSON.stringify(staffDirectory));
+            renderStaffDirectory();
+            renderFlightCards();
+            renderWorkloadTracker();
+        }
+
+        function addStaffMember(e) {
+            e.preventDefault();
+            const gNum = document.getElementById('newStaffGNum').value.trim().toUpperCase();
+            const name = document.getElementById('newStaffName').value.trim().toUpperCase();
+            const designation = document.getElementById('newStaffDesignation').value.trim().toUpperCase() || "GROUND HANDLING";
+            const licensesRaw = document.getElementById('newStaffLicenses').value.trim().toUpperCase();
+            const licenses = licensesRaw ? licensesRaw.split(',').map(x => x.trim()).filter(Boolean) : [];
+
+            if (!gNum || !name) return;
+
+            if (staffDirectory.some(s => s.gNum === gNum)) {
+                alert("G-Number already exists!");
+                return;
+            }
+
+            staffDirectory.push({ gNum, name, designation, licenses });
+            saveStaffDirectory();
+            document.getElementById('newStaffGNum').value = '';
+            document.getElementById('newStaffName').value = '';
+            document.getElementById('newStaffDesignation').value = '';
+            document.getElementById('newStaffLicenses').value = '';
+        }
+
+        function deleteStaffMember(gNum) {
+            if (confirm(`Remove staff member ${gNum}?`)) {
+                staffDirectory = staffDirectory.filter(s => s.gNum !== gNum);
+                saveStaffDirectory();
+            }
+        }
+
+        function updateStaffLicensesInline(gNum, val) {
+            const staff = staffDirectory.find(s => s.gNum === gNum);
+            if (!staff) return;
+            staff.licenses = val.split(',').map(x => x.trim().toUpperCase()).filter(Boolean);
+            saveStaffDirectory();
+        }
+
+        function renderStaffDirectory() {
+            const tbody = document.getElementById('staffDirectoryBody');
+            const sortedStaff = getSortedStaffDirectory();
+            if (sortedStaff.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-slate-400">[No staff added yet]</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = sortedStaff.map(s => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-1.5 font-bold text-slate-900 border-r border-slate-200 font-mono">${s.gNum}</td>
+                    <td class="p-1.5 border-r border-slate-200 uppercase font-semibold text-slate-800">${s.name}</td>
+                    <td class="p-1.5 border-r border-slate-200 uppercase font-medium text-slate-600">${s.designation || 'GROUND HANDLING'}</td>
+                    <td class="p-1.5 border-r border-slate-200 font-mono">
+                        <input type="text" value="${(s.licenses || []).join(', ')}" 
+                               onchange="updateStaffLicensesInline('${s.gNum}', this.value)"
+                               placeholder="e.g. TRIM, DGR" 
+                               class="w-full bg-slate-50 border border-slate-200 hover:border-slate-400 rounded px-1.5 py-0.5 text-[11px] font-bold text-amber-700 uppercase"
+                               title="Edit licenses directly (comma-separated)">
+                    </td>
+                    <td class="p-1.5 text-right space-x-1.5">
+                        <button type="button" onclick="openStaffHistoryModal('${s.gNum}')" class="font-bold text-yellow-600 hover:text-yellow-700">[History]</button>
+                        <button type="button" onclick="deleteStaffMember('${s.gNum}')" class="font-semibold text-red-600 hover:text-red-800">[Del]</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // ROSTER MANAGEMENT
+        function loadRosterForDate(dateStr) {
+            document.getElementById('displayActiveDate').innerText = dateStr;
+            const saved = localStorage.getItem('biman_cgp_roster_' + dateStr);
+            if (saved) {
+                try { currentRosterData = JSON.parse(saved); } catch(e) { currentRosterData = createInitialEmptyRoster(); }
+            } else {
+                currentRosterData = createInitialEmptyRoster();
+            }
+            renderRoster();
+        }
+
+        function saveCurrentRoster() {
+            localStorage.setItem('biman_cgp_roster_' + currentDateStr, JSON.stringify(currentRosterData));
+            updateStats();
+            renderWorkloadTracker();
+        }
+
+        function createInitialEmptyRoster() {
+            return {
+                shifts: [
+                    { id: 's1', name: 'SHIFT A', time: '0600LT-1400LT' },
+                    { id: 's2', name: 'SHIFT B', time: '1400LT-2200LT' }
+                ],
+                flights: []
+            };
+        }
+
+        function copyRosterFromLastWeek() {
+            const dateObj = new Date(currentDateStr);
+            dateObj.setDate(dateObj.getDate() - 7);
+            const lastWeekDateStr = dateObj.toISOString().split('T')[0];
+
+            const savedLastWeek = localStorage.getItem('biman_cgp_roster_' + lastWeekDateStr);
+            if (!savedLastWeek) {
+                alert(`No roster record found for ${lastWeekDateStr}.`);
+                return;
+            }
+
+            if (confirm(`Overwrite current roster for ${currentDateStr} with data from ${lastWeekDateStr}?`)) {
+                currentRosterData = JSON.parse(savedLastWeek);
+                currentRosterData.flights.forEach(f => { f.ata = ''; f.atd = ''; });
+                saveCurrentRoster();
+                renderFlightCards();
+                alert(`Copied roster from ${lastWeekDateStr}!`);
+            }
+        }
+
+        function toggleShiftForm() {
+            document.getElementById('shiftForm').classList.toggle('hidden');
+        }
+
+        function handleCreateShift(e) {
+            e.preventDefault();
+            const name = document.getElementById('shiftNameInput').value.trim().toUpperCase();
+            const time = document.getElementById('shiftTimeInput').value.trim();
+            if (!name || !time) return;
+
+            currentRosterData.shifts.push({ id: 's_' + Date.now(), name, time });
+            document.getElementById('shiftNameInput').value = '';
+            document.getElementById('shiftTimeInput').value = '';
+            toggleShiftForm();
+            saveCurrentRoster();
+            renderShiftsBar();
+        }
+
+        function deleteShift(shiftId) {
+            if (confirm("Delete this shift?")) {
+                currentRosterData.shifts = currentRosterData.shifts.filter(s => s.id !== shiftId);
+                saveCurrentRoster();
+                renderShiftsBar();
+            }
+        }
+
+        function formatHHMM(val) {
+            if (!val) return '----';
+            const clean = val.replace(/[^0-9]/g, '');
+            return clean.padStart(4, '0').slice(0, 4);
+        }
+
+        // FLIGHTS & TASK MATRIX
+        function openFlightModal(flightId = null) {
+            const shiftSelect = document.getElementById('flightShiftSelect');
+            if (currentRosterData.shifts.length === 0) {
+                alert("Please create at least one shift first!");
+                return;
+            }
+
+            shiftSelect.innerHTML = currentRosterData.shifts.map(s => `<option value="${s.id}">${s.name} (${s.time})</option>`).join('');
+
+            if (flightId) {
+                const flight = currentRosterData.flights.find(f => f.id === flightId);
+                document.getElementById('flightModalTitle').innerText = "Edit Flight Card";
+                document.getElementById('flightId').value = flight.id;
+                document.getElementById('flightShiftSelect').value = flight.shiftId;
+                document.getElementById('flightNoInput').value = flight.flightNo;
+                document.getElementById('aircraftRegInput').value = flight.aircraftReg || '';
+                document.getElementById('captainInput').value = flight.captain || '';
+                document.getElementById('sectorInput').value = flight.sector || '';
+                document.getElementById('staInput').value = flight.sta || '';
+                document.getElementById('stdInput').value = flight.std || '';
+                document.getElementById('ataInput').value = flight.ata || '';
+                document.getElementById('atdInput').value = flight.atd || '';
+                document.getElementById('delayReasonInput').value = flight.delayReason || '';
+                document.getElementById('flightNotesInput').value = flight.notes || '';
+            } else {
+                document.getElementById('flightModalTitle').innerText = "Add Flight Card";
+                document.getElementById('flightForm').reset();
+                document.getElementById('flightId').value = '';
+            }
+            document.getElementById('flightModal').classList.remove('hidden');
+        }
+
+        function closeFlightModal() {
+            document.getElementById('flightModal').classList.add('hidden');
+        }
+
+        function saveFlight(e) {
+            e.preventDefault();
+            const flightId = document.getElementById('flightId').value;
+            const shiftId = document.getElementById('flightShiftSelect').value;
+            const flightNo = document.getElementById('flightNoInput').value.trim().toUpperCase();
+            const aircraftReg = document.getElementById('aircraftRegInput').value.trim().toUpperCase();
+            const captain = document.getElementById('captainInput').value.trim().toUpperCase();
+            const sector = document.getElementById('sectorInput').value.trim().toUpperCase();
+            const sta = document.getElementById('staInput').value.trim();
+            const std = document.getElementById('stdInput').value.trim();
+            const ata = document.getElementById('ataInput').value.trim();
+            const atd = document.getElementById('atdInput').value.trim();
+            const delayReason = document.getElementById('delayReasonInput').value.trim().toUpperCase();
+            const notes = document.getElementById('flightNotesInput').value.trim().toUpperCase();
+
+            if (flightId) {
+                const idx = currentRosterData.flights.findIndex(f => f.id === flightId);
+                if (idx !== -1) {
+                    currentRosterData.flights[idx] = {
+                        ...currentRosterData.flights[idx],
+                        shiftId, flightNo, aircraftReg, captain, sector, sta, std, ata, atd, delayReason, notes
+                    };
+                }
+            } else {
+                const newFlight = {
+                    id: 'f_' + Date.now(),
+                    shiftId, flightNo, aircraftReg, captain, sector, sta, std, ata, atd, delayReason, notes,
+                    arrivalTasks: [
+                        { id: 't_' + Date.now() + '_1', code: 'OFL', name: 'OFL', score: 5, requiredLicense: '', gNum: '' },
+                        { id: 't_' + Date.now() + '_2', code: 'CVG', name: 'CVG', score: 3, requiredLicense: '', gNum: '' }
+                    ],
+                    departureTasks: [
+                        { id: 't_' + Date.now() + '_3', code: 'CHK IN', name: 'CHK IN', score: 5, requiredLicense: '', gNum: '' },
+                        { id: 't_' + Date.now() + '_4', code: 'LDG', name: 'LDG', score: 5, requiredLicense: '', gNum: '' },
+                        { id: 't_' + Date.now() + '_5', code: 'BDG', name: 'BDG', score: 4, requiredLicense: '', gNum: '' },
+                        { id: 't_' + Date.now() + '_6', code: 'BAB', name: 'BAB', score: 4, requiredLicense: '', gNum: '' },
+                        { id: 't_' + Date.now() + '_7', code: 'CVG', name: 'CVG', score: 3, requiredLicense: '', gNum: '' },
+                        { id: 't_' + Date.now() + '_8', code: 'TRIM', name: 'TRIM', score: 5, requiredLicense: 'TRIM', gNum: '' },
+                        { id: 't_' + Date.now() + '_9', code: 'FNL', name: 'FNL', score: 4, requiredLicense: '', gNum: '' }
+                    ]
+                };
+                currentRosterData.flights.push(newFlight);
+            }
+
+            closeFlightModal();
+            saveCurrentRoster();
+            renderFlightCards();
+        }
+
+        function duplicateFlight(flightId) {
+            const original = currentRosterData.flights.find(f => f.id === flightId);
+            if (!original) return;
+
+            const timestamp = Date.now();
+            const cloned = JSON.parse(JSON.stringify(original));
+            cloned.id = 'f_' + timestamp;
+            cloned.flightNo = cloned.flightNo ? `${cloned.flightNo} (COPY)` : 'COPY';
+            cloned.ata = '';
+            cloned.atd = '';
+
+            cloned.arrivalTasks = (cloned.arrivalTasks || []).map((t, idx) => ({ ...t, id: `t_${timestamp}_arr_${idx}` }));
+            cloned.departureTasks = (cloned.departureTasks || []).map((t, idx) => ({ ...t, id: `t_${timestamp}_dep_${idx}` }));
+
+            currentRosterData.flights.push(cloned);
+            saveCurrentRoster();
+            renderFlightCards();
+        }
+
+        function deleteFlight(flightId) {
+            if (confirm("Delete this flight card?")) {
+                currentRosterData.flights = currentRosterData.flights.filter(f => f.id !== flightId);
+                saveCurrentRoster();
+                renderFlightCards();
+            }
+        }
+
+        function addTaskToFlight(flightId, side) {
+            const taskName = prompt(`Enter ${side.toUpperCase()} task code (e.g. OFL, CHK IN, TRIM, LDG):`);
+            if (!taskName) return;
+
+            const upperName = taskName.toUpperCase();
+            const defaultLic = upperName === 'TRIM' ? 'TRIM' : (upperName === 'DGR' ? 'DGR' : '');
+            const scoreStr = prompt("Enter workload points:", "5");
+            const score = parseInt(scoreStr) || 5;
+
+            const flight = currentRosterData.flights.find(f => f.id === flightId);
+            if (!flight) return;
+
+            const newTask = {
+                id: 't_' + Date.now(),
+                code: upperName,
+                name: upperName,
+                score,
+                requiredLicense: defaultLic,
+                gNum: ''
+            };
+
+            if (side === 'arrival') flight.arrivalTasks.push(newTask);
+            else flight.departureTasks.push(newTask);
+
+            saveCurrentRoster();
+            renderFlightCards();
+        }
+
+        function duplicateTaskInFlight(flightId, side, taskId) {
+            const flight = currentRosterData.flights.find(f => f.id === flightId);
+            if (!flight) return;
+
+            const taskList = side === 'arrival' ? flight.arrivalTasks : flight.departureTasks;
+            const idx = taskList.findIndex(t => t.id === taskId);
+            if (idx === -1) return;
+
+            const original = taskList[idx];
+            const duplicate = {
+                ...JSON.parse(JSON.stringify(original)),
+                id: 't_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                gNum: ''
+            };
+
+            taskList.splice(idx + 1, 0, duplicate);
+            saveCurrentRoster();
+            renderFlightCards();
+        }
+
+        function deleteTaskFromFlight(flightId, side, taskId) {
+            const flight = currentRosterData.flights.find(f => f.id === flightId);
+            if (!flight) return;
+
+            if (side === 'arrival') flight.arrivalTasks = flight.arrivalTasks.filter(t => t.id !== taskId);
+            else flight.departureTasks = flight.departureTasks.filter(t => t.id !== taskId);
+
+            saveCurrentRoster();
+            renderFlightCards();
+        }
+
+        // IN-PLACE DOM UPDATE TO PREVENT TAB FOCUS LOSS
+        function updateTaskAssignment(flightId, side, taskId, field, value) {
+            const flight = currentRosterData.flights.find(f => f.id === flightId);
+            if (!flight) return;
+
+            const taskList = side === 'arrival' ? flight.arrivalTasks : flight.departureTasks;
+            const task = taskList.find(t => t.id === taskId);
+            if (!task) return;
+
+            if (field === 'gNum') {
+                task.gNum = value.trim().toUpperCase();
+            } else if (field === 'score') {
+                task.score = parseInt(value) || 0;
+            } else if (field === 'code') {
+                const upper = value.trim().toUpperCase();
+                task.code = upper;
+                task.name = upper;
+            } else if (field === 'requiredLicense') {
+                task.requiredLicense = value.trim().toUpperCase();
+                // If current staff does not have this license, reset their assignment
+                if (task.gNum && task.requiredLicense) {
+                    const assignedStaff = staffDirectory.find(s => s.gNum === task.gNum);
+                    if (!assignedStaff || !(assignedStaff.licenses || []).includes(task.requiredLicense)) {
+                        task.gNum = '';
+                    }
+                }
+                // Refresh task card so dropdown reflects license restriction
+                renderFlightCards();
+            }
+
+            saveCurrentRoster();
+        }
+
+        // DRAG AND DROP
+        function handleDragStart(e, flightId, side, index) {
+            draggedTaskInfo = { flightId, side, index };
+            e.currentTarget.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            e.currentTarget.classList.remove('dragging');
+            document.querySelectorAll('.task-card').forEach(card => card.classList.remove('drag-over'));
+            draggedTaskInfo = null;
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e, targetFlightId, targetSide, targetIndex) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            if (!draggedTaskInfo) return;
+
+            const { flightId: srcFlightId, side: srcSide, index: srcIndex } = draggedTaskInfo;
+            const srcFlight = currentRosterData.flights.find(f => f.id === srcFlightId);
+            const targetFlight = currentRosterData.flights.find(f => f.id === targetFlightId);
+            if (!srcFlight || !targetFlight) return;
+
+            const srcList = srcSide === 'arrival' ? srcFlight.arrivalTasks : srcFlight.departureTasks;
+            const targetList = targetSide === 'arrival' ? targetFlight.arrivalTasks : targetFlight.departureTasks;
+
+            const [movedTask] = srcList.splice(srcIndex, 1);
+            targetList.splice(targetIndex, 0, movedTask);
+
+            saveCurrentRoster();
+            renderFlightCards();
+        }
+
+        // MAIN RENDER FUNCTIONS
+        function renderRoster() {
+            renderShiftsBar();
+            renderFlightCards();
+            renderWorkloadTracker();
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('statShiftsCount').innerText = currentRosterData.shifts.length;
+            document.getElementById('statFlightsCount').innerText = currentRosterData.flights.length;
+
+            let totalPoints = 0;
+            currentRosterData.flights.forEach(f => {
+                (f.arrivalTasks || []).forEach(t => totalPoints += (t.score || 0));
+                (f.departureTasks || []).forEach(t => totalPoints += (t.score || 0));
+            });
+            document.getElementById('statTotalWorkload').innerText = `${totalPoints} WL`;
+        }
+
+        function renderShiftsBar() {
+            const container = document.getElementById('shiftsContainer');
+            if (currentRosterData.shifts.length === 0) {
+                container.innerHTML = `<span class="text-slate-400 italic font-medium">[No shifts created]</span>`;
+                return;
+            }
+
+            container.innerHTML = currentRosterData.shifts.map(s => `
+                <div class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded flex items-center space-x-1.5 font-semibold text-slate-800">
+                    <span>${s.name} <span class="font-mono text-slate-500 text-[10px]">(${s.time})</span></span>
+                    <button type="button" onclick="deleteShift('${s.id}')" class="text-slate-400 hover:text-red-600 font-bold ml-1">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function renderFlightCards() {
+            const container = document.getElementById('flightsList');
+            if (currentRosterData.flights.length === 0) {
+                container.innerHTML = `
+                    <div class="border border-dashed border-slate-300 rounded p-4 text-center text-slate-400 font-medium">
+                        No flights scheduled. Click <strong>"+ Add Flight Card"</strong> above.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = currentRosterData.flights.map(f => {
+                const shift = currentRosterData.shifts.find(s => s.id === f.shiftId) || { name: 'GENERAL', time: '' };
+
+                return `
+                <div class="bg-white border border-slate-900 rounded-lg shadow-sm overflow-hidden text-xs">
+                    
+                    <!-- HIGH-DENSITY FLIGHT HEADER -->
+                    <div class="bg-black text-white px-2.5 py-1.5 flex flex-wrap items-center justify-between gap-1.5">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="font-black text-xs text-black bg-yellow-400 px-2 py-0.5 rounded">${f.flightNo}</span>
+                            <span class="text-slate-300 font-semibold text-[11px]">REG: <strong class="text-yellow-400 font-mono">${f.aircraftReg || 'N/A'}</strong></span>
+                            <span class="text-slate-300 font-semibold text-[11px]">CPT: <strong class="text-yellow-400 font-mono">${f.captain || 'N/A'}</strong></span>
+                            <span class="text-slate-300 font-semibold text-[11px]">SEC: <strong class="text-yellow-400 font-mono">${f.sector || 'N/A'}</strong></span>
+                            <span class="text-slate-400 font-mono text-[10px]">(${shift.name} ${shift.time})</span>
+                        </div>
+
+                        <div class="flex flex-wrap items-center space-x-2 font-mono font-bold text-slate-300 text-[11px]">
+                            <span>STA:<strong class="text-white">${formatHHMM(f.sta)}</strong></span>
+                            <span>STD:<strong class="text-white">${formatHHMM(f.std)}</strong></span>
+                            <span>ATA:<strong class="text-yellow-400">${formatHHMM(f.ata)}</strong></span>
+                            <span>ATD:<strong class="text-yellow-400">${formatHHMM(f.atd)}</strong></span>
+                            ${f.delayReason ? `<span class="bg-red-950 text-red-300 border border-red-800 px-1.5 py-0.2 rounded text-[10px]">DLY: ${f.delayReason}</span>` : ''}
+                            <div class="flex space-x-1 pl-1">
+                                <button type="button" onclick="openFlightModal('${f.id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-1.5 py-0.5 rounded text-[10px]">Edit</button>
+                                <button type="button" onclick="duplicateFlight('${f.id}')" class="bg-yellow-400 hover:bg-yellow-300 text-black px-1.5 py-0.5 rounded text-[10px] font-bold">Dup</button>
+                                <button type="button" onclick="deleteFlight('${f.id}')" class="bg-red-900 text-red-200 hover:bg-red-800 px-1.5 py-0.5 rounded text-[10px]">Del</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SIDE-BY-SIDE DENSE COLUMNS -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
+                        
+                        <!-- ARRIVAL -->
+                        <div class="p-2 space-y-1.5 bg-slate-50/40">
+                            <div class="flex justify-between items-center border-b border-slate-200 pb-1">
+                                <span class="font-bold text-slate-800 uppercase text-[10px] flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span> Arrival Duties
+                                </span>
+                                <button type="button" onclick="addTaskToFlight('${f.id}', 'arrival')" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-semibold px-1.5 py-0.2 rounded text-[10px]">+ Task</button>
+                            </div>
+                            <div class="space-y-1">
+                                ${renderTaskList(f.id, 'arrival', f.arrivalTasks)}
+                            </div>
+
+                            <!-- FLIGHT NOTES -->
+                            <div class="pt-1.5 border-t border-slate-200 flex items-center gap-1">
+                                <span class="text-[9px] uppercase font-bold text-slate-500 w-12 flex-shrink-0">Notes:</span>
+                                <input type="text" value="${f.notes || ''}" 
+                                       placeholder="Notes / instructions..."
+                                       onchange="updateFlightNotes('${f.id}', this.value)"
+                                       class="w-full bg-white border border-slate-300 rounded px-1.5 py-0.5 text-[10px] uppercase font-mono text-slate-800 outline-none focus:border-yellow-400">
+                            </div>
+                        </div>
+
+                        <!-- DEPARTURE -->
+                        <div class="p-2 space-y-1.5 bg-slate-50/40">
+                            <div class="flex justify-between items-center border-b border-slate-200 pb-1">
+                                <span class="font-bold text-slate-800 uppercase text-[10px] flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-black"></span> Departure Duties
+                                </span>
+                                <button type="button" onclick="addTaskToFlight('${f.id}', 'departure')" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-semibold px-1.5 py-0.2 rounded text-[10px]">+ Task</button>
+                            </div>
+                            <div class="space-y-1">
+                                ${renderTaskList(f.id, 'departure', f.departureTasks)}
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                `;
+            }).join('');
+        }
+
+        function updateFlightNotes(flightId, value) {
+            const flight = currentRosterData.flights.find(f => f.id === flightId);
+            if (!flight) return;
+            flight.notes = value.trim().toUpperCase();
+            saveCurrentRoster();
+        }
+
+        // RENDER TASK LIST WITH NAME-FIRST TYPING AND LICENSE FILTERING
+        function renderTaskList(flightId, side, tasks) {
+            if (!tasks || tasks.length === 0) {
+                return `
+                <div class="border border-dashed border-slate-200 rounded p-2 text-center text-slate-400 text-[10px]"
+                     ondragover="handleDragOver(event)" 
+                     ondrop="handleDrop(event, '${flightId}', '${side}', 0)">
+                    [Drop task here]
+                </div>`;
+            }
+
+            const sortedStaff = getSortedStaffDirectory();
+
+            return tasks.map((t, index) => {
+                // FILTER STAFF BY REQUIRED LICENSE
+                const reqLic = (t.requiredLicense || '').trim().toUpperCase();
+                const eligibleStaff = reqLic
+                    ? sortedStaff.filter(s => Array.isArray(s.licenses) && s.licenses.includes(reqLic))
+                    : sortedStaff;
+
+                const assignedStaff = staffDirectory.find(s => s.gNum === t.gNum);
+                const hasLicenseMismatch = reqLic && assignedStaff && !(assignedStaff.licenses || []).includes(reqLic);
+
+                return `
+                <div class="task-card bg-white border ${hasLicenseMismatch ? 'border-red-400 bg-red-50/30' : 'border-slate-200'} hover:border-yellow-400 px-2 py-1 rounded flex items-center justify-between gap-1 shadow-xs text-xs"
+                     draggable="true"
+                     ondragstart="handleDragStart(event, '${flightId}', '${side}', ${index})"
+                     ondragend="handleDragEnd(event)"
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)"
+                     ondrop="handleDrop(event, '${flightId}', '${side}', ${index})">
+                    
+                    <!-- DRAG HANDLE & TASK CODE -->
+                    <div class="flex items-center space-x-1.5 min-w-0">
+                        <div class="cursor-grab text-slate-300 hover:text-slate-600 flex-shrink-0" title="Drag to reorder">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+                        </div>
+                        
+                        <input type="text" 
+                               value="${t.code || t.name}" 
+                               placeholder="TASK"
+                               onchange="updateTaskAssignment('${flightId}', '${side}', '${t.id}', 'code', this.value)"
+                               class="font-bold text-slate-900 uppercase bg-transparent border border-transparent hover:border-slate-300 focus:border-black rounded px-1 py-0.5 text-[11px] outline-none w-16 transition flex-shrink-0"
+                               title="Task Code">
+                    </div>
+
+                    <!-- WORKLOAD SCORE -->
+                    <div class="flex items-center space-x-0.5 bg-yellow-50 border border-yellow-200 px-1 py-0.5 rounded flex-shrink-0">
+                        <span class="text-[9px] font-bold text-slate-600">WL:</span>
+                        <input type="number" value="${t.score}" min="1" max="50" 
+                               onchange="updateTaskAssignment('${flightId}', '${side}', '${t.id}', 'score', this.value)" 
+                               class="w-6 font-bold text-center bg-transparent outline-none text-[11px]">
+                    </div>
+
+                    <!-- REQUIRED LICENSE SELECTOR -->
+                    <div class="flex items-center space-x-1 flex-shrink-0">
+                        <select onchange="updateTaskAssignment('${flightId}', '${side}', '${t.id}', 'requiredLicense', this.value)"
+                                class="bg-slate-50 border border-slate-200 rounded px-1 py-0.5 text-[10px] uppercase font-mono ${reqLic ? 'font-bold text-amber-700 bg-amber-50 border-amber-300' : 'text-slate-500'}"
+                                title="Required license qualification for this task">
+                            <option value="">LIC: ANY</option>
+                            ${KNOWN_LICENSES.map(lic => `<option value="${lic}" ${reqLic === lic ? 'selected' : ''}>${lic}</option>`).join('')}
+                        </select>
+                    </div>
+
+                    <!-- STAFF SELECTOR (NAME FIRST: TYPING SORTS/JUMPS BY NAME) -->
+                    <div class="flex-1 min-w-[130px] max-w-[200px]">
+                        <select onchange="updateTaskAssignment('${flightId}', '${side}', '${t.id}', 'gNum', this.value)" 
+                                class="w-full bg-white border ${hasLicenseMismatch ? 'border-red-500 text-red-600' : 'border-slate-300'} rounded p-0.5 text-[11px] font-medium outline-none focus:ring-1 focus:ring-black truncate"
+                                title="${reqLic ? `Showing only staff with ${reqLic} license` : 'Select staff member'}">
+                            <option value="">-- Unassigned --</option>
+                            ${eligibleStaff.map(s => `
+                                <option value="${s.gNum}" ${s.gNum === t.gNum ? 'selected' : ''}>${s.name} (${s.gNum})</option>
+                            `).join('')}
+                        </select>
+                    </div>
+
+                    <!-- DUPLICATE & DELETE -->
+                    <div class="flex items-center space-x-1 flex-shrink-0">
+                        <button type="button" onclick="duplicateTaskInFlight('${flightId}', '${side}', '${t.id}')" class="text-slate-400 hover:text-black p-0.5" title="Duplicate Task">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        </button>
+                        <button type="button" onclick="deleteTaskFromFlight('${flightId}', '${side}', '${t.id}')" class="text-slate-400 hover:text-red-600 font-bold p-0.5" title="Delete Task">✕</button>
+                    </div>
+
+                </div>
+                `;
+            }).join('');
+        }
+
+        // WORKLOAD TRACKER & GRAPHICAL CHART
+        function renderWorkloadTracker() {
+            const tbody = document.getElementById('workloadTableBody');
+            const chartContainer = document.getElementById('workloadChartContainer');
+            const workloadMap = {};
+
+            staffDirectory.forEach(s => {
+                workloadMap[s.gNum] = {
+                    ...s,
+                    designation: s.designation || 'GROUND HANDLING',
+                    licenses: s.licenses || [],
+                    taskCount: 0,
+                    totalScore: 0
+                };
+            });
+
+            currentRosterData.flights.forEach(f => {
+                [...(f.arrivalTasks || []), ...(f.departureTasks || [])].forEach(t => {
+                    if (t.gNum && workloadMap[t.gNum]) {
+                        workloadMap[t.gNum].taskCount += 1;
+                        workloadMap[t.gNum].totalScore += (t.score || 0);
+                    }
+                });
+            });
+
+            // WORKLOAD TABLE (SORTED BY NAME)
+            const staffList = Object.values(workloadMap).sort((a, b) => a.name.localeCompare(b.name));
+
+            if (staffList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-3 text-center text-slate-400">[No staff recorded]</td></tr>`;
+                chartContainer.innerHTML = `<div class="p-3 text-center text-slate-400 text-[11px]">[No staff recorded]</div>`;
+                return;
+            }
+
+            tbody.innerHTML = staffList.map(s => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-1.5 border-r border-slate-200 font-bold font-mono text-slate-900">${s.gNum}</td>
+                    <td class="p-1.5 border-r border-slate-200 uppercase font-semibold text-slate-900">${s.name}</td>
+                    <td class="p-1.5 border-r border-slate-200 text-slate-600 font-mono text-[10px]">
+                        ${s.licenses.length > 0 ? s.licenses.map(lic => `<span class="bg-slate-100 text-slate-800 border px-1 rounded mr-0.5 font-bold">${lic}</span>`).join('') : '<span class="text-slate-300">-</span>'}
+                    </td>
+                    <td class="p-1.5 border-r border-slate-200 text-center font-semibold text-slate-800">${s.taskCount}</td>
+                    <td class="p-1.5 border-r border-slate-200 text-center bg-yellow-50 font-bold text-yellow-800 font-mono">${s.totalScore} WL</td>
+                    <td class="p-1.5 text-right">
+                        <button type="button" onclick="openStaffHistoryModal('${s.gNum}')" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-1.5 py-0.2 rounded text-[10px] border border-yellow-500">History</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // WORKLOAD CHART (RANKED DESCENDING)
+            const chartSorted = [...staffList].sort((a, b) => b.totalScore - a.totalScore);
+            const maxScore = Math.max(...chartSorted.map(s => s.totalScore), 1);
+
+            chartContainer.innerHTML = chartSorted.map((s, rank) => {
+                const percentage = Math.min(Math.round((s.totalScore / maxScore) * 100), 100);
+                let barClass = "bg-yellow-400";
+                if (percentage > 70) barClass = "bg-amber-500";
+                if (percentage > 88) barClass = "bg-black";
+
+                return `
+                <div class="space-y-0.5">
+                    <div class="flex justify-between items-center text-[10px]">
+                        <div class="font-bold text-slate-900 flex items-center space-x-1.5">
+                            <span class="text-slate-400 font-mono">#${rank + 1}</span>
+                            <span class="uppercase">${s.name}</span>
+                            <span class="font-mono text-slate-500">(${s.gNum})</span>
+                        </div>
+                        <div class="font-mono font-bold text-slate-800">
+                            ${s.totalScore} WL <span class="text-slate-400 font-normal">(${s.taskCount} duties)</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2 border border-slate-200 overflow-hidden flex">
+                        <div class="${barClass} h-full rounded-full transition-all duration-200" style="width: ${Math.max(percentage, s.totalScore > 0 ? 4 : 0)}%"></div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // ==========================================
+        // STAFF HISTORY TABLE & EXCEL EXPORT ENGINE
+        // ==========================================
+
+        function getAllStoredRosterDates() {
+            const datesSet = new Set();
+            datesSet.add(currentDateStr);
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('biman_cgp_roster_')) {
+                    datesSet.add(key.replace('biman_cgp_roster_', ''));
+                }
+            }
+            return Array.from(datesSet).sort().reverse();
+        }
+
+        function getStaffHistoryData(targetGNum) {
+            const allDates = getAllStoredRosterDates();
+            const staffObj = staffDirectory.find(s => s.gNum === targetGNum) || { gNum: targetGNum, name: 'UNKNOWN', designation: 'GH', licenses: [] };
+
+            let totalWL = 0;
+            let totalDuties = 0;
+            const historyRows = [];
+
+            allDates.forEach(dateStr => {
+                const roster = getRosterForDate(dateStr);
+                if (!roster || !roster.flights) return;
+
+                let dayWL = 0;
+                const flightsForThisDay = [];
+
+                roster.flights.forEach(f => {
+                    const shiftObj = (roster.shifts || []).find(s => s.id === f.shiftId) || { name: 'GENERAL', time: '' };
+                    const matchedTasks = [...(f.arrivalTasks || []), ...(f.departureTasks || [])].filter(t => t.gNum === targetGNum);
+
+                    if (matchedTasks.length > 0) {
+                        let flightWL = 0;
+                        matchedTasks.forEach(t => { flightWL += (parseInt(t.score) || 0); });
+
+                        dayWL += flightWL;
+                        totalDuties += matchedTasks.length;
+
+                        flightsForThisDay.push({
+                            flightNo: f.flightNo,
+                            sector: f.sector || 'CGP',
+                            shiftName: shiftObj.name,
+                            tasks: matchedTasks,
+                            flightWL
+                        });
+                    }
+                });
+
+                if (flightsForThisDay.length > 0) {
+                    totalWL += dayWL;
+                    historyRows.push({
+                        date: dateStr,
+                        dayWL,
+                        flights: flightsForThisDay
+                    });
+                }
+            });
+
+            return {
+                staff: staffObj,
+                totalWL,
+                totalDuties,
+                activeDaysCount: historyRows.length,
+                rows: historyRows
+            };
+        }
+
+        function openStaffHistoryModal(preselectedGNum = null) {
+            const sortedStaff = getSortedStaffDirectory();
+            if (sortedStaff.length === 0) {
+                alert("Please add staff members first.");
+                return;
+            }
+
+            const selectEl = document.getElementById('historyStaffSelect');
+            selectEl.innerHTML = sortedStaff.map(s => `
+                <option value="${s.gNum}">${s.name} (${s.gNum}) &bull; ${s.designation}</option>
+            `).join('');
+
+            const selectedGNum = preselectedGNum && sortedStaff.some(s => s.gNum === preselectedGNum)
+                ? preselectedGNum
+                : sortedStaff[0].gNum;
+
+            selectEl.value = selectedGNum;
+            currentHistoryGNum = selectedGNum;
+
+            renderIndividualStaffHistory(selectedGNum);
+            document.getElementById('staffHistoryModal').classList.remove('hidden');
+        }
+
+        function closeStaffHistoryModal() {
+            document.getElementById('staffHistoryModal').classList.add('hidden');
+        }
+
+        function renderIndividualStaffHistory(gNum) {
+            currentHistoryGNum = gNum;
+            const history = getStaffHistoryData(gNum);
+
+            document.getElementById('historyStaffName').innerText = `${history.staff.name} (${history.staff.gNum})`;
+            document.getElementById('historyActiveDays').innerText = `${history.activeDaysCount} Days`;
+            document.getElementById('historyTotalDuties').innerText = `${history.totalDuties} Duties`;
+            document.getElementById('historyTotalWL').innerText = `${history.totalWL} WL`;
+
+            const tbody = document.getElementById('historyTableBody');
+            if (history.rows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">[No duty history recorded for this staff member]</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            history.rows.forEach(day => {
+                day.flights.forEach((f, fIdx) => {
+                    const taskBadges = f.tasks.map(t => `
+                        <span class="inline-block bg-slate-100 border border-slate-300 px-1 py-0.2 rounded font-mono font-bold text-[10px] mr-1">
+                            ${t.code || t.name} <span class="text-slate-500 font-normal">(${t.score} WL)</span>
+                            ${t.requiredLicense ? `<span class="text-amber-700 bg-amber-50 px-0.5 rounded font-bold text-[9px]">[${t.requiredLicense}]</span>` : ''}
+                        </span>
+                    `).join('');
+
+                    html += `
+                    <tr class="hover:bg-slate-50">
+                        ${fIdx === 0 ? `<td rowspan="${day.flights.length}" class="p-1.5 border-r border-slate-200 font-mono font-bold align-top text-slate-900 bg-slate-50/50">${day.date}</td>` : ''}
+                        <td class="p-1.5 border-r border-slate-200 font-mono font-bold text-slate-900">${f.flightNo}</td>
+                        <td class="p-1.5 border-r border-slate-200 font-mono text-slate-600">${f.sector}</td>
+                        <td class="p-1.5 border-r border-slate-200 text-slate-500">${f.shiftName}</td>
+                        <td class="p-1.5 border-r border-slate-200">${taskBadges}</td>
+                        <td class="p-1.5 border-r border-slate-200 text-center font-mono font-bold text-slate-800">${f.flightWL} WL</td>
+                        ${fIdx === 0 ? `<td rowspan="${day.flights.length}" class="p-1.5 text-center font-mono font-bold bg-yellow-50 text-yellow-900 align-top">${day.dayWL} WL</td>` : ''}
+                    </tr>
+                    `;
+                });
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // EXCEL EXPORT FUNCTIONS
+        function exportStaffHistoryToExcel() {
+            if (!currentHistoryGNum) return;
+            const history = getStaffHistoryData(currentHistoryGNum);
+            
+            let html = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head>
+                <meta charset="utf-8">
+                <!--[if gte mso 9]>
+                <xml>
+                <x:ExcelWorkbook>
+                <x:ExcelWorksheets>
+                    <x:ExcelWorksheet>
+                    <x:Name>${history.staff.gNum} History</x:Name>
+                    <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+                    </x:ExcelWorksheet>
+                </x:ExcelWorksheets>
+                </x:ExcelWorkbook>
+                </xml>
+                <![endif]-->
+                <style>
+                    table { border-collapse: collapse; font-family: Calibri, sans-serif; font-size: 11pt; }
+                    th { background-color: #000000; color: #ffffff; border: 1px solid #333; padding: 6px; }
+                    td { border: 1px solid #cccccc; padding: 5px; }
+                    .header-title { font-size: 14pt; font-weight: bold; margin-bottom: 5px; }
+                    .summary { background-color: #f2f2f2; font-weight: bold; }
+                </style>
+            </head>
+            <body>
+                <div class="header-title">BIMAN BANGLADESH AIRLINES - CGP GROUND HANDLING</div>
+                <div>STAFF DUTY HISTORY: <strong>${history.staff.name} (${history.staff.gNum})</strong> &bull; ${history.staff.designation}</div>
+                <div>LICENSES: ${(history.staff.licenses || []).join(', ') || 'N/A'} | TOTAL DUTIES: ${history.totalDuties} | CUMULATIVE WL: ${history.totalWL} WL</div>
+                <br/>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Flight No</th>
+                            <th>Sector</th>
+                            <th>Shift</th>
+                            <th>Assigned Duties</th>
+                            <th>Flight WL</th>
+                            <th>Day WL Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            history.rows.forEach(day => {
+                day.flights.forEach(f => {
+                    const taskSummary = f.tasks.map(t => `${t.code || t.name} (${t.score} WL)`).join('; ');
+                    html += `
+                        <tr>
+                            <td>${day.date}</td>
+                            <td>${f.flightNo}</td>
+                            <td>${f.sector}</td>
+                            <td>${f.shiftName}</td>
+                            <td>${taskSummary}</td>
+                            <td style="text-align:center;">${f.flightWL}</td>
+                            <td style="text-align:center; font-weight:bold; background-color:#fffbeb;">${day.dayWL}</td>
+                        </tr>
+                    `;
+                });
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            </body>
+            </html>
+            `;
+
+            downloadExcelFile(html, `Biman_Duty_History_${history.staff.gNum}_${currentDateStr}.xls`);
+        }
+
+        function exportTodayWorkloadToExcel() {
+            const table = document.getElementById('workloadLiveTable');
+            if (!table) return;
+
+            let html = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head>
+                <meta charset="utf-8">
+                <!--[if gte mso 9]>
+                <xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Today Workload</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml>
+                <![endif]-->
+                <style>
+                    th { background-color: #000; color: #fff; border: 1px solid #333; padding: 6px; }
+                    td { border: 1px solid #ccc; padding: 5px; }
+                </style>
+            </head>
+            <body>
+                <h2>BIMAN CGP - DAILY WORKLOAD TALLY (${currentDateStr})</h2>
+                ${table.outerHTML}
+            </body>
+            </html>
+            `;
+
+            downloadExcelFile(html, `Biman_CGP_Workload_${currentDateStr}.xls`);
+        }
+
+        function downloadExcelFile(htmlContent, filename) {
+            const blob = new Blob(['\ufeff', htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function openStaffHistorySeparatePage() {
+            if (!currentHistoryGNum) return;
+            const history = getStaffHistoryData(currentHistoryGNum);
+
+            const rowsHtml = history.rows.map(day => {
+                return day.flights.map(f => {
+                    const taskList = f.tasks.map(t => `${t.code || t.name} (${t.score} WL)`).join(', ');
+                    return `
+                    <tr>
+                        <td style="padding:6px; border:1px solid #333; font-family:monospace; font-weight:bold;">${day.date}</td>
+                        <td style="padding:6px; border:1px solid #333; font-weight:bold;">${f.flightNo}</td>
+                        <td style="padding:6px; border:1px solid #333;">${f.sector}</td>
+                        <td style="padding:6px; border:1px solid #333;">${f.shiftName}</td>
+                        <td style="padding:6px; border:1px solid #333;">${taskList}</td>
+                        <td style="padding:6px; border:1px solid #333; text-align:center; font-weight:bold;">${f.flightWL}</td>
+                        <td style="padding:6px; border:1px solid #333; text-align:center; font-weight:bold; background:#fffbeb;">${day.dayWL}</td>
+                    </tr>
+                    `;
+                }).join('');
+            }).join('');
+
+            const separateHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Duty History - ${history.staff.name} (${history.staff.gNum})</title>
+                <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 20px; color: #000; }
+                    .header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; }
+                    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                    th { background: #000; color: #fff; padding: 6px; text-align: left; }
+                    @media print { .no-print { display: none; } }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div>
+                        <h2 style="margin:0;">BIMAN BANGLADESH AIRLINES - CGP</h2>
+                        <div style="font-size:13px; color:#444;">Individual Duty History: <strong>${history.staff.name} (${history.staff.gNum})</strong> &bull; ${history.staff.designation}</div>
+                        <div style="font-size:11px; color:#666;">Active Days: ${history.activeDaysCount} | Duties: ${history.totalDuties} | Cumulative Workload: ${history.totalWL} WL</div>
+                    </div>
+                    <button class="no-print" onclick="window.print()" style="padding:6px 12px; font-weight:bold; cursor:pointer;">Print / PDF</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Flight</th>
+                            <th>Sector</th>
+                            <th>Shift</th>
+                            <th>Tasks</th>
+                            <th style="text-align:center;">Flight WL</th>
+                            <th style="text-align:center;">Day Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml || '<tr><td colspan="7" style="text-align:center; padding:15px;">No duty records found.</td></tr>'}</tbody>
+                </table>
+            </body>
+            </html>
+            `;
+
+            const win = window.open('', '_blank');
+            if (win) {
+                win.document.open();
+                win.document.write(separateHtml);
+                win.document.close();
+            }
+        }
+
+        // ==========================================
+        // ANALYTICS, BACKUP & EXPORTS
+        // ==========================================
+
+        function openAnalyticsModal() {
+            const end = new Date(currentDateStr);
+            const start = new Date(currentDateStr);
+            start.setDate(start.getDate() - 6);
+
+            document.getElementById('analyticsStartDate').value = start.toISOString().split('T')[0];
+            document.getElementById('analyticsEndDate').value = currentDateStr;
+
+            selectedAnalyticsStaff = new Set(staffDirectory.map(s => s.gNum));
+            renderAnalyticsStaffCheckboxes();
+            calculateAnalytics();
+            document.getElementById('analyticsModal').classList.remove('hidden');
+        }
+
+        function closeAnalyticsModal() {
+            document.getElementById('analyticsModal').classList.add('hidden');
+        }
+
+        function setAnalyticsPreset(preset) {
+            const today = new Date(currentDateStr);
+            let sDate = new Date(currentDateStr);
+            if (preset === 'today') sDate = new Date(currentDateStr);
+            else if (preset === 'last7') sDate.setDate(today.getDate() - 6);
+            else if (preset === 'last14') sDate.setDate(today.getDate() - 13);
+            else if (preset === 'last30') sDate.setDate(today.getDate() - 29);
+
+            document.getElementById('analyticsStartDate').value = sDate.toISOString().split('T')[0];
+            document.getElementById('analyticsEndDate').value = currentDateStr;
+            calculateAnalytics();
+        }
+
+        function renderAnalyticsStaffCheckboxes() {
+            const container = document.getElementById('analyticsStaffCheckboxes');
+            const sorted = getSortedStaffDirectory();
+            container.innerHTML = sorted.map(s => `
+                <label class="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded bg-slate-100 hover:bg-yellow-100 border text-[11px] cursor-pointer">
+                    <input type="checkbox" ${selectedAnalyticsStaff.has(s.gNum) ? 'checked' : ''} onchange="toggleAnalyticsStaff('${s.gNum}')" class="rounded accent-black">
+                    <span class="font-bold uppercase">${s.name}</span>
+                </label>
+            `).join('');
+        }
+
+        function toggleAnalyticsStaff(gNum) {
+            if (selectedAnalyticsStaff.has(gNum)) selectedAnalyticsStaff.delete(gNum);
+            else selectedAnalyticsStaff.add(gNum);
+            calculateAnalytics();
+        }
+
+        function getDatesInRange(startDateStr, endDateStr) {
+            const dates = [];
+            if (!startDateStr || !endDateStr) return dates;
+            const [sY, sM, sD] = startDateStr.split('-').map(Number);
+            const [eY, eM, eD] = endDateStr.split('-').map(Number);
+            let curr = new Date(sY, sM - 1, sD);
+            const end = new Date(eY, eM - 1, eD);
+            while (curr <= end) {
+                const y = curr.getFullYear();
+                const m = String(curr.getMonth() + 1).padStart(2, '0');
+                const d = String(curr.getDate()).padStart(2, '0');
+                dates.push(`${y}-${m}-${d}`);
+                curr.setDate(curr.getDate() + 1);
+            }
+            return dates;
+        }
+
+        function getRosterForDate(dateStr) {
+            if (dateStr === currentDateStr) return currentRosterData;
+            const saved = localStorage.getItem('biman_cgp_roster_' + dateStr);
+            if (saved) {
+                try { return JSON.parse(saved); } catch (e) { return null; }
+            }
+            return null;
+        }
+
+        function calculateAnalytics() {
+            const sDate = document.getElementById('analyticsStartDate').value;
+            const eDate = document.getElementById('analyticsEndDate').value;
+            if (!sDate || !eDate || sDate > eDate) return;
+
+            const dates = getDatesInRange(sDate, eDate);
+            const numDays = dates.length;
+            const staffStats = {};
+
+            staffDirectory.forEach(s => {
+                if (selectedAnalyticsStaff.has(s.gNum)) {
+                    staffStats[s.gNum] = { gNum: s.gNum, name: s.name, totalScore: 0, taskCount: 0, activeDays: new Set() };
+                }
+            });
+
+            dates.forEach(dStr => {
+                const roster = getRosterForDate(dStr);
+                if (roster && roster.flights) {
+                    roster.flights.forEach(f => {
+                        [...(f.arrivalTasks || []), ...(f.departureTasks || [])].forEach(t => {
+                            if (t.gNum && staffStats[t.gNum]) {
+                                staffStats[t.gNum].totalScore += (parseInt(t.score) || 0);
+                                staffStats[t.gNum].taskCount += 1;
+                                staffStats[t.gNum].activeDays.add(dStr);
+                            }
+                        });
+                    });
+                }
+            });
+
+            const staffList = Object.values(staffStats).sort((a, b) => b.totalScore - a.totalScore);
+            let combinedWL = 0;
+            let combinedDuties = 0;
+            staffList.forEach(s => { combinedWL += s.totalScore; combinedDuties += s.taskCount; });
+
+            document.getElementById('analyticsCombinedWL').innerText = `${combinedWL} WL`;
+            document.getElementById('analyticsCombinedDuties').innerText = `${combinedDuties} Duties`;
+            document.getElementById('analyticsAvgWLPerDay').innerText = `${numDays > 0 ? (combinedWL / numDays).toFixed(1) : 0} WL/d`;
+            document.getElementById('analyticsAvgWLPerDuty').innerText = `${combinedDuties > 0 ? (combinedWL / combinedDuties).toFixed(1) : 0} WL`;
+
+            const tbody = document.getElementById('analyticsTableBody');
+            tbody.innerHTML = staffList.map(s => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-1.5 border-r border-slate-200 font-mono font-bold">${s.gNum}</td>
+                    <td class="p-1.5 border-r border-slate-200 font-semibold uppercase">${s.name}</td>
+                    <td class="p-1.5 border-r border-slate-200 text-center font-mono">${s.activeDays.size} / ${numDays}d</td>
+                    <td class="p-1.5 border-r border-slate-200 text-center font-bold">${s.taskCount}</td>
+                    <td class="p-1.5 border-r border-slate-200 text-center font-bold bg-yellow-50">${s.totalScore} WL</td>
+                    <td class="p-1.5 border-r border-slate-200 text-center font-mono text-yellow-700">${numDays > 0 ? (s.totalScore / numDays).toFixed(1) : 0}</td>
+                    <td class="p-1.5 text-center font-mono">${s.taskCount > 0 ? (s.totalScore / s.taskCount).toFixed(1) : 0}</td>
+                </tr>
+            `).join('');
+        }
+
+        // FULL BACKUP & RESTORE
+        function openBackupModal() {
+            let datesCount = 0;
+            for (let i = 0; i < localStorage.length; i++) {
+                if (localStorage.key(i)?.startsWith('biman_cgp_roster_')) datesCount++;
+            }
+            document.getElementById('backupStatDates').innerText = datesCount;
+            document.getElementById('backupStatStaff').innerText = staffDirectory.length;
+            document.getElementById('backupModal').classList.remove('hidden');
+        }
+
+        function closeBackupModal() {
+            document.getElementById('backupModal').classList.add('hidden');
+        }
+
+        function downloadBackupFile() {
+            saveCurrentRoster();
+            const backup = {
+                app: "BIMAN_CGP_GROUND_HANDLING_SYSTEM",
+                version: "5.0",
+                exportedAt: new Date().toISOString(),
+                staffDirectory: staffDirectory,
+                rosters: {}
+            };
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key?.startsWith('biman_cgp_roster_')) {
+                    backup.rosters[key.replace('biman_cgp_roster_', '')] = JSON.parse(localStorage.getItem(key));
+                }
+            }
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Biman_CGP_Backup_${currentDateStr}.json`;
+            a.click();
+        }
+
+        function handleBackupImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = JSON.parse(evt.target.result);
+                    if (!data.staffDirectory && !data.rosters) throw new Error("Invalid structure");
+                    if (Array.isArray(data.staffDirectory)) {
+                        staffDirectory = data.staffDirectory;
+                        localStorage.setItem('biman_cgp_staff_directory', JSON.stringify(staffDirectory));
+                    }
+                    if (data.rosters) {
+                        for (const [dStr, rObj] of Object.entries(data.rosters)) {
+                            localStorage.setItem('biman_cgp_roster_' + dStr, JSON.stringify(rObj));
+                        }
+                    }
+                    loadStaffDirectory();
+                    loadRosterForDate(currentDateStr);
+                    alert("Backup restored successfully!");
+                    closeBackupModal();
+                } catch(err) {
+                    alert("Import failed: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // TELETYPE & WORD EXPORTS
+        function formatDateFormatted(dateStr) {
+            if (!dateStr) return '';
+            const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+            const parts = dateStr.split('-');
+            if (parts.length === 3) return `${parts[2]} ${months[parseInt(parts[1], 10) - 1]} ${parts[0]}`;
+            return dateStr;
+        }
+
+        function generateTextOutputModal() {
+            const formattedDate = formatDateFormatted(currentDateStr);
+            const activeShift = currentRosterData.shifts[0] ? `${currentRosterData.shifts[0].name} (${currentRosterData.shifts[0].time})` : "GENERAL";
+
+            let txt = `BIMAN BANGLADESH AIRLINES\nSHAH AMANAT INTERNATIONAL AIRPORT\nDUTY ROSTER - ${activeShift}\nDATE: ${formattedDate}\n\n`;
+
+            currentRosterData.flights.forEach((f, idx) => {
+                const num = String(idx + 1).padStart(2, '0');
+                txt += `${num}. ${f.flightNo}, STA/STD: ${formatHHMM(f.sta)}/${formatHHMM(f.std)}, ATA/ATD: ${formatHHMM(f.ata)}/${formatHHMM(f.atd)}\n`;
+                if (f.delayReason) txt += `DELAY REASON: ${f.delayReason}\n`;
+                txt += `CAPTAIN: ${f.captain || 'N/A'}, REG: ${f.aircraftReg || 'N/A'}, SECTOR: ${f.sector || 'N/A'}\n`;
+
+                const colW = 38;
+                const border = `+${'-'.repeat(colW)}+${'-'.repeat(colW)}+`;
+                txt += `${border}\n| ${"ARRIVAL".padEnd(colW - 1)}| ${"DEPARTURE".padEnd(colW - 1)}|\n${border}\n`;
+
+                const max = Math.max(f.arrivalTasks.length, f.departureTasks.length);
+                for (let i = 0; i < max; i++) {
+                    const arrT = f.arrivalTasks[i];
+                    const depT = f.departureTasks[i];
+
+                    const arrS = arrT ? staffDirectory.find(s => s.gNum === arrT.gNum) : null;
+                    const depS = depT ? staffDirectory.find(s => s.gNum === depT.gNum) : null;
+
+                    const arrCell = arrT ? `${arrT.code}: ${arrS ? arrS.name : (arrT.gNum || 'UNASSIGNED')}` : '';
+                    const depCell = depT ? `${depT.code}: ${depS ? depS.name : (depT.gNum || 'UNASSIGNED')}` : '';
+
+                    txt += `| ${arrCell.slice(0, colW - 2).padEnd(colW - 1)}| ${depCell.slice(0, colW - 2).padEnd(colW - 1)}|\n`;
+                }
+                txt += `${border}\n`;
+                if (f.notes) txt += `NOTES: ${f.notes}\n`;
+                txt += `\n`;
+            });
+
+            document.getElementById('txtOutputPre').innerText = txt;
+            document.getElementById('txtOutputModal').classList.remove('hidden');
+        }
+
+        function closeTxtModal() { document.getElementById('txtOutputModal').classList.add('hidden'); }
+        function openStaffModal() { document.getElementById('staffModal').classList.remove('hidden'); }
+        function closeStaffModal() { document.getElementById('staffModal').classList.add('hidden'); }
+
+        function copyTxtOutput() {
+            navigator.clipboard.writeText(document.getElementById('txtOutputPre').innerText);
+            alert("Teletype roster copied to clipboard.");
+        }
+
+        function downloadTxtFile() {
+            const blob = new Blob([document.getElementById('txtOutputPre').innerText], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Biman_CGP_Roster_${currentDateStr}.txt`;
+            a.click();
+        }
+
+        function generateWordHtml() {
+            const formattedDate = formatDateFormatted(currentDateStr);
+            const activeShift = currentRosterData.shifts[0] ? `${currentRosterData.shifts[0].name} (${currentRosterData.shifts[0].time})` : "GENERAL";
+
+            let html = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>Biman Duty Roster</title>
+            <style>
+                body { font-family: 'Courier New', monospace; font-size: 10pt; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+                td, th { border: 1px solid #000; padding: 4px; font-size: 9pt; }
+            </style>
+            </head>
+            <body>
+                <h3>BIMAN BANGLADESH AIRLINES - CGP</h3>
+                <div>DUTY ROSTER - ${activeShift} | DATE: ${formattedDate}</div><br/>
+            `;
+
+            currentRosterData.flights.forEach((f, idx) => {
+                html += `
+                <div><strong>${idx + 1}. ${f.flightNo}</strong> (STA: ${formatHHMM(f.sta)} STD: ${formatHHMM(f.std)} ATA: ${formatHHMM(f.ata)} ATD: ${formatHHMM(f.atd)})</div>
+                <div>REG: ${f.aircraftReg || 'N/A'} | CPT: ${f.captain || 'N/A'} | SEC: ${f.sector || 'N/A'}</div>
+                <table>
+                    <thead><tr><th style="width:50%;">ARRIVAL</th><th style="width:50%;">DEPARTURE</th></tr></thead>
+                    <tbody>
+                `;
+                const max = Math.max(f.arrivalTasks.length, f.departureTasks.length);
+                for (let i = 0; i < max; i++) {
+                    const arrT = f.arrivalTasks[i];
+                    const depT = f.departureTasks[i];
+                    const arrS = arrT ? staffDirectory.find(s => s.gNum === arrT.gNum) : null;
+                    const depS = depT ? staffDirectory.find(s => s.gNum === depT.gNum) : null;
+
+                    html += `<tr>
+                        <td>${arrT ? `${arrT.code}: ${arrS ? arrS.name : (arrT.gNum || '')}` : '&nbsp;'}</td>
+                        <td>${depT ? `${depT.code}: ${depS ? depS.name : (depT.gNum || '')}` : '&nbsp;'}</td>
+                    </tr>`;
+                }
+                html += `</tbody></table>`;
+                if (f.notes) html += `<div>NOTES: ${f.notes}</div>`;
+                html += `<br/>`;
+            });
+
+            html += `</body></html>`;
+            return html;
+        }
+
+        function copyForWord() {
+            const html = generateWordHtml();
+            const blobHtml = new Blob([html], { type: 'text/html' });
+            const blobTxt = new Blob([document.getElementById('txtOutputPre').innerText], { type: 'text/plain' });
+            navigator.clipboard.write([new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobTxt })]);
+            alert("Copied for Microsoft Word (pastes as editable tables).");
+        }
+
+        function downloadWordDoc() {
+            const blob = new Blob(['\ufeff', generateWordHtml()], { type: 'application/msword' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Biman_CGP_Roster_${currentDateStr}.doc`;
+            a.click();
+        }
+    </script>
+</body>
+</html>
