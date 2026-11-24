@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Load Position Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f8f9fa; }
+        .container { max-width: 1250px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: #333; }
+        .controls { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; align-items: center; background: #f1f3f5; padding: 15px; border-radius: 6px; }
+        .control-group { display: flex; flex-direction: column; gap: 5px; }
+        label { font-weight: bold; font-size: 13px; color: #495057; }
+        select, input, button { padding: 8px 12px; font-size: 14px; border: 1px solid #ced4da; border-radius: 4px; }
+        textarea { width: 100%; height: 200px; padding: 10px; font-family: monospace; font-size: 12px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #0d6efd; color: white; cursor: pointer; font-weight: bold; border: none; padding: 10px 20px; }
+        button:hover { background-color: #0b5ed7; }
+        
+        /* Table Styles */
+        .table-container { margin-top: 25px; overflow-x: auto; }
+        table { border-collapse: collapse; width: 100%; text-align: center; background: white; }
+        th, td { border: 1px solid #333; padding: 5px 6px; font-size: 12px; }
+        th { background-color: #e9ecef; }
+        .header-main { font-weight: bold; font-size: 15px; text-transform: uppercase; background-color: #d6d8db; }
+        tr:nth-child(even) td { background-color: #fdfdfd; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Universal Flight Load Position Table Generator</h2>
+    
+    <div class="controls">
+        <div class="control-group">
+            <label for="monthSelect">Month:</label>
+            <select id="monthSelect">
+                <option value="0">January</option>
+                <option value="1">February</option>
+                <option value="2">March</option>
+                <option value="3">April</option>
+                <option value="4">May</option>
+                <option value="5">June</option>
+                <option value="6" selected>July</option>
+                <option value="7">August</option>
+                <option value="8">September</option>
+                <option value="9">October</option>
+                <option value="10">November</option>
+                <option value="11">December</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="yearInput">Year:</label>
+            <input type="number" id="yearInput" value="2026" style="width: 80px;">
+        </div>
+
+        <div class="control-group">
+            <label for="sectorInput">Sector:</label>
+            <input type="text" id="sectorInput" value="MCT-CGP-MCT" style="width: 140px;">
+        </div>
+
+        <div style="flex-grow: 1; text-align: right;">
+            <button onclick="processLoadsheets()">Generate Table</button>
+        </div>
+    </div>
+
+    <label for="rawInput"><b>Paste Bulk Emails/Loadsheets Below:</b></label>
+    <textarea id="rawInput" placeholder="Paste raw loadsheets or email text here..."></textarea>
+
+    <div class="table-container" id="output"></div>
+</div>
+
+<script>
+// --- REGISTRATION EXTRACTION ENGINE ---
+function formatRegistration(raw) {
+    let clean = raw.trim().toUpperCase();
+    if (/^A4O[A-Z]{3}$/.test(clean)) return "A4O-" + clean.slice(3);
+    if (/^A6[A-Z]{3}$/.test(clean)) return "A6-" + clean.slice(2);
+    if (/^S2[A-Z]{3}$/.test(clean)) return "S2-" + clean.slice(2);
+    if (/^A7[A-Z]{3}$/.test(clean)) return "A7-" + clean.slice(2);
+    if (/^9K[A-Z]{3}$/.test(clean)) return "9K-" + clean.slice(2);
+    if (/^HZ[A-Z]{3}$/.test(clean)) return "HZ-" + clean.slice(2);
+    if (/^VT[A-Z]{3}$/.test(clean)) return "VT-" + clean.slice(2);
+    return clean;
+}
+
+function cleanRegistration(rawReg) {
+    if (!rawReg) return "";
+    let clean = rawReg.trim().toUpperCase();
+    
+    const blacklist = [
+        "FLAG", "SEAL", "SPAM", "LOAD", "PAGE", "FROM", "AUTO", "MAIL", 
+        "VERSION", "EDITION", "WEIGHT", "BALANCE", "TRIM", "CHECK", "FINAL", "SHEET", "TYPE"
+    ];
+    if (blacklist.some(word => clean.includes(word))) return "";
+    if (/^\d{3}/.test(clean) || /^A\d{3}/.test(clean)) return "";
+
+    return formatRegistration(clean);
+}
+
+function extractRegistration(text) {
+    if (!text) return "";
+
+    // 1. Direct match for known registration prefix patterns
+    const tailRegex = /\b(A4O\-?[A-Z]{3}|A6\-?[A-Z]{3}|S2\-?[A-Z]{3}|A7\-?[A-Z]{3}|9K\-?[A-Z]{3}|HZ\-?[A-Z]{3}|VT\-?[A-Z]{3})\b/i;
+    const tailMatch = text.match(tailRegex);
+    if (tailMatch) {
+        return formatRegistration(tailMatch[1]);
+    }
+
+    // 2. Match REG / A/C REG lines
+    const labelRegex = /(?:REG|A\/C\s*REG|REGISTRATION)\s*[:\.\/]?\s*([A-Z0-9\-]{4,8})\b/i;
+    const labelMatch = text.match(labelRegex);
+    if (labelMatch) {
+        const cleaned = cleanRegistration(labelMatch[1]);
+        if (cleaned) return cleaned;
+    }
+
+    return "";
+}
+
+// --- PARSER FUNCTION ---
+function parseSingleLoadsheet(text) {
+    if (!/PASSENGER\/CABIN BAG/i.test(text) && !/LOAD\s*SHEET|L\s*O\s*A\s*D\s*S\s*H\s*E\s*E\s*T/i.test(text) && !/TRIM sheet/i.test(text)) {
+        return null;
+    }
+
+    // 1. Carrier & Flight Number Extraction
+    let carrier = "";
+    let flightNum = 0;
+
+    const knownMatch = text.match(/\b(OV|G9|BS|BG|FZ|J9|AK|3L|XY|WY|EK|QR|EY)\s*(\d{3,4})\b/i);
+    if (knownMatch) {
+        carrier = knownMatch[1].toUpperCase();
+        flightNum = parseInt(knownMatch[2], 10);
+    } else {
+        const flightMatch = text.match(/\b([A-Z0-9]{2})\s*(\d{3,4})\b/i);
+        if (!flightMatch) return null;
+        carrier = flightMatch[1].toUpperCase();
+        flightNum = parseInt(flightMatch[2], 10);
+    }
+
+    if (carrier === "FF") return null;
+
+    const flightNo = `${carrier}${flightNum}`;
+
+    // 2. Extract Valid Flight Date
+    const dateMatch = text.match(/\b(\d{2}(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:\d{2})?)\b/i);
+    let rawDate = dateMatch ? dateMatch[1].toUpperCase() : null;
+    if (rawDate && rawDate.length > 5) {
+        rawDate = rawDate.slice(0, 5);
+    }
+    if (!rawDate) return null;
+
+    // 3. Extract Timestamp for Deduplication
+    let timestamp = 0;
+    const timeMatch = text.match(/\b\d{2}[A-Z]{3}\d{2}\s+(\d{4,6})\b/i) || text.match(/TIME\s*\n[^\n]*?\s+(\d{4})/i);
+    if (timeMatch) {
+        timestamp = parseInt(timeMatch[1].padEnd(6, '0'));
+    }
+
+    // 4. Extract Registration
+    const reg = extractRegistration(text);
+
+    // 5. Extract Passengers
+    let male = 0, female = 0, child = 0, infant = 0;
+    let paxMatch = text.match(/PASSENGER\/CABIN BAG[^\n]*?(\d+)\/\s*(\d+)\/\s*(\d+)\/\s*(\d+)/i);
+    
+    if (!paxMatch) {
+        paxMatch = text.match(/(?:-[A-Z]{3}\.|LDM[\s\S]*?\n[^\n]*?\.)(\d+)\/\s*(\d+)\/\s*(\d+)\/\s*(\d+)/i);
+    }
+
+    if (paxMatch) {
+        male = parseInt(paxMatch[1]);
+        female = parseInt(paxMatch[2]);
+        child = parseInt(paxMatch[3]);
+        infant = parseInt(paxMatch[4]);
+    }
+
+    const yClass = male + female + child; 
+    const jClass = 0;                     
+
+    // 6. Extract Freight Cargo
+    let cargo = 0;
+    const freMatch = text.match(/FRE\s+(\d+)/i);
+    if (freMatch) {
+        cargo = parseInt(freMatch[1]);
+    }
+
+    return { carrier, flightNum, flightNo, rawDate, timestamp, reg, jClass, yClass, infant, cargo };
+}
+
+// --- MAIN PROCESSOR ---
+function processLoadsheets() {
+    const rawText = document.getElementById("rawInput").value;
+    const selectedMonth = parseInt(document.getElementById("monthSelect").value);
+    const selectedYear = parseInt(document.getElementById("yearInput").value);
+    const customSector = document.getElementById("sectorInput").value.trim();
+
+    const rawBlocks = rawText.split(/(?=---------- Forwarded|From:\s*|L O A D S H E E T|LOAD SHEET|TRIM sheet)/i);
+    
+    const parsedMap = new Map();
+
+    rawBlocks.forEach(block => {
+        const parsed = parseSingleLoadsheet(block);
+        if (parsed) {
+            const key = `${parsed.flightNo}_${parsed.rawDate}`;
+            if (!parsedMap.has(key) || parsed.timestamp > parsedMap.get(key).timestamp) {
+                parsedMap.set(key, parsed);
+            }
+        }
+    });
+
+    const finalParsedData = Array.from(parsedMap.values());
+    renderTable(finalParsedData, selectedMonth, selectedYear, customSector);
+}
+
+// --- TABLE RENDERER ---
+function renderTable(dataList, month, year, sector) {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+    const monthShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const dayShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    let carrierName = "AIRLINE";
+    if (dataList.length > 0) {
+        carrierName = dataList[0].carrier;
+    }
+
+    let html = `
+    <table>
+        <thead>
+            <tr>
+                <th colspan="14" class="header-main">${carrierName} LOAD POSN TO/FROM CGP DURING ${monthNames[month]}'${year}</th>
+            </tr>
+            <tr>
+                <th rowspan="2">DATE</th>
+                <th rowspan="2">FLT NO</th>
+                <th rowspan="2">REG</th>
+                <th rowspan="2">SECTOR</th>
+                <th colspan="4">ARRIVAL</th>
+                <th colspan="4">DEPARTURE</th>
+                <th rowspan="2">TOTAL<br>FLT</th>
+                <th rowspan="2">REMARKS</th>
+            </tr>
+            <tr>
+                <th>J</th><th>Y</th><th>INF</th><th>CARGO IN KG</th>
+                <th>J</th><th>Y</th><th>INF</th><th>CARGO IN KG</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateObj = new Date(year, month, d);
+        const dayFormatted = String(d).padStart(2, '0');
+        const monthFormatted = monthShort[month];
+        const yearFormatted = String(year).slice(-2);
+        const dayName = dayShort[dateObj.getDay()];
+        
+        const displayDate = `${dayFormatted}-${monthFormatted}-${yearFormatted}-${dayName}`;
+        const matchDateKey = `${dayFormatted}${monthNames[month].slice(0, 3)}`;
+
+        const dayData = dataList.filter(item => item.rawDate === matchDateKey);
+
+        let flightPairs = [];
+
+        if (carrierName === 'G9') {
+            flightPairs = [
+                { name: "G9526/527", arrNum: 526, depNum: 527 },
+                { name: "G9341/342", arrNum: 341, depNum: 342 },
+                { name: "G9520/521", arrNum: 520, depNum: 521 }
+            ];
+        } else if (carrierName === 'OV') {
+            flightPairs = [
+                { name: "OV401/402", arrNum: 401, depNum: 402 },
+                { name: "OV403/404", arrNum: 403, depNum: 404 },
+                { name: "OV403/408", arrNum: 403, depNum: 408 },
+            ];
+        } else {
+            let depFlights = [...new Set(dayData.map(item => item.flightNum))];
+            if (depFlights.length === 0) depFlights = [null];
+
+            flightPairs = depFlights.map(depNum => {
+                if (!depNum) return { name: "", arrNum: null, depNum: null };
+                const arrNum = depNum - 1;
+                return {
+                    name: `${carrierName}${arrNum}/${String(depNum).slice(-3)}`,
+                    arrNum: arrNum,
+                    depNum: depNum
+                };
+            });
+        }
+
+        flightPairs.forEach((pair, index) => {
+            let arrData = null;
+            let depData = null;
+            let reg = "";
+            let fltCount = "";
+
+            if (pair.arrNum || pair.depNum) {
+                arrData = dayData.find(f => f.flightNum === pair.arrNum);
+                depData = dayData.find(f => f.flightNum === pair.depNum);
+
+                // STRICT RULE: Only show registration if actual data exists for THIS specific pair
+                if (arrData || depData) {
+                    reg = (depData && depData.reg) ? depData.reg : ((arrData && arrData.reg) ? arrData.reg : "");
+                    fltCount = (arrData ? 1 : 0) + (depData ? 1 : 0);
+                } else {
+                    reg = "";
+                    fltCount = "";
+                }
+            }
+
+            html += `<tr>`;
+            
+            if (index === 0) {
+                html += `<td rowspan="${flightPairs.length}"><b>${displayDate}</b></td>`;
+            }
+
+            html += `
+                <td><b>${pair.name}</b></td>
+                <td>${reg}</td>
+                <td>${sector}</td>
+                
+                <!-- ARRIVAL -->
+                <td>${arrData ? arrData.jClass : ''}</td>
+                <td>${arrData ? arrData.yClass : ''}</td>
+                <td>${arrData ? arrData.infant : ''}</td>
+                <td>${arrData ? arrData.cargo : ''}</td>
+                
+                <!-- DEPARTURE -->
+                <td>${depData ? depData.jClass : ''}</td>
+                <td>${depData ? depData.yClass : ''}</td>
+                <td>${depData ? depData.infant : ''}</td>
+                <td>${depData ? depData.cargo : ''}</td>
+                
+                <td>${fltCount}</td>
+                <td></td>
+            </tr>`;
+        });
+    }
+
+    html += `</tbody></table>`;
+    document.getElementById("output").innerHTML = html;
+}
+</script>
+
+</body>
+</html>

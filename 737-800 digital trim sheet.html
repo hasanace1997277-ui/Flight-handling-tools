@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B737-800 Digital Trim Sheet & % MAC</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --primary-color: #0f172a;
+            --accent-color: #2563eb;
+            --border-color: #cbd5e1;
+            --text-color: #1e293b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        header {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            background: #fafafa;
+        }
+
+        .card h2 {
+            font-size: 1.05rem;
+            margin-top: 0;
+            margin-bottom: 12px;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="number"] {
+            width: 70px;
+            padding: 6px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            text-align: right;
+            font-size: 0.95rem;
+        }
+
+        .zone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-top: 10px;
+            margin-bottom: 6px;
+            color: var(--primary-color);
+            background: #e2e8f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .pax-inputs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .pax-field {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .pax-field label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 2px;
+        }
+
+        .pax-field input {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .index-badge {
+            display: inline-block;
+            min-width: 45px;
+            padding: 4px 6px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .results-card {
+            grid-column: 1 / -1;
+            background-color: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .result-item {
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #dbeafe;
+            text-align: center;
+        }
+
+        .result-item label {
+            display: block;
+            font-size: 0.8rem;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .result-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .highlight-cg {
+            color: #059669;
+        }
+
+        .limits {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>BOEING 737-800</h1>
+        <div class="subtitle">LOAD, TRIM INDEX & % MAC CALCULATOR</div>
+    </header>
+
+    <div class="grid">
+        <!-- 1. Basic Setup -->
+        <div class="card">
+            <h2>1. Basic Setup</h2>
+            <div class="form-group">
+                <label for="doi">Dry Operating Index (DOI):</label>
+                <input type="number" id="doi" step="0.1" value="50.0" oninput="calculateTrim()">
+            </div>
+            <div class="form-group">
+                <label for="dow">Dry Operating Weight (DOW kg):</label>
+                <input type="number" id="dow" step="10" value="43000" oninput="calculateTrim()">
+            </div>
+        </div>
+
+        <!-- 2. Cargo Compartments -->
+        <div class="card">
+            <h2>2. Cargo Compartments</h2>
+            <div class="form-group">
+                <label for="cargo1">Cargo 1 (Max 809 kg):</label>
+                <div class="input-wrapper">
+                    <input type="number" id="cargo1" min="0" max="809" value="0" oninput="calculateTrim()">
+                    <span id="idx-cargo1" class="index-badge">0.0</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="cargo2">Cargo 2 (Max 2676 kg):</label>
+                <div class="input-wrapper">
+                    <input type="number" id="cargo2" min="0" max="2676" value="0" oninput="calculateTrim()">
+                    <span id="idx-cargo2" class="index-badge">0.0</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="cargo3">Cargo 3 (Max 3467 kg):</label>
+                <div class="input-wrapper">
+                    <input type="number" id="cargo3" min="0" max="3467" value="0" oninput="calculateTrim()">
+                    <span id="idx-cargo3" class="index-badge">0.0</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="cargo4">Cargo 4 (Max 577 kg):</label>
+                <div class="input-wrapper">
+                    <input type="number" id="cargo4" min="0" max="577" value="0" oninput="calculateTrim()">
+                    <span id="idx-cargo4" class="index-badge">0.0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Passenger Zones -->
+        <div class="card">
+            <h2>3. Passenger Zones</h2>
+
+            <div class="zone-header">
+                <span>Cabin OA (Max 12)</span>
+                <span id="idx-cabinOA" class="index-badge">0.0</span>
+            </div>
+            <div class="pax-inputs">
+                <div class="pax-field">
+                    <label>Adult (75kg)</label>
+                    <input type="number" id="oa-adt" min="0" value="0" oninput="calculateTrim()">
+                </div>
+                <div class="pax-field">
+                    <label>Child (40kg)</label>
+                    <input type="number" id="oa-chd" min="0" value="0" oninput="calculateTrim()">
+                </div>
+                <div class="pax-field">
+                    <label>Infant (10kg)</label>
+                    <input type="number" id="oa-inf" min="0" value="0" oninput="calculateTrim()">
+                </div>
+            </div>
+
+            <div class="zone-header">
+                <span>Cabin OB (Max 78)</span>
+                <span id="idx-cabinOB" class="index-badge">0.0</span>
+            </div>
+            <div class="pax-inputs">
+                <div class="pax-field">
+                    <label>Adult (75kg)</label>
+                    <input type="number" id="ob-adt" min="0" value="0" oninput="calculateTrim()">
+                </div>
+                <div class="pax-field">
+                    <label>Child (40kg)</label>
+                    <input type="number" id="ob-chd" min="0" value="0" oninput="calculateTrim()">
+                </div>
+                <div class="pax-field">
+                    <label>Infant (10kg)</label>
+                    <input type="number" id="ob-inf" min="0" value="0" oninput="calculateTrim()">
+                </div>
+            </div>
+
+            <div class="zone-header">
+                <span>Cabin OC (Max 72)</span>
+                <span id="idx-cabinOC" class="index-badge">0.0</span>
+            </div>
+            <div class="pax-inputs">
+                <div class="pax-field">
+                    <label>Adult (75kg)</label>
+                    <input type="number" id="oc-adt" min="0" value="0" oninput="calculateTrim()">
+                </div>
+                <div class="pax-field">
+                    <label>Child (40kg)</label>
+                    <input type="number" id="oc-chd" min="0" value="0" oninput="calculateTrim()">
+                </div>
+                <div class="pax-field">
+                    <label>Infant (10kg)</label>
+                    <input type="number" id="oc-inf" min="0" value="0" oninput="calculateTrim()">
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Takeoff Fuel -->
+        <div class="card">
+            <h2>4. Takeoff Fuel</h2>
+            <div class="form-group">
+                <label for="toFuel">Takeoff Fuel (kg):</label>
+                <div class="input-wrapper">
+                    <input type="number" id="toFuel" min="0" max="22144" step="100" value="0" oninput="calculateTrim()">
+                    <span id="idx-toFuel" class="index-badge">0.0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Calculated Results -->
+        <div class="card results-card">
+            <h2>5. Calculated Weights, Trim & % MAC</h2>
+            <div class="results-grid">
+                <div class="result-item">
+                    <label>Zero Fuel Weight</label>
+                    <div id="res-zfw" class="result-value">0 kg</div>
+                    <div class="limits">Max: 62,731 kg</div>
+                </div>
+                <div class="result-item">
+                    <label>LIZFW</label>
+                    <div id="res-lizfw" class="result-value">0.00</div>
+                    <div class="limits">Loaded Index ZFW</div>
+                </div>
+                <div class="result-item">
+                    <label>ZFW % MAC</label>
+                    <div id="res-zfwMac" class="result-value highlight-cg">0.00%</div>
+                    <div class="limits">ZFW CG</div>
+                </div>
+                <div class="result-item">
+                    <label>Takeoff Weight</label>
+                    <div id="res-tow" class="result-value">0 kg</div>
+                    <div class="limits">Max: 79,015 kg</div>
+                </div>
+                <div class="result-item">
+                    <label>LITOW</label>
+                    <div id="res-litow" class="result-value">0.00</div>
+                    <div class="limits">Loaded Index TOW</div>
+                </div>
+                <div class="result-item">
+                    <label>TOW % MAC</label>
+                    <div id="res-towMac" class="result-value highlight-cg">0.00%</div>
+                    <div class="limits">TOW CG</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const INDEX_TABLES = {
+        cargo1: [
+            { min: 1, max: 41, idx: 0 }, { min: 42, max: 124, idx: -1 },
+            { min: 125, max: 207, idx: -2 }, { min: 208, max: 290, idx: -3 },
+            { min: 291, max: 373, idx: -4 }, { min: 374, max: 456, idx: -5 },
+            { min: 457, max: 539, idx: -6 }, { min: 540, max: 622, idx: -7 },
+            { min: 623, max: 705, idx: -8 }, { min: 706, max: 809, idx: -9 }
+        ],
+        cargo2: [
+            { min: 1, max: 67, idx: 0 }, { min: 68, max: 202, idx: -1 },
+            { min: 203, max: 336, idx: -2 }, { min: 337, max: 471, idx: -3 },
+            { min: 472, max: 606, idx: -4 }, { min: 607, max: 740, idx: -5 },
+            { min: 741, max: 875, idx: -6 }, { min: 876, max: 1010, idx: -7 },
+            { min: 1011, max: 1144, idx: -8 }, { min: 1145, max: 1279, idx: -9 },
+            { min: 1280, max: 1414, idx: -10 }
+        ],
+        cargo3: [
+            { min: 1, max: 83, idx: 0 }, { min: 84, max: 251, idx: 1 },
+            { min: 252, max: 418, idx: 2 }, { min: 419, max: 586, idx: 3 },
+            { min: 587, max: 753, idx: 4 }, { min: 754, max: 921, idx: 5 },
+            { min: 922, max: 1089, idx: 6 }, { min: 1090, max: 1256, idx: 7 },
+            { min: 1257, max: 1424, idx: 8 }, { min: 1425, max: 1591, idx: 9 },
+            { min: 1592, max: 1759, idx: 10 }, { min: 1760, max: 1926, idx: 11 },
+            { min: 1927, max: 2094, idx: 12 }, { min: 2095, max: 2261, idx: 13 },
+            { min: 2262, max: 2429, idx: 14 }, { min: 2430, max: 2596, idx: 15 },
+            { min: 2597, max: 2764, idx: 16 }, { min: 2765, max: 2932, idx: 17 },
+            { min: 2933, max: 3099, idx: 18 }, { min: 3100, max: 3267, idx: 19 },
+            { min: 3268, max: 3434, idx: 20 }, { min: 3435, max: 3467, idx: 21 }
+        ],
+        cargo4: [
+            { min: 1, max: 41, idx: 0 }, { min: 42, max: 125, idx: 1 },
+            { min: 126, max: 208, idx: 2 }, { min: 209, max: 292, idx: 3 },
+            { min: 293, max: 375, idx: 4 }, { min: 376, max: 458, idx: 5 },
+            { min: 459, max: 542, idx: 6 }, { min: 543, max: 577, idx: 7 }
+        ],
+        cabinOA: [
+            { pax: 0, idx: 0 }, { pax: 1, idx: -1 }, { pax: 2, idx: -2 },
+            { pax: 3, idx: -3 }, { pax: 4, idx: -4 }, { pax: 5, idx: -5 },
+            { pax: 6, idx: -6 }, { pax: 7, idx: -7 }, { pax: 8, idx: -8 },
+            { pax: 9, idx: -9 }, { pax: 10, idx: -10 }, { pax: 11, idx: -11 }, { pax: 12, idx: -12 }
+        ],
+        cabinOB: [
+            { min: 1, max: 1, idx: 0 }, { min: 2, max: 5, idx: -1 },
+            { min: 6, max: 9, idx: -2 }, { min: 10, max: 13, idx: -3 },
+            { min: 14, max: 17, idx: -4 }, { min: 18, max: 21, idx: -5 },
+            { min: 22, max: 25, idx: -6 }, { min: 26, max: 29, idx: -7 },
+            { min: 30, max: 33, idx: -8 }, { min: 34, max: 36, idx: -9 },
+            { min: 37, max: 40, idx: -10 }, { min: 41, max: 44, idx: -11 },
+            { min: 45, max: 48, idx: -12 }, { min: 49, max: 52, idx: -13 },
+            { min: 53, max: 56, idx: -14 }, { min: 57, max: 60, idx: -15 },
+            { min: 61, max: 64, idx: -16 }, { min: 65, max: 67, idx: -17 },
+            { min: 68, max: 71, idx: -18 }, { min: 72, max: 75, idx: -19 },
+            { min: 76, max: 78, idx: -20 }
+        ],
+        cabinOC: [
+            { min: 1, max: 2, idx: 1 }, { min: 3, max: 4, idx: 2 },
+            { min: 5, max: 5, idx: 3 }, { min: 6, max: 7, idx: 4 },
+            { min: 8, max: 9, idx: 5 }, { min: 10, max: 10, idx: 6 },
+            { min: 11, max: 12, idx: 7 }, { min: 13, max: 14, idx: 8 },
+            { min: 15, max: 15, idx: 9 }, { min: 16, max: 17, idx: 10 },
+            { min: 18, max: 19, idx: 11 }, { min: 20, max: 20, idx: 12 },
+            { min: 21, max: 22, idx: 13 }, { min: 23, max: 24, idx: 14 },
+            { min: 25, max: 26, idx: 15 }, { min: 27, max: 27, idx: 16 },
+            { min: 28, max: 29, idx: 17 }, { min: 30, max: 31, idx: 18 },
+            { min: 32, max: 32, idx: 19 }, { min: 33, max: 34, idx: 20 },
+            { min: 35, max: 36, idx: 21 }, { min: 37, max: 37, idx: 22 },
+            { min: 38, max: 39, idx: 23 }, { min: 40, max: 41, idx: 24 },
+            { min: 42, max: 42, idx: 25 }, { min: 43, max: 44, idx: 26 },
+            { min: 45, max: 46, idx: 27 }, { min: 47, max: 47, idx: 28 },
+            { min: 48, max: 49, idx: 29 }, { min: 50, max: 51, idx: 30 },
+            { min: 52, max: 52, idx: 31 }, { min: 53, max: 54, idx: 32 },
+            { min: 55, max: 56, idx: 33 }, { min: 57, max: 57, idx: 34 },
+            { min: 58, max: 59, idx: 35 }, { min: 60, max: 61, idx: 36 },
+            { min: 62, max: 62, idx: 37 }, { min: 63, max: 64, idx: 38 },
+            { min: 65, max: 66, idx: 39 }, { min: 67, max: 67, idx: 40 },
+            { min: 68, max: 69, idx: 41 }, { min: 70, max: 71, idx: 42 },
+            { min: 72, max: 72, idx: 43 }
+        ],
+        fuel: [
+            { min: 0, max: 3300, idx: 0 }, { min: 3301, max: 4500, idx: 1 },
+            { min: 4501, max: 5200, idx: 2 }, { min: 5201, max: 5800, idx: 3 },
+            { min: 5801, max: 6300, idx: 4 }, { min: 6301, max: 6700, idx: 5 },
+            { min: 6701, max: 7000, idx: 6 }, { min: 7001, max: 7300, idx: 7 },
+            { min: 7301, max: 7600, idx: 8 }, { min: 7601, max: 8500, idx: 9 },
+            { min: 8501, max: 9100, idx: 8 }, { min: 9101, max: 9700, idx: 7 },
+            { min: 9701, max: 10400, idx: 6 }, { min: 10401, max: 11000, idx: 5 },
+            { min: 11001, max: 11700, idx: 4 }, { min: 11701, max: 12300, idx: 3 },
+            { min: 12301, max: 13000, idx: 2 }, { min: 13001, max: 13700, idx: 1 },
+            { min: 13701, max: 14400, idx: 0 }, { min: 14401, max: 15100, idx: -1 },
+            { min: 15101, max: 15800, idx: -2 }, { min: 15801, max: 16500, idx: -3 },
+            { min: 16501, max: 17200, idx: -4 }, { min: 17201, max: 17900, idx: -5 },
+            { min: 17901, max: 18600, idx: -6 }, { min: 18601, max: 19200, idx: -7 },
+            { min: 19201, max: 19800, idx: -8 }, { min: 19801, max: 20400, idx: -9 },
+            { min: 20401, max: 20893, idx: -10 }, { min: 20894, max: 22144, idx: -11 }
+        ]
+    };
+
+    // CG Envelope Reference Lines
+    const CG_LINES = [
+        { cg: 10, solveX: (y) => (905 - 9 * y) / 20 },
+        { cg: 12, solveX: (y) => (2255 - 18 * y) / 50 },
+        { cg: 14, solveX: (y) => (4495 - 27 * y) / 100 },
+        { cg: 16, solveX: (y) => (4565 - 19 * y) / 100 },
+        { cg: 18, solveX: (y) => (4515 - 9 * y) / 100 },
+        { cg: 20, solveX: (y) => 45 },
+        { cg: 22, solveX: (y) => (4485 + 9 * y) / 100 },
+        { cg: 24, solveX: (y) => (2235 + 9 * y) / 50 },
+        { cg: 26, solveX: (y) => (1105 + 7 * y) / 25 },
+        { cg: 28, solveX: (y) => (1110 + 9 * y) / 25 },
+        { cg: 30, solveX: (y) => (2195 + 23 * y) / 50 },
+        { cg: 32, solveX: (y) => (885 + 11 * y) / 20 }
+    ];
+
+    function calculateCG(x, weight) {
+        if (weight <= 0) return 0;
+        const y = weight / 1000;
+
+        // Calculate expected X positions for each CG line at this weight (Y)
+        const lineData = CG_LINES.map(line => ({
+            cg: line.cg,
+            xLine: line.solveX(y)
+        }));
+
+        // Check if out of lower boundary
+        if (x <= lineData[0].xLine) {
+            return lineData[0].cg;
+        }
+
+        // Check if out of upper boundary
+        if (x >= lineData[lineData.length - 1].xLine) {
+            return lineData[lineData.length - 1].cg;
+        }
+
+        // Interpolate between the bounding CG lines
+        for (let i = 0; i < lineData.length - 1; i++) {
+            const x1 = lineData[i].xLine;
+            const x2 = lineData[i + 1].xLine;
+
+            if (x >= x1 && x <= x2) {
+                const cg1 = lineData[i].cg;
+                const cg2 = lineData[i + 1].cg;
+                const cg = cg1 + (cg2 - cg1) * ((x - x1) / (x2 - x1));
+                return cg;
+            }
+        }
+
+        return 0;
+    }
+
+    function getRangeIndex(val, table) {
+        if (val <= 0) return 0;
+        const entry = table.find(item => val >= item.min && val <= item.max);
+        return entry ? entry.idx : 0;
+    }
+
+    function getPaxIndex(pax, table) {
+        if (pax <= 0) return 0;
+        const entry = table.find(item => item.pax === pax);
+        if (entry) return entry.idx;
+        const maxDefined = table[table.length - 1];
+        return Math.round((pax / maxDefined.pax) * maxDefined.idx);
+    }
+
+    function calculateTrim() {
+        const doi = parseFloat(document.getElementById('doi').value) || 0;
+        const dow = parseFloat(document.getElementById('dow').value) || 0;
+
+        const c1 = parseFloat(document.getElementById('cargo1').value) || 0;
+        const c2 = parseFloat(document.getElementById('cargo2').value) || 0;
+        const c3 = parseFloat(document.getElementById('cargo3').value) || 0;
+        const c4 = parseFloat(document.getElementById('cargo4').value) || 0;
+
+        // Zone OA
+        const oaAdt = parseFloat(document.getElementById('oa-adt').value) || 0;
+        const oaChd = parseFloat(document.getElementById('oa-chd').value) || 0;
+        const oaInf = parseFloat(document.getElementById('oa-inf').value) || 0;
+        const oaPaxCount = oaAdt + oaChd;
+        const oaWeight = (oaAdt * 75) + (oaChd * 40) + (oaInf * 10);
+
+        // Zone OB
+        const obAdt = parseFloat(document.getElementById('ob-adt').value) || 0;
+        const obChd = parseFloat(document.getElementById('ob-chd').value) || 0;
+        const obInf = parseFloat(document.getElementById('ob-inf').value) || 0;
+        const obPaxCount = obAdt + obChd;
+        const obWeight = (obAdt * 75) + (obChd * 40) + (obInf * 10);
+
+        // Zone OC
+        const ocAdt = parseFloat(document.getElementById('oc-adt').value) || 0;
+        const ocChd = parseFloat(document.getElementById('oc-chd').value) || 0;
+        const ocInf = parseFloat(document.getElementById('oc-inf').value) || 0;
+        const ocPaxCount = ocAdt + ocChd;
+        const ocWeight = (ocAdt * 75) + (ocChd * 40) + (ocInf * 10);
+
+        const toFuel = parseFloat(document.getElementById('toFuel').value) || 0;
+
+        // Index Lookups
+        const idxC1 = getRangeIndex(c1, INDEX_TABLES.cargo1);
+        const idxC2 = getRangeIndex(c2, INDEX_TABLES.cargo2);
+        const idxC3 = getRangeIndex(c3, INDEX_TABLES.cargo3);
+        const idxC4 = getRangeIndex(c4, INDEX_TABLES.cargo4);
+
+        const idxOA = getPaxIndex(oaPaxCount, INDEX_TABLES.cabinOA);
+        const idxOB = getRangeIndex(obPaxCount, INDEX_TABLES.cabinOB);
+        const idxOC = getRangeIndex(ocPaxCount, INDEX_TABLES.cabinOC);
+
+        const idxFuel = getRangeIndex(toFuel, INDEX_TABLES.fuel);
+
+        // Update Badges
+        document.getElementById('idx-cargo1').innerText = (idxC1 >= 0 ? '+' : '') + idxC1;
+        document.getElementById('idx-cargo2').innerText = (idxC2 >= 0 ? '+' : '') + idxC2;
+        document.getElementById('idx-cargo3').innerText = (idxC3 >= 0 ? '+' : '') + idxC3;
+        document.getElementById('idx-cargo4').innerText = (idxC4 >= 0 ? '+' : '') + idxC4;
+
+        document.getElementById('idx-cabinOA').innerText = (idxOA >= 0 ? '+' : '') + idxOA;
+        document.getElementById('idx-cabinOB').innerText = (idxOB >= 0 ? '+' : '') + idxOB;
+        document.getElementById('idx-cabinOC').innerText = (idxOC >= 0 ? '+' : '') + idxOC;
+
+        document.getElementById('idx-toFuel').innerText = (idxFuel >= 0 ? '+' : '') + idxFuel;
+
+        // Weights
+        const totalCargo = c1 + c2 + c3 + c4;
+        const totalPaxWeight = oaWeight + obWeight + ocWeight;
+        const trafficLoad = totalCargo + totalPaxWeight;
+        const zfw = dow + trafficLoad;
+        const tow = zfw + toFuel;
+
+        // Loaded Indexes
+        const totalCargoIndex = idxC1 + idxC2 + idxC3 + idxC4;
+        const totalCabinIndex = idxOA + idxOB + idxOC;
+        const lizfw = doi + totalCargoIndex + totalCabinIndex;
+        const litow = lizfw + idxFuel;
+
+        // Calculate % MAC (CG)
+        const zfwMac = calculateCG(lizfw, zfw);
+        const towMac = calculateCG(litow, tow);
+
+        // Display Results
+        document.getElementById('res-zfw').innerText = zfw.toLocaleString() + ' kg';
+        document.getElementById('res-lizfw').innerText = lizfw.toFixed(2);
+        document.getElementById('res-zfwMac').innerText = zfwMac.toFixed(2) + '%';
+
+        document.getElementById('res-tow').innerText = tow.toLocaleString() + ' kg';
+        document.getElementById('res-litow').innerText = litow.toFixed(2);
+        document.getElementById('res-towMac').innerText = towMac.toFixed(2) + '%';
+    }
+
+    calculateTrim();
+</script>
+
+</body>
+</html>
