@@ -552,7 +552,7 @@
           </div>
           <div class="form-group">
             <label for="projFile">HTML Filename</label>
-            <input type="text" id="projFile" placeholder="e.g. b737-trim.html" />
+            <input type="text" id="projFile" placeholder="e.g. 737-800 digital trim sheet.html" />
           </div>
           <div class="form-group full">
             <label for="projSrc">Link URL (src)</label>
@@ -582,93 +582,94 @@
   <script>
     const BASE_URL = "https://hasanace1997277-ui.github.io/Flight-handling-tools/";
 
-const DEFAULT_PROJECTS = [
-  {
-    "title": "CGP Roster 6.0",
-    "icon": "📋",
-    "category": "ROSTER & OPS",
-    "file": "Digital Roster 6.0.html",
-    "src": "https://hasanace1997277-ui.github.io/Flight-handling-tools/Digital_Roster_5.0_Standalone.html"
-  },
-  {
-    "title": "MVT Generator (LT → UTC)",
-    "icon": "🕒",
-    "category": "ROSTER & OPS",
-    "file": "MVT GENERATOR.html",
-    "src": "https://hasanace1997277-ui.github.io/Flight-handling-tools/MVT%20GENERATOR.html"
-  },
-  {
-    "title": "Flight Ops Suite (UFDC 2.0)",
-    "icon": "📊",
-    "category": "LDM & MANIFEST",
-    "file": "UFDC 2.0.html",
-    "src": "https://hasanace1997277-ui.github.io/Flight-handling-tools/UFDC%202.0.html"
-  },
-  {
-    "title": "Manifest Extractor 4.0",
-    "icon": "📑",
-    "category": "LDM & MANIFEST",
-    "file": "MANIFEST EXTRACTOR 4.0.html",
-    "src": "https://hasanace1997277-ui.github.io/Flight-handling-tools/MANIFEST%20EXTRACTOR%204.0.html"
-  },
-  {
-    "title": "OB Passenger Counter",
-    "icon": "🧳",
-    "category": "LDM & MANIFEST",
-    "file": "ob passenger counter.html",
-    "src": "https://hasanace1997277-ui.github.io/Flight-handling-tools/ob%20passenger%20counter.html"
-  },
-  {
-    "title": "Any LDM Parser",
-    "icon": "🔄",
-    "category": "LDM & MANIFEST",
-    "file": "ANY LDM PARSER.html",
-    "src": "https://hasanace1997277-ui.github.io/Flight-handling-tools/ANY%20LDM%20PARSER.html"
-  },
-  {
-    "title": "Universal Loadsheet Parser",
-    "icon": "⚖️",
-    "category": "LOAD & TRIM",
-    "file": "Universal Loadsheet Parser.html",
-    "src": "https://hasanace1997277-ui.github.io/Flight-handling-tools/Universal%20Loadsheet%20Parser.html"
-  },
-  {
-    "title": "Dash 8 Digital Trim Sheet",
-    "icon": "✈️",
-    "category": "LOAD & TRIM",
-    "file": "DASH 8 DIGITAL TRIM SHEET.html",
-    "src": "https://hasanace1997277-ui.github.io/Flight-handling-tools/DASH%208%20DIGITAL%20TRIM%20SHEET.html"
-  },
-  {
-    "title": "HTML Block Editor",
-    "icon": "🧩",
-    "category": "DEV & TEXT",
-    "file": "HTML block view.html",
-    "src": "https://hasanace1997277-ui.github.io/Flight-handling-tools/HTML%20block%20view.html"
-  },
-  {
-    "title": "TXT File Combiner",
-    "icon": "📄",
-    "category": "DEV & TEXT",
-    "file": "TEXT COMBINER.html",
-    "src": "https://hasanace1997277-ui.github.io/Flight-handling-tools/TEXT%20COMBINER.html"
-  },
-  {
-    "title": "Duty Roster",
-    "icon": "📋",
-    "category": "ROSTER & OPS",
-    "file": "Duty Roster November v15 beta.html",
-    "src": "https://hasanace1997277-ui.github.io/Flight-handling-tools/Duty%20Roster%20November%20v15%20beta.html"
-  },
-  {
-    "title": "737 DIGITAL TRIM SHEET",
-    "icon": "✈️",
-    "category": "LOAD & TRIM",
-    "file": "737-800 digital trim sheet.html",
-    "src": "https://hasanace1997277-ui.github.io/Flight-handling-tools/737-800%20digital%20trim%20sheet.html"
-  }
-];
-    const STORAGE_KEY = "flight_handling_portal_icons_v3";
+    const DEFAULT_PROJECTS = [
+      {
+        title: "CGP Roster 6.0",
+        icon: "📋",
+        category: "ROSTER & OPS",
+        file: "Digital Roster 6.0.html",
+        src: BASE_URL + "Digital%20Roster%206.0.html"
+      },
+      {
+        title: "Duty Roster November v15 Beta",
+        icon: "📋",
+        category: "ROSTER & OPS",
+        file: "Duty Roster November v15 beta.html",
+        src: BASE_URL + "Duty%20Roster%20November%20v15%20beta.html"
+      },
+      {
+        title: "MVT Generator (LT → UTC)",
+        icon: "🕒",
+        category: "ROSTER & OPS",
+        file: "MVT GENERATOR.html",
+        src: BASE_URL + "MVT%20GENERATOR.html"
+      },
+      {
+        title: "Flight Ops Suite (UFDC 2.0)",
+        icon: "📊",
+        category: "LDM & MANIFEST",
+        file: "UFDC 2.0.html",
+        src: BASE_URL + "UFDC%202.0.html"
+      },
+      {
+        title: "Manifest Extractor 4.0",
+        icon: "📑",
+        category: "LDM & MANIFEST",
+        file: "MANIFEST EXTRACTOR 4.0.html",
+        src: BASE_URL + "MANIFEST%20EXTRACTOR%204.0.html"
+      },
+      {
+        title: "OB Passenger Counter",
+        icon: "🧳",
+        category: "LDM & MANIFEST",
+        file: "ob passenger counter.html",
+        src: BASE_URL + "ob%20passenger%20counter.html"
+      },
+      {
+        title: "Any LDM Parser",
+        icon: "🔄",
+        category: "LDM & MANIFEST",
+        file: "ANY LDM PARSER.html",
+        src: BASE_URL + "ANY%20LDM%20PARSER.html"
+      },
+      {
+        title: "Universal Loadsheet Parser",
+        icon: "⚖️",
+        category: "LOAD & TRIM",
+        file: "Universal Loadsheet Parser.html",
+        src: BASE_URL + "Universal%20Loadsheet%20Parser.html"
+      },
+      {
+        title: "Dash 8 Digital Trim Sheet",
+        icon: "✈️",
+        category: "LOAD & TRIM",
+        file: "DASH 8 DIGITAL TRIM SHEET.html",
+        src: BASE_URL + "DASH%208%20DIGITAL%20TRIM%20SHEET.html"
+      },
+      {
+        title: "737-800 Digital Trim Sheet",
+        icon: "⚖️",
+        category: "LOAD & TRIM",
+        file: "737-800 digital trim sheet.html",
+        src: BASE_URL + "737-800%20digital%20trim%20sheet.html"
+      },
+      {
+        title: "HTML Block Editor",
+        icon: "🧩",
+        category: "DEV & TEXT",
+        file: "HTML block view.html",
+        src: BASE_URL + "HTML%20block%20view.html"
+      },
+      {
+        title: "TXT File Combiner",
+        icon: "📄",
+        category: "DEV & TEXT",
+        file: "TEXT COMBINER.html",
+        src: BASE_URL + "TEXT%20COMBINER.html"
+      }
+    ];
+
+    const STORAGE_KEY = "flight_handling_portal_icons_v4";
     const VIEW_KEY = "flight_handling_portal_compact_v1";
     let projects = [];
     let activeCategory = "ALL";
